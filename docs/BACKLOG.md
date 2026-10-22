@@ -21,8 +21,8 @@
 
 ## 2. Další funkce (dohodnuté kroky)
 1. **Mapa** ✔ (OpenFreeMap, anglické popisky). Zbývá: offline oblast (např. PMTiles výřez země přes `vector_map_tiles_pmtiles`), jazyk popisků z nastavení.
-2. **Nominatim hledání podle názvu** ✔ pro místa. Zbývá: u dokladů (vstupenka, hotel) vytvořit/propojit `Place`;
-   názvy z Google Map typu „JP9V JX2 Huong Pagoda“ obsahují Plus Code (`JP9V+JX2`) – dekódovat na souřadnice (balíček `open_location_code`) už při sdílení.
+2. **Poloha míst** ✔ (sdílení z Map s dohledáním, Plus Code, ruční bod v mapě, moje poloha). Zbývá: u dokladů (vstupenka, hotel)
+   vytvořit/propojit `Place`; přibližný výsledek (obec/provincie) zobrazit s menším přiblížením.
 3. **Nahrávání PDF** (letenky, rezervace z e-mailu): vykreslit stránku (`pdfx`), pak stejný sken jako u fotek.
 4. **Travel Vault** (pas, víza, očkování, pojištění, nouzové kontakty, ambasády): šifrovaně (AES‑GCM, klíč v Android Keystore, odemknutí biometrií), funguje offline,
    zálohování jen zašifrovaných dat, **nikdy** ne do AI. Tlačítko SOS s kontakty.

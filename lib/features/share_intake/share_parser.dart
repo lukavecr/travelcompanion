@@ -14,9 +14,12 @@ class SharedPlace {
 }
 
 class ResolvedMaps {
-  const ResolvedMaps({this.coords, this.name, this.origin, this.destination});
+  const ResolvedMaps(
+      {this.coords, this.name, this.address, this.origin, this.destination, this.finalUrl});
   final Coords? coords;
   final String? name;
+  final String? address; // celý text místa z odkazu („Název, ulice, město, země“)
+  final String? finalUrl; // poslední adresa po přesměrování (pro kontrolu)
   final String? origin; // u sdílené trasy (.../maps/dir/Odkud/Kam)
   final String? destination;
 }
@@ -42,8 +45,8 @@ List<String>? routeFromUri(Uri uri) {
 }
 
 final _patterns = <RegExp>[
-  RegExp(r'@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)'),
-  RegExp(r'!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)'),
+  RegExp(r'!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)'), // přesná poloha místa
+  RegExp(r'@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)'), // střed výřezu mapy
   RegExp(
       r'[?&](?:q|ll|query|destination|center)=(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)'),
   RegExp(r'^\s*(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)\s*$'),
@@ -67,6 +70,21 @@ Coords? coordsFrom(String input) {
     }
   }
   return null;
+}
+
+/// Celý text místa z odkazu (`…/maps/place/TEXT/…` nebo `?q=TEXT`).
+String? addressFromUri(Uri uri) {
+  String? raw;
+  final seg = uri.pathSegments;
+  final i = seg.indexOf('place');
+  if (i >= 0 && i + 1 < seg.length) raw = seg[i + 1];
+  raw ??= uri.queryParameters['q'] ?? uri.queryParameters['query'];
+  if (raw == null) return null;
+  final s = _dec(raw);
+  if (s.isEmpty || s.startsWith('@') || s.startsWith('data=') || _coordsOnly.hasMatch(s)) {
+    return null;
+  }
+  return s;
 }
 
 /// Název místa z adresy typu .../maps/place/Grand+Palace/@13.7,100.4,17z...
@@ -108,24 +126,34 @@ Future<ResolvedMaps> resolveMaps(String url) async {
   final client = http.Client();
   Coords? coords;
   String? name;
+  String? address;
   List<String>? route;
+  var current = Uri.parse(url);
+  final visited = <String>{};
   try {
-    var current = Uri.parse(url);
     for (var i = 0; i < 8; i++) {
       coords ??= coordsFrom(current.toString());
       name ??= nameFromUri(current);
+      address ??= addressFromUri(current);
       route ??= routeFromUri(current);
       if (route != null) break;
       if (coords != null && name != null) break;
+      if (!visited.add(current.toString())) break; // kolečko (souhlas s cookies)
 
       final cont = current.queryParameters['continue'];
       if (current.host.contains('consent.google') && cont != null) {
         current = Uri.parse(cont);
         continue;
       }
+      // Google z adres Map stejně souřadnice nevydá, dál už nic nezjistíme
+      if (name != null && current.host.contains('google.') && !current.host.startsWith('maps.app')) {
+        break;
+      }
 
       final req = http.Request('GET', current)
         ..followRedirects = false
+        // SOCS=CAI = odmítnuté nepovinné cookies (jinak Google v EU přesměruje na souhlas)
+        ..headers['cookie'] = 'SOCS=CAI'
         ..headers['user-agent'] =
             'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36';
       final res = await client.send(req).timeout(const Duration(seconds: 10));
@@ -145,6 +173,8 @@ Future<ResolvedMaps> resolveMaps(String url) async {
   return ResolvedMaps(
     coords: route != null ? null : coords,
     name: route != null ? null : name,
+    address: route != null ? null : address,
+    finalUrl: current.toString(),
     origin: route?[0],
     destination: route?[1],
   );

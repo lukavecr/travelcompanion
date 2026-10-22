@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../core/country_info.dart';
 import '../../core/format.dart';
 import '../../core/geocode.dart';
+import '../../core/map_tiles.dart';
+import '../../core/place_locator.dart';
+import '../places/locate_place_screen.dart';
 import '../places/place_types.dart';
 import '../trips/trip_repository.dart';
 import 'share_parser.dart';
@@ -23,6 +28,9 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
   String? _routeNote;
   late final SharedPlace _shared;
   Coords? _coords;
+  bool _approx = false; // poloha dohledaná podle názvu/adresy, ne přímo z odkazu
+  String? _address;
+  String? _finalUrl;
   bool _resolving = false;
   String _type = 'attraction';
   String? _tripId;
@@ -40,10 +48,27 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
     _coords = _shared.coords;
     if (_shared.url != null && (_coords == null || _shared.name.isEmpty)) {
       _resolving = true;
-      resolveMaps(_shared.url!).then((r) {
+      resolveMaps(_shared.url!).then((r) async {
         if (!mounted) return;
+        _address = r.address;
+        _finalUrl = r.finalUrl;
+        GeoResult? found;
+        if (_coords == null && r.coords == null && r.origin == null) {
+          // odkaz bez souřadnic → dohledat podle adresy / názvu / Plus Code
+          found = await locateByText(
+              name: _nameC.text.trim().isEmpty ? r.name : _nameC.text.trim(),
+              address: r.address);
+          if (!mounted) return;
+        }
         setState(() {
           _coords ??= r.coords;
+          if (found != null) {
+            _coords ??= Coords(found.lat, found.lng);
+            _approx = true;
+            if (_countryC.text.trim().isEmpty && found.country != null) {
+              _countryC.text = found.country!;
+            }
+          }
           if (_nameC.text.trim().isEmpty && r.name != null) {
             _nameC.text = r.name!;
           }
@@ -61,6 +86,36 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
       });
     }
     if (_coords != null) _lookupCountry();
+    if (_shared.url == null && _coords == null && _shared.name.isNotEmpty) {
+      _resolving = true;
+      locateByText(name: _shared.name).then((g) {
+        if (!mounted) return;
+        setState(() {
+          _resolving = false;
+          if (g == null) return;
+          _coords = Coords(g.lat, g.lng);
+          _approx = true;
+          if (_countryC.text.trim().isEmpty && g.country != null) {
+            _countryC.text = g.country!;
+          }
+        });
+      });
+    }
+  }
+
+  Future<void> _findManually() async {
+    final r = await Navigator.of(context).push<GeoResult>(MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => LocatePlaceScreen(
+          initialQuery: _address ?? _nameC.text.trim()),
+    ));
+    if (r == null || !mounted) return;
+    setState(() {
+      _coords = Coords(r.lat, r.lng);
+      _approx = false;
+      if (_nameC.text.trim().isEmpty) _nameC.text = r.name;
+      if (r.country != null) _countryC.text = r.country!;
+    });
   }
 
   Future<void> _lookupCountry() async {
@@ -160,15 +215,57 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                   decoration: const InputDecoration(labelText: 'Název místa'),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  _resolving
-                      ? 'Zjišťuji název a polohu…'
-                      : _coords != null
-                          ? 'Poloha nalezena: '
-                              '${_coords!.lat.toStringAsFixed(5)}, '
-                              '${_coords!.lng.toStringAsFixed(5)}'
-                          : 'Souřadnice se nepodařilo zjistit, uložím alespoň odkaz.',
-                ),
+                if (_resolving) ...[
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 8),
+                  const Text('Zjišťuji název a polohu…'),
+                ] else ...[
+                  Text(_coords == null
+                      ? 'Polohu se nepodařilo zjistit. Najdi ji ručně, nebo uložím jen odkaz.'
+                      : _approx
+                          ? 'Poloha dohledána podle názvu / adresy – zkontroluj ji na mapě.'
+                          : 'Poloha nalezena.'),
+                  if (_coords != null) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                        height: 180,
+                        child: FlutterMap(
+                          key: ValueKey(_coords),
+                          options: MapOptions(
+                            initialCenter: LatLng(_coords!.lat, _coords!.lng),
+                            initialZoom: 14,
+                            interactionOptions: const InteractionOptions(
+                              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                          ),
+                          children: [
+                            const MapTiles(),
+                            MarkerLayer(markers: [
+                              Marker(
+                                point: LatLng(_coords!.lat, _coords!.lng),
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.topCenter,
+                                child: const Icon(Icons.location_on,
+                                    size: 40, color: Color(0xFFE5677A)),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _findManually,
+                      icon: const Icon(Icons.search),
+                      label: Text(_coords == null ? 'Najít polohu' : 'Není to ono? Najít jinak'),
+                    ),
+                  ),
+                ],
                 if (_routeNote != null) ...[
                   const SizedBox(height: 8),
                   Text(_routeNote!),
@@ -281,7 +378,10 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(12),
-                      child: SelectableText(widget.text),
+                      child: SelectableText([
+                        widget.text,
+                        if (_finalUrl != null) '\nOdkaz vede na:\n$_finalUrl',
+                      ].join('\n')),
                     ),
                   ],
                 ),

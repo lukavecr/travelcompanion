@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/geocode.dart';
+import '../../core/place_locator.dart';
 import '../../core/map_tiles.dart';
 import '../../data/database.dart';
+import '../share_intake/share_parser.dart';
 import '../trips/trip_repository.dart';
 import 'place_types.dart';
 
@@ -18,6 +20,8 @@ Future<void> locatePlace(BuildContext context, WidgetRef ref, Place p) async {
         p.name,
         if (p.country != null && p.country!.isNotEmpty) p.country!,
       ].join(', '),
+      name: p.name,
+      mapUrl: p.mapUrl,
     ),
   ));
   if (r == null) return;
@@ -31,8 +35,11 @@ Future<void> locatePlace(BuildContext context, WidgetRef ref, Place p) async {
 }
 
 class LocatePlaceScreen extends StatefulWidget {
-  const LocatePlaceScreen({super.key, required this.initialQuery});
+  const LocatePlaceScreen(
+      {super.key, required this.initialQuery, this.name, this.mapUrl});
   final String initialQuery;
+  final String? name; // u uloženého místa: zkusí se odkaz z Map a Plus Code
+  final String? mapUrl;
 
   @override
   State<LocatePlaceScreen> createState() => _LocatePlaceScreenState();
@@ -49,7 +56,43 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
   @override
   void initState() {
     super.initState();
-    _search();
+    if (widget.name != null || widget.mapUrl != null) {
+      _prefill();
+    } else {
+      _search();
+    }
+  }
+
+  /// Nejdřív odkaz z Google Map (souřadnice / adresa), pak Plus Code a název.
+  Future<void> _prefill() async {
+    setState(() => _busy = true);
+    GeoResult? found;
+    try {
+      String? address;
+      if (widget.mapUrl != null) {
+        final r = await resolveMaps(widget.mapUrl!);
+        address = r.address;
+        if (r.coords != null) {
+          found = GeoResult(
+            name: r.name ?? widget.name ?? '',
+            address: r.address ?? 'Poloha z odkazu Google Map',
+            lat: r.coords!.lat,
+            lng: r.coords!.lng,
+            country: await reverseCountry(r.coords!.lat, r.coords!.lng),
+          );
+        }
+      }
+      found ??= await locateByText(name: widget.name, address: address);
+      if (address != null && mounted) _query.text = address;
+    } catch (_) {}
+    if (!mounted) return;
+    if (found == null) return _search();
+    final f = found;
+    setState(() {
+      _busy = false;
+      _results = [f];
+    });
+    _pick(f);
   }
 
   Future<void> _search() async {
@@ -59,13 +102,24 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
       _picked = null;
     });
     try {
-      final r = await searchPlaces(_query.text);
+      var r = await searchPlaces(_query.text);
+      var approx = false;
+      if (r.isEmpty) {
+        // zkus kratší varianty a nakonec aspoň obec / okres
+        final g = await locateByText(address: _query.text);
+        if (g != null) {
+          r = [g];
+          approx = true;
+        }
+      }
       if (!mounted) return;
       setState(() {
         _results = r;
         _message = r.isEmpty
-            ? 'Nic nenalezeno. Zkus kratší název, anglický název nebo přidej město.'
-            : null;
+            ? 'Nic nenalezeno. Zkus kratší nebo anglický název, nebo najdi místo na mapě a klepni na něj.'
+            : approx
+                ? 'Přesně to nenašlo – ukazuji nejbližší shodu. Případně klepni do mapy na přesné místo.'
+                : null;
       });
       if (r.isNotEmpty) _pick(r.first);
     } catch (_) {
@@ -79,7 +133,13 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
 
   void _pick(GeoResult r) {
     setState(() => _picked = r);
-    _map.move(LatLng(r.lat, r.lng), 14);
+    try {
+      _map.move(LatLng(r.lat, r.lng), 14);
+    } catch (_) {
+      // mapa ještě není vykreslená
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _map.move(LatLng(r.lat, r.lng), 14));
+    }
   }
 
   @override
@@ -107,15 +167,22 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
           ),
           if (_busy) const LinearProgressIndicator(),
           SizedBox(
-            height: 220,
+            height: 280,
             child: FlutterMap(
               mapController: _map,
-              options: const MapOptions(
-                initialCenter: LatLng(20, 100),
+              options: MapOptions(
+                initialCenter: const LatLng(20, 100),
                 initialZoom: 2,
-                interactionOptions: InteractionOptions(
+                interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                 ),
+                // ruční volba: klepnutí do mapy na přesné místo
+                onTap: (_, p) => setState(() => _picked = GeoResult(
+                      name: widget.name ?? 'Vybraný bod',
+                      address: 'Bod vybraný na mapě',
+                      lat: p.latitude,
+                      lng: p.longitude,
+                    )),
               ),
               children: [
                 const MapTiles(),
@@ -133,6 +200,11 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
                 const MapAttribution(),
               ],
             ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 6, 16, 0),
+            child: Text('Tip: můžeš i klepnout do mapy na přesné místo.',
+                style: TextStyle(fontSize: 13)),
           ),
           if (_message != null)
             Padding(

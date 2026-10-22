@@ -34,6 +34,10 @@ proto je důležitá spolehlivost offline a záloha dat.
   závislost `com.google.mlkit:text-recognition-japanese:16.0.0`.
 - `AndroidManifest.xml`: `launchMode=singleTask`, intent-filter `SEND text/*` (sdílení z Google Map),
   oprávnění `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `SCHEDULE_EXACT_ALARM`, přijímače plánovaných oznámení.
+- Sdílení z Google Map: aplikace Map posílá **jen odkaz** `maps.app.goo.gl/…` (bez názvu). Přesměruje na `/maps/place/<Název, adresa>/data=…`,
+  většinou **bez souřadnic** (`!3d…!4d…` jen někdy; `@lat,lng` je střed výřezu, ne místo). Google stránka souřadnice neprozradí
+  (v EU navíc přesměruje na consent.google.com – posíláme cookie `SOCS=CAI` = odmítnuto). Poloha se proto dohledá přes Nominatim.
+  Kontrola z PC: `dart run tool/share_probe.dart "<sdílený text>"`.
 - Mapy: CARTO basemaps už chtějí API klíč, wikimedia dlaždice jsou jen pro Wikimedii, tile.openstreetmap.org zakazuje hromadné stahování
   (offline oblasti tedy ne odtud). OpenFreeMap je zdarma bez klíče a bez limitu.
 - Xiaomi/MIUI zabíjí upozornění, dokud uživatel nevypne úsporu baterie pro aplikaci.
@@ -47,8 +51,11 @@ proto je důležitá spolehlivost offline a záloha dat.
   `theme.dart` (tmavý režim výchozí), `format.dart` (data, čas, `fmtMoney`, `parseAmount`), `dialogs.dart`, `full_image_screen.dart`,
   `country_info.dart` (země↔měna, tipování země), `geocode.dart` (Nominatim reverse + `searchPlaces`, společné omezení 1 dotaz/s).
 - `data/database.dart` – Drift (SQLite) = **zdroj pravdy v telefonu**. `schemaVersion = 5`, migrace v `onUpgrade`.
-- `features/map` (záložka Mapa: místa všech cest, filtr podle cesty, „Doplnit“ polohu), `places/locate_place_screen.dart`
-  (hledání polohy podle názvu přes Nominatim, náhled na mapě, uloží lat/lng + zemi).
+- `features/map` (záložka Mapa: místa všech cest, filtr podle cesty, „Doplnit“ polohu, moje poloha přes `geolocator`,
+  dlouhé podržení = uložit bod), `places/locate_place_screen.dart` (hledání polohy: nejdřív uložený odkaz z Map, pak Plus Code /
+  adresa / název přes Nominatim, náhled na mapě, klepnutí do mapy = ruční bod).
+- `core/plus_code.dart` (vlastní dekodér Open Location Code – balíček `open_location_code` pro Dart 3 neexistuje),
+  `core/place_locator.dart` (`locateByText`: Plus Code → adresa → zkrácené varianty → obec/okres).
 - `features/trips` (cesty + plán dne + ubytování od–do + čas + upozornění), `places`, `share_intake` (Android Share Intent z Google Map),
   `documents` (sken fotky → kódy + OCR → formulář → doklad + položka plánu), `money` (výdaje, kurzy, statistiky, účtenky),
   `reminders` (flutter_local_notifications), `sync` (Firestore záloha), `auth`, `shell`.

@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -41,6 +46,103 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   bool _ready = false;
   String? _tripId; // null = všechny cesty
   List<LatLng> _points = const [];
+  LatLng? _me; // moje aktuální poloha
+  double? _meAccuracy;
+  StreamSubscription<Position>? _meSub;
+
+  @override
+  void dispose() {
+    _meSub?.cancel();
+    super.dispose();
+  }
+
+  void _snack(String text) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(text)));
+
+  /// Zapne sledování polohy (GPS v telefonu, zdarma) a přesune mapu na mě.
+  Future<void> _showMe() async {
+    if (_me != null) {
+      _map.move(_me!, math.max(_map.camera.zoom, 15));
+      return;
+    }
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      _snack('Zapni v telefonu Polohu (GPS).');
+      await Geolocator.openLocationSettings();
+      return;
+    }
+    var perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
+    }
+    if (perm == LocationPermission.denied) {
+      _snack('Bez povolení polohy tě na mapě neukážu.');
+      return;
+    }
+    if (perm == LocationPermission.deniedForever) {
+      _snack('Poloha je pro aplikaci zakázaná – povol ji v Nastavení.');
+      await Geolocator.openAppSettings();
+      return;
+    }
+    // rychle poslední známá poloha, pak průběžné upřesňování
+    final last = await Geolocator.getLastKnownPosition();
+    if (last != null && mounted) _onPosition(last, move: true);
+    var first = true; // první čerstvá poloha z GPS → přesunout (uložená může být stará)
+    _meSub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high, distanceFilter: 10),
+    ).listen((p) {
+      _onPosition(p, move: first);
+      first = false;
+    }, onError: (_) {});
+  }
+
+  void _onPosition(Position p, {bool move = false}) {
+    if (!mounted) return;
+    setState(() {
+      _me = LatLng(p.latitude, p.longitude);
+      _meAccuracy = p.accuracy;
+    });
+    if (move && _ready) _map.move(_me!, 15);
+  }
+
+  /// Uložení libovolného bodu (moje poloha / dlouhé podržení) přes obrazovku sdílení.
+  void _savePoint(LatLng p, String name) {
+    final q = '${p.latitude.toStringAsFixed(6)},${p.longitude.toStringAsFixed(6)}';
+    context.push('/share',
+        extra: '$name\nhttps://www.google.com/maps/search/?api=1&query=$q');
+  }
+
+  void _pointSheet(LatLng p, {required bool me}) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(me ? 'Moje poloha' : 'Vybraný bod',
+                  style: Theme.of(ctx).textTheme.titleLarge),
+              const SizedBox(height: 4),
+              Text('${p.latitude.toStringAsFixed(5)}, ${p.longitude.toStringAsFixed(5)}'
+                  '${me && _meAccuracy != null ? ' · přesnost ±${_meAccuracy!.round()} m' : ''}'),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _savePoint(p, me ? 'Moje poloha' : '');
+                },
+                icon: const Icon(Icons.add_location_alt),
+                label: const Text('Uložit jako místo'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _fit() {
     if (!_ready) return;
@@ -241,6 +343,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                 ),
+                onLongPress: (_, p) => _pointSheet(p, me: false),
                 onMapReady: () {
                   _ready = true;
                   _fit();
@@ -248,8 +351,38 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
               children: [
                 const MapTiles(),
+                if (_me != null && (_meAccuracy ?? 0) > 20)
+                  CircleLayer(circles: [
+                    CircleMarker(
+                      point: _me!,
+                      radius: _meAccuracy!,
+                      useRadiusInMeter: true,
+                      color: const Color(0x334AA3F0),
+                      borderColor: const Color(0x884AA3F0),
+                      borderStrokeWidth: 1,
+                    ),
+                  ]),
                 MarkerLayer(
                   markers: [
+                    if (_me != null)
+                      Marker(
+                        point: _me!,
+                        width: 24,
+                        height: 24,
+                        child: GestureDetector(
+                          onTap: () => _pointSheet(_me!, me: true),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2F80ED),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: const [
+                                BoxShadow(blurRadius: 4, color: Colors.black45)
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     for (final p in located)
                       Marker(
                         point: LatLng(p.lat, p.lng),
@@ -268,13 +401,26 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ],
       ),
-      floatingActionButton: located.isEmpty
-          ? null
-          : FloatingActionButton.small(
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (located.isNotEmpty) ...[
+            FloatingActionButton.small(
+              heroTag: 'fit',
               tooltip: 'Zobrazit všechna místa',
               onPressed: _fit,
               child: const Icon(Icons.fit_screen),
             ),
+            const SizedBox(height: 12),
+          ],
+          FloatingActionButton(
+            heroTag: 'me',
+            tooltip: 'Moje poloha',
+            onPressed: _showMe,
+            child: Icon(_me == null ? Icons.my_location_outlined : Icons.my_location),
+          ),
+        ],
+      ),
     );
   }
 }

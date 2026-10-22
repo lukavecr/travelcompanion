@@ -167,7 +167,13 @@ class TripRepository {
         ..orderBy([(p) => OrderingTerm.asc(p.name)]))
       .watch();
 
-  /// Souřadnice 0,0 znamenají „neznámé“ (mapa přijde později).
+  /// Všechna místa ze všech cest (pro záložku Mapa).
+  Stream<List<Place>> watchAllPlaces() => (db.select(db.places)
+        ..where((p) => p.deletedAt.isNull())
+        ..orderBy([(p) => OrderingTerm.asc(p.name)]))
+      .watch();
+
+  /// Souřadnice 0,0 znamenají „neznámé“.
   Future<String> addPlace({
     required String tripId,
     required String name,
@@ -263,7 +269,10 @@ final eventsProvider =
 final placesProvider = StreamProvider.autoDispose.family<List<Place>, String>(
     (ref, tripId) => ref.watch(tripRepositoryProvider).watchPlaces(tripId));
 
-final reminderEventsProvider = StreamProvider<List<CalendarEvent>>(
+final allPlacesProvider = StreamProvider.autoDispose<List<Place>>(
+    (ref) => ref.watch(tripRepositoryProvider).watchAllPlaces());
+
+final reminderEventsProvider =StreamProvider<List<CalendarEvent>>(
     (ref) => ref.watch(tripRepositoryProvider).watchReminderEvents());
 
 /// Země naplánované u cesty (v pořadí, jak je uživatel zadal).

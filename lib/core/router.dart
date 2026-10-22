@@ -9,6 +9,7 @@ import '../features/documents/document_detail_screen.dart';
 import '../features/documents/new_document_screen.dart';
 import '../features/documents/document_repository.dart' show DocView;
 import '../features/documents/scan_service.dart';
+import '../features/map/map_screen.dart';
 import '../features/money/expense_form_screen.dart';
 import '../features/money/money_screen.dart';
 import '../features/places/places_screen.dart';
@@ -68,7 +69,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               ],
             ),
           ]),
-          StatefulShellBranch(routes: [tab('/map', 'Mapa', Icons.map)]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
+          ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/docs',

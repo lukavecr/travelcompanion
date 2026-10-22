@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Travel Companion – your whole trip in one pocket</title>
+  <meta name="description" content="Day-by-day plans, boarding passes with QR codes, expenses in any currency and an encrypted vault for your passport. Built on a trip around the world, works offline.">
+  <meta name="theme-color" content="#0b1412">
+  <meta property="og:title" content="Travel Companion">
+  <meta property="og:description" content="Your whole trip in one pocket – even without signal.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg>Travel Companion</a>
+    <nav class="nav" aria-label="Main">
+      <a href="#features">Features</a>
+      <a class="opt" href="#journey">The journey</a>
+      <a class="opt" href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="16" fill="currentColor" opacity=".12"/>
+    <circle cx="32" cy="32" r="19" fill="none" stroke="#2dd4a7" stroke-width="4"/>
+    <path d="M32 15v6M32 43v6M15 32h6M43 32h6" stroke="#2dd4a7" stroke-width="3" stroke-linecap="round"/>
+    <path d="M38.5 25.5 35 35l-9.5 3.5L29 29z" fill="#2dd4a7"/>
+  </symbol>
+</svg>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-text">
+        <span class="eyebrow">Travel app for long trips</span>
+        <h1>Your whole trip <em>in one pocket</em>, even without signal.</h1>
+        <p>Day-by-day plans, boarding passes with their QR codes, expenses in any currency and an encrypted vault for your passport and insurance. Built for a trip around the world.</p>
+        <div class="btns">
+          <a class="btn" href="#get">Get it for Android</a>
+          <a class="btn ghost" href="#journey">Follow the journey</a>
+        </div>
+        <p class="note">Coming to Google Play. iPhone version in progress.</p>
+      </div>
+
+      <div class="pass" role="img" aria-label="Example of a boarding pass stored in the app: Prague to Tokyo, seat 23A, gate B12">
+        <div class="pass-top"><span>Boarding pass</span><span>Day 1 · 08:35</span></div>
+        <div class="route"><b>PRG</b><span>✈ 12h 40m</span><b>NRT</b></div>
+        <div class="kv">
+          <div>Seat<b>23A</b></div>
+          <div>Gate<b>B12</b></div>
+          <div>Booking<b>K7XQ2M</b></div>
+        </div>
+        <div class="code"><i></i></div>
+        <div class="fx"><span>Ramen, Shinjuku</span>¥ 1 280 → € 8.40</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Features</span>
+        <h2>Everything a long trip needs. Nothing it doesn't.</h2>
+        <p>Your data lives on your phone first, so the app keeps working in the metro, on a plane or in the mountains.</p>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M7 13h4M7 17h7"/></svg>
+          <h3>Day-by-day plan</h3>
+          <p>Trips, days and stops in order. Stays from check-in to check-out, times and reminders before each event.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 18v3"/></svg>
+          <h3>Tickets &amp; documents</h3>
+          <p>Take a photo of a boarding pass or ticket. The app reads the QR code and text and fills in flight, seat and gate. Show the code full screen at the gate.</p>
+          <span class="tag">QR · IATA BCBP · Latin &amp; Japanese text</span>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.6-1-1.7-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3.1-1.6M12 6v2M12 16v2"/></svg>
+          <h3>Money</h3>
+          <p>Log expenses in any currency, converted to your home currency with daily ECB rates. Scan receipts, see spending by day, category and country.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <h3>Places &amp; map</h3>
+          <p>Share a place from Google Maps straight into your trip. See all your places on an OpenStreetMap map, with your own position.</p>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v2.5"/></svg>
+          <h3>Travel Vault</h3>
+          <p>Passport, visas, insurance, vaccinations and emergency contacts. End-to-end encrypted, unlocked with your fingerprint. Reminds you before a document expires.</p>
+          <span class="tag">AES-256-GCM</span>
+        </article>
+        <article class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>
+          <h3>SOS</h3>
+          <p>One tap sends a text with your location to your emergency contacts. A card in English shows first responders your medical details.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="section-head" style="margin:0">
+        <span class="eyebrow">How it works</span>
+        <h2>From a crumpled ticket to a plan in seconds.</h2>
+        <p>Text and code recognition runs on your phone. Your photos are not sent anywhere to be read.</p>
+      </div>
+      <ol class="steps">
+        <li><div><h3>Snap the ticket</h3><p>Boarding pass, train ticket, hotel booking or a screenshot.</p></div></li>
+        <li><div><h3>Check what was read</h3><p>Flight number, booking reference, date, time, seat and gate are filled in. Fix anything with one tap.</p></div></li>
+        <li><div><h3>It lands in your plan</h3><p>The ticket appears on the right day with a reminder. At the gate, open the code full screen.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="section-head" style="margin:0">
+        <span class="eyebrow">Privacy</span>
+        <h2>Your passport is nobody else's business.</h2>
+        <p>No ads, no tracking, no selling of data. Read the <a href="privacy.html">privacy policy</a>.</p>
+      </div>
+      <ul class="checks">
+        <li><b>Encrypted on the phone.</b> The app's database is encrypted with a key kept in the Android Keystore.</li>
+        <li><b>App lock.</b> Fingerprint, face or phone PIN when you open the app.</li>
+        <li><b>Vault encrypted end to end.</b> Only you can read it, even in the cloud backup.</li>
+        <li><b>Reading happens on the device.</b> Ticket and receipt photos are processed locally.</li>
+        <li><b>You can delete everything.</b> All data or your whole account, right in the app.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="journey">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">The journey</span>
+        <h2>Made on the road, not in an office.</h2>
+        <p>Travel Companion started as a personal tool for a trip around the world. Every feature had to survive a real border crossing, a dead phone signal or a ticket in Japanese.</p>
+      </div>
+      <div class="journey">
+        <div class="journey-line" aria-label="Route">
+          <span>Prague</span><i></i><span>Tokyo</span><i></i><span class="next">next stop soon</span>
+        </div>
+        <p class="muted">Follow the trip and see the app in action on Instagram and Facebook. Links coming soon.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Pricing</span>
+        <h2>Free to start. Pro for the long haul.</h2>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <h3>Free</h3>
+          <div class="price">0 <small>forever</small></div>
+          <ul class="checks">
+            <li>1 active trip</li>
+            <li>10 documents, 30 expenses</li>
+            <li>Travel Vault and SOS included</li>
+            <li>Data stays on your phone</li>
+          </ul>
+        </div>
+        <div class="plan pro">
+          <h3>Pro</h3>
+          <div class="price">Yearly <small>subscription in Google Play</small></div>
+          <ul class="checks">
+            <li>Unlimited trips, documents and expenses</li>
+            <li>Cloud backup and sync</li>
+            <li>Restore everything on a new phone</li>
+            <li>Cancel any time in Google Play</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Does it work offline?</summary>
+          <p>Yes. Trips, plans, documents, codes, expenses and the Vault are stored on your phone. Exchange rates, place search and the map need a connection.</p>
+        </details>
+        <details>
+          <summary>What happens if I lose my phone?</summary>
+          <p>With Pro, your data is backed up to the cloud and comes back when you sign in on a new phone. The Vault is restored with your Vault password.</p>
+        </details>
+        <details>
+          <summary>Is there an iPhone version?</summary>
+          <p>It is in progress. Android comes first.</p>
+        </details>
+        <details>
+          <summary>I don't get reminders on my Xiaomi phone.</summary>
+          <p>Some phones (Xiaomi, Redmi, POCO and others) stop apps in the background to save battery. Open Settings → Apps → Travel Companion → Battery saver and choose “No restrictions”.</p>
+        </details>
+        <details>
+          <summary>How do I delete my account?</summary>
+          <p>In the app: Settings → Delete account. Details are on the <a href="delete-account.html">account deletion page</a>.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="get">
+    <div class="container split">
+      <div class="section-head" style="margin:0">
+        <span class="eyebrow">Get the app</span>
+        <h2>Coming soon to Google Play.</h2>
+        <p>The app is in testing right now. Want to try it early? Write to us and you can join the test group.</p>
+      </div>
+      <div class="btns" style="align-self:center">
+        <span class="btn ghost" aria-disabled="true">Google Play <small>soon</small></span>
+        <span class="btn ghost" aria-disabled="true">App Store <small>later</small></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · Contact: <span class="todo">e-mail TBD</span></span>
+    <nav aria-label="Footer">
+      <a href="privacy.html">Privacy policy</a>
+      <a href="delete-account.html">Delete account</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

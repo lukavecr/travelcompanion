@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Privacy policy – Travel Companion</title>
+  <meta name="description" content="What data Travel Companion stores, where, and how it is protected.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Main"><a href="./">Home</a><a href="delete-account.html">Delete account</a></nav>
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Last updated: 22 October 2026</span>
+    <h1>Privacy policy</h1>
+    <p>Travel Companion (“the app”, “we”) is a travel planning app for Android, developed by an independent developer, <span class="todo">name TBD</span>, Czech Republic. This policy explains what data the app handles, where it is stored and what your rights are. In short: your data is yours, it lives on your phone first, and we do not sell it, show ads or track you.</p>
+    <p>Contact for anything about privacy: <span class="todo">e-mail TBD</span></p>
+
+    <h2>1. Data stored on your phone</h2>
+    <p>Everything you enter is stored in a database on your phone. The database is <strong>encrypted</strong>; its key is kept in the Android Keystore. This includes:</p>
+    <ul>
+      <li>trips, day plans, places and notes,</li>
+      <li>documents and tickets (photos, recognised text, QR and barcode content, flight details, passenger name, seat),</li>
+      <li>expenses and receipt photos,</li>
+      <li>Travel Vault items (passport, visas, insurance, vaccinations, emergency contacts, medical details), which are additionally encrypted with AES-256-GCM.</li>
+    </ul>
+    <p>Photos of documents are stored in the app's private storage on your phone.</p>
+
+    <h2>2. Account</h2>
+    <p>To use cloud backup you create an account with your <strong>e-mail address and a password</strong>. Accounts are handled by Google Firebase Authentication. We use the e-mail address only to sign you in and, if you write to us, to reply.</p>
+
+    <h2>3. Cloud backup (Pro)</h2>
+    <p>If you have Travel Companion Pro and are signed in, the app backs up your data to <strong>Google Cloud Firestore</strong> so you can restore it on another phone. The backup contains your trips, places, documents, tickets, expenses and reduced-size images. It is stored in your own area of the database, which only your signed-in account can access.</p>
+    <ul>
+      <li>Data is encrypted in transit and at rest by Google. The main backup is not yet encrypted by the app itself.</li>
+      <li><strong>Travel Vault is end-to-end encrypted.</strong> Vault items and photos leave your phone only in encrypted form. The key is protected by your Vault password (PBKDF2-SHA256), which we never receive. Without that password, nobody, including us, can read the Vault.</li>
+    </ul>
+    <p>Free users' data stays only on their phone.</p>
+
+    <h2>4. Processing on your device</h2>
+    <p>Reading text, QR codes and barcodes from photos is done <strong>on your phone</strong> with Google ML Kit. Photos are not uploaded for recognition. ML Kit may contact Google to download model updates and may send anonymous performance and usage metrics to Google.</p>
+
+    <h2>5. Location</h2>
+    <p>The app asks for location permission only when you use it: to show your position on the map, to save your current spot as a place, or to include your location in an SOS message. Your location is not tracked in the background and is not sent to us. An SOS message is sent by your phone's own messaging app to the contacts you chose.</p>
+
+    <h2>6. Third-party services</h2>
+    <p>Some features send a request to an outside service. These requests contain only what is needed for the feature, plus your IP address, which every internet request reveals.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Service</th><th>Used for</th><th>What it receives</th></tr></thead>
+      <tbody>
+        <tr><td>Google Firebase (Auth, Firestore)</td><td>Account and cloud backup</td><td>E-mail, password (hashed by Google), backup data</td></tr>
+        <tr><td>Google Play Billing</td><td>Pro subscription</td><td>Purchase handled by Google Play; we never see payment details</td></tr>
+        <tr><td>Nominatim (OpenStreetMap Foundation)</td><td>Finding a place's position or address</td><td>The searched text or coordinates</td></tr>
+        <tr><td>OpenFreeMap / OpenStreetMap</td><td>Map tiles</td><td>The map area you are viewing</td></tr>
+        <tr><td>Frankfurter (ECB rates)</td><td>Currency conversion</td><td>Currency pair and date</td></tr>
+        <tr><td>Google Maps</td><td>Opening a place link you shared into the app</td><td>The shared link</td></tr>
+      </tbody>
+    </table></div>
+    <p>We do not use advertising, analytics or tracking SDKs, and we do not sell or share your data for advertising.</p>
+
+    <h2>7. Notifications</h2>
+    <p>Reminders (events, check-ins, expiring documents) are scheduled locally on your phone. Reminder texts for documents do not contain the document's details.</p>
+
+    <h2>8. How long we keep data</h2>
+    <p>Data on your phone stays until you delete it or uninstall the app. Cloud backup stays until you delete it in the app or delete your account. Deleted items are removed from the backup when the app syncs.</p>
+
+    <h2>9. Deleting your data</h2>
+    <ul>
+      <li><strong>All data:</strong> Settings → Delete all data. Deletes the cloud backup first, then the data on your phone.</li>
+      <li><strong>Account:</strong> Settings → Delete account. Deletes your account, cloud backup and Vault backup. See the <a href="delete-account.html">account deletion page</a>.</li>
+      <li>If you cannot use the app, write to us and we will delete your account and data within 30 days.</li>
+    </ul>
+
+    <h2>10. Your rights</h2>
+    <p>Under the GDPR you have the right to access, correct, delete and export your data, to restrict or object to processing, and to complain to a supervisory authority. In the Czech Republic that is the Office for Personal Data Protection (ÚOOÚ, uoou.gov.cz). The legal basis for processing is the performance of our agreement with you (providing the app and the backup you asked for).</p>
+
+    <h2>11. Children</h2>
+    <p>The app is intended for adults and is not directed at children under 16.</p>
+
+    <h2>12. Changes</h2>
+    <p>If this policy changes, we will update it on this page and change the date at the top. Important changes will also be announced in the app.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion</span>
+    <nav aria-label="Footer"><a href="./">Home</a><a href="delete-account.html">Delete account</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

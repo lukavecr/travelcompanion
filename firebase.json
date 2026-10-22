@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"travel-companion-ai-e300c","appId":"1:120166127331:android:4870db03b96c8dee0c57d6","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"travel-companion-ai-e300c","configurations":{"android":"1:120166127331:android:4870db03b96c8dee0c57d6","ios":"1:120166127331:ios:7793dbbc590cb5630c57d6"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "travel-companion-ai-e300c",
+          "appId": "1:120166127331:android:4870db03b96c8dee0c57d6",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "travel-companion-ai-e300c",
+          "configurations": {
+            "android": "1:120166127331:android:4870db03b96c8dee0c57d6",
+            "ios": "1:120166127331:ios:7793dbbc590cb5630c57d6"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "website",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "cleanUrls": true
+  }
+}

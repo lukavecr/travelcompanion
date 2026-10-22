@@ -1,0 +1,48 @@
+# Sestavení aplikace pro iPhone na Macu v cloudu (GitHub Actions).
+# Výsledek: TravelCompanion.ipa (nepodepsaná) – do iPhonu ji nahraje Sideloadly s Apple ID.
+# Spuštění: GitHub → Actions → „iPhone (IPA)“ → Run workflow.
+# Pozor: macOS minuty se v soukromém repozitáři počítají 10× (zdarma ~200 min/měsíc ≈ 8–10 sestavení).
+name: iPhone (IPA)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+
+      - name: Firebase konfigurace (z tajných nastavení repozitáře)
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          if [ -z "$FIREBASE_OPTIONS_DART" ]; then
+            echo "::error::Chybí secret FIREBASE_OPTIONS_DART (viz docs/IPHONE.md)"; exit 1
+          fi
+          echo "$FIREBASE_OPTIONS_DART" | base64 --decode > lib/firebase_options.dart
+
+      - run: flutter pub get
+
+      - name: Sestavit pro iPhone (bez podpisu – podepíše Sideloadly)
+        run: flutter build ios --release --no-codesign
+
+      - name: Zabalit do .ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qry TravelCompanion.ipa Payload
+          ls -lh TravelCompanion.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TravelCompanion-iPhone
+          path: TravelCompanion.ipa
+          retention-days: 14

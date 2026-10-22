@@ -54,6 +54,13 @@ proto je důležitá spolehlivost offline a záloha dat.
   Řešení: `~/.gradle/gradle.properties` → `systemProp.javax.net.ssl.trustStore=C:/Users/lukav/.gradle/truststore-avast.p12`
   (kopie `jbr/lib/security/cacerts` + `C:\ProgramData\Avast Software\Avast\wscert.pem`, heslo `changeit`).
   Build se stahováním knihoven spouštěj mimo sandbox nástroje.
+- **iPhone** (`docs/IPHONE.md`): sestavení jen na Macu → GitHub Actions `.github/workflows/ios.yml` (ruční spuštění,
+  `flutter build ios --no-codesign` → `TravelCompanion.ipa`), instalace Sideloadly s bezplatným Apple ID (platí 7 dní).
+  `lib/firebase_options.dart` je v gitignore → na GitHubu jako secret `FIREBASE_OPTIONS_DART` (base64; připravený soubor
+  `build/firebase_options.base64.txt`). iOS app je ve Firebase už zaregistrovaná (iosBundleId v firebase_options).
+  `ios/Podfile`: iOS 15.5 (ML Kit), `GoogleMLKit/TextRecognitionJapanese`. Info.plist: popisy oprávnění (kamera, fotky,
+  poloha, Face ID). Sdílení z Map na iOS nejde (Share Extension + App Groups = placený účet) → tlačítko „Vložit odkaz“ na Mapě.
+  SMS na iOS: `sms:/open?addresses=…&body=…`.
 - Xiaomi/MIUI zabíjí upozornění, dokud uživatel nevypne úsporu baterie pro aplikaci.
 - Česká typografie ve stringech: „uvozovky“, ne ASCII. Neinstaluj balíček `intl`, formát dat/čísel řeší `lib/core/format.dart`.
 

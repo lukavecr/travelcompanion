@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -65,11 +67,11 @@ class _SosScreenState extends ConsumerState<SosScreen> {
 
   Future<void> _sms(List<String> phones) async {
     // aplikace Zprávy se otevře s předvyplněnou zprávou, odeslání potvrdíš tam
-    final uri = Uri(
-      scheme: 'sms',
-      path: phones.join(','),
-      queryParameters: {'body': _smsText()},
-    );
+    final body = Uri.encodeComponent(_smsText());
+    final uri = Platform.isIOS
+        // iOS: víc příjemců jen přes /open?addresses=, text za „&body=“
+        ? Uri.parse('sms:/open?addresses=${phones.join(',')}&body=$body')
+        : Uri.parse('sms:${phones.join(',')}?body=$body');
     await launchUrl(uri);
   }
 

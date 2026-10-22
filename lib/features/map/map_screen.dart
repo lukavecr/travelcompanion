@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/map_tiles.dart';
+import '../../core/plus_code.dart';
 import '../../data/database.dart';
 import '../places/locate_place_screen.dart';
 import '../places/open_in_maps.dart';
@@ -103,6 +105,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _meAccuracy = p.accuracy;
     });
     if (move && _ready) _map.move(_me!, 15);
+  }
+
+  /// Odkaz zkopírovaný v Google Mapách (Sdílet → Kopírovat) → stejná obrazovka jako sdílení.
+  /// Na iPhonu je to jediná cesta (sdílení do aplikace chce placený účet Apple).
+  Future<void> _pasteLink() async {
+    final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text?.trim() ?? '';
+    if (!mounted) return;
+    final looksLikePlace = text.contains('http') ||
+        findPlusCode(text) != null ||
+        RegExp(r'-?\d{1,3}\.\d+,\s*-?\d{1,3}\.\d+').hasMatch(text);
+    if (!looksLikePlace) {
+      _snack('Ve schránce není odkaz na místo. V Google Mapách dej Sdílet → Kopírovat odkaz.');
+      return;
+    }
+    context.push('/share', extra: text);
   }
 
   /// Uložení libovolného bodu (moje poloha / dlouhé podržení) přes obrazovku sdílení.
@@ -281,7 +298,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mapa')),
+      appBar: AppBar(
+        title: const Text('Mapa'),
+        actions: [
+          IconButton(
+            tooltip: 'Vložit odkaz z Google Map',
+            icon: const Icon(Icons.content_paste_go),
+            onPressed: _pasteLink,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           if (trips.length > 1)

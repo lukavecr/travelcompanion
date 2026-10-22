@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Travelcompanion</string>
+	<string>Travel Companion</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -24,6 +24,22 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Fotoaparát slouží k focení dokladů, účtenek a dokumentů do Vaultu.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Z galerie můžeš vybrat fotku dokladu, účtenky nebo screenshot.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Poloha se ukáže na mapě a pošle se v SOS zprávě tvým nouzovým kontaktům.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID odemyká aplikaci a Vault s tvými doklady.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>sms</string>
+		<string>tel</string>
+		<string>comgooglemaps</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

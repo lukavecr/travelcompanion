@@ -22,6 +22,12 @@ class ReminderService {
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // o povolení se aplikace zeptá až při prvním upozornění (ensurePermissions)
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
       ),
     );
     _ready = true;
@@ -36,6 +42,9 @@ class ReminderService {
     try {
       await init();
       await _android?.requestNotificationsPermission();
+      await _plugin
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
       final exact = await _android?.canScheduleExactNotifications() ?? false;
       if (!exact && !_askedExact) {
         _askedExact = true;

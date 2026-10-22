@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
+import '../pro/paywall.dart';
+import '../pro/pro_service.dart';
 import 'sync_service.dart';
 
 class SyncScreen extends ConsumerWidget {
@@ -23,6 +25,17 @@ class SyncScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (!ProService.instance.isPro)
+                Card(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  child: ListTile(
+                    leading: const Icon(Icons.workspace_premium),
+                    title: const Text('Záloha je součást Pro'),
+                    subtitle: const Text(
+                        'Ve verzi zdarma jsou data jen v tomto telefonu. Klepni pro víc informací.'),
+                    onTap: () => openPaywall(context, ProLimit.backup),
+                  ),
+                ),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.account_circle),

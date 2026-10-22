@@ -6,6 +6,7 @@ import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
 import 'features/lock/app_lock.dart';
+import 'features/pro/pro_service.dart';
 import 'features/vault/vault_repository.dart';
 import 'core/theme.dart';
 import 'data/database.dart';
@@ -30,8 +31,15 @@ class _TravelAppState extends ConsumerState<TravelApp>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initShare();
-    // záloha: po přihlášení a při každém návratu do aplikace
+    // záloha: po přihlášení a při každém návratu do aplikace (jen Pro)
     ref.read(syncServiceProvider).start();
+    ProService.instance.init();
+    var wasPro = false;
+    ProService.instance.addListener(() {
+      final isPro = ProService.instance.isPro;
+      if (isPro && !wasPro) ref.read(syncServiceProvider).syncNow();
+      wasPro = isPro;
+    });
     ref.listenManual(
       authStateProvider,
       (prev, next) {

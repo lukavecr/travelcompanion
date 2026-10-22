@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/dialogs.dart';
 import '../lock/app_lock.dart';
+import '../pro/paywall.dart';
+import '../pro/pro_service.dart';
 import '../sync/sync_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -151,6 +153,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.all(12),
           children: [
+            ListenableBuilder(
+              listenable: ProService.instance,
+              builder: (context, _) {
+                final pro = ProService.instance.isPro;
+                return Card(
+                  child: ListTile(
+                    leading: Icon(Icons.workspace_premium,
+                        color: pro ? Colors.amber : Theme.of(context).colorScheme.primary),
+                    title: Text(pro ? 'Travel Companion Pro – aktivní' : 'Travel Companion Pro'),
+                    subtitle: Text(pro
+                        ? 'Bez omezení, se zálohou do cloudu'
+                        : 'Zdarma: 1 aktivní cesta, 10 dokladů, 30 výdajů, bez zálohy'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => openPaywall(context),
+                  ),
+                );
+              },
+            ),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.cloud_outlined),

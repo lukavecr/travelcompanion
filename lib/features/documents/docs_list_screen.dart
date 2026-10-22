@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/format.dart';
+import '../../data/database.dart';
+import '../pro/paywall.dart';
 import 'doc_types.dart';
 import 'document_repository.dart';
 import 'scan_service.dart';
@@ -27,6 +29,8 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
   bool _busy = false;
 
   Future<void> _add() async {
+    if (!await ensureCanAdd(context, ref.read(databaseProvider), ProLimit.document)) return;
+    if (!mounted) return;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (ctx) => SafeArea(

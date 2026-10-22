@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
+import '../../data/database.dart';
+import '../pro/paywall.dart';
 import 'trip_repository.dart';
 
 class TripFormResult {
@@ -113,6 +115,8 @@ class TripsListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          if (!await ensureCanAdd(context, ref.read(databaseProvider), ProLimit.trip)) return;
+          if (!context.mounted) return;
           final r = await askTrip(context,
               heading: 'Nová cesta', confirmLabel: 'Vytvořit');
           if (r != null) {

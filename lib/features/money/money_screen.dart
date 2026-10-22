@@ -8,6 +8,7 @@ import '../../core/dialogs.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import '../trips/trip_repository.dart';
+import '../pro/paywall.dart';
 import 'categories.dart';
 import 'expense_form_screen.dart';
 import 'expense_repository.dart';
@@ -60,6 +61,8 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   }
 
   Future<void> _addExpense(List<Trip> trips, Trip? trip) async {
+    if (!await ensureCanAdd(context, ref.read(databaseProvider), ProLimit.expense)) return;
+    if (!mounted) return;
     var tripId = trip?.id;
     if (tripId == null) {
       final picked = await showModalBottomSheet<String>(

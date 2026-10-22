@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database.dart';
+import '../pro/pro_service.dart';
 import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
 
@@ -235,6 +236,7 @@ class SyncService {
 
   Future<void> syncIfPending() async {
     if (_running || FirebaseAuth.instance.currentUser == null) return;
+    if (!ProService.instance.isPro) return; // záloha je součást Pro
     final n = await _pendingCount();
     status.value = SyncStatus(
         lastSync: status.value.lastSync, error: status.value.error, pending: n);
@@ -244,6 +246,7 @@ class SyncService {
   Future<void> syncNow() async {
     final user = FirebaseAuth.instance.currentUser;
     if (_running || user == null) return;
+    if (!ProService.instance.isPro) return; // záloha je součást Pro
     _running = true;
     status.value = SyncStatus(
         running: true,

@@ -32,6 +32,10 @@ proto je důležitá spolehlivost offline a záloha dat.
   `android/app/upload-keystore.jks` + `android/key.properties` (heslo jen tam; obojí v gitignore – uživatel musí zálohovat).
   Bez `-Pplay` se release APK podepisuje dál debug klíčem (kvůli instalaci přes stávající verzi na Xiaomi).
   Rozhodnutí uživatele: zatím jen Google Play (Apple později), Pro = **roční předplatné**, bez reklam (navrženo).
+  **Free/Pro** (`features/pro`): `ProService` (in_app_purchase, předplatné `pro_yearly`, stav z obnovení nákupů, offline
+  7 dní z cache), majitel = Pro bez nákupu (SHA-256 e-mailu v `_ownerHashes`). Limity Free: 1 aktivní cesta (bez konce
+  nebo konec ≥ dnes), 10 dokladů, 30 výdajů (`ensureCanAdd` → paywall), záloha/sync jen Pro (`syncNow` se ve Free nespustí).
+  Vault a SOS zdarma. Návod pro Play Console: `docs/GOOGLE_PLAY.md`.
   V Nastavení je „Smazat účet“ (`deleteAccount`: heslo → reauth, smaže vše vč. Vaultu v cloudu i telefonu, pak účet).
 - Release build: R8 je **vypnutý** (`isMinifyEnabled=false`), jinak padá na chybějících třídách ML Kit.
   Do telefonu patří `app-arm64-v8a-release.apk` (`flutter build apk --release --split-per-abi`), podepisuje se debug klíčem
@@ -50,7 +54,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   Keystore přes `flutter_secure_storage` (`core/db_crypto.dart`), načte se v `main()` → `databaseKeyProvider`; drift_flutter `setup` volá
   `PRAGMA key`. Starou nešifrovanou DB `encryptLegacyDatabase` jednorázově převede (`PRAGMA rekey`, mimo WAL, se zálohou).
   Odinstalace aplikace = ztráta klíče → data jen ze zálohy Firestore. Kontrola z PC: `dart run tool/crypto_probe.dart`.
-- Testy: `flutter test` (`test/vault_types_test.dart` – texty upozornění, Plus Code).
+- Testy: `flutter test` (`test/vault_types_test.dart` – texty upozornění, Plus Code; `test/free_limits_test.dart` – limity Free).
 - **Zámek aplikace** (`features/lock/app_lock.dart`, `local_auth` 3): při spuštění a po >60 s v pozadí; biometrie nebo PIN telefonu.
   `MainActivity` musí být `FlutterFragmentActivity`. Emulátor nemá zámek obrazovky → ukáže „Pokračovat bez zámku“
   (zámek emulátoru nenastavovat bez souhlasu uživatele). Smazání všech dat se potvrzuje stejným ověřením.

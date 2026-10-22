@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../trips/trip_repository.dart';
+import 'locate_place_screen.dart';
 import 'open_in_maps.dart';
 import 'place_types.dart';
 
@@ -115,18 +116,24 @@ class PlacesScreen extends ConsumerWidget {
                   title: Text(p.name),
                   subtitle: Text(
                     '${placeTypes[p.type] ?? 'Místo'} · '
-                    '${hasCoords ? 'poloha uložena' : 'bez souřadnic'}'
+                    '${hasCoords ? 'poloha uložena' : 'bez polohy – klepni a najdi'}'
                     '${(p.country ?? '').isEmpty ? '' : ' · ${p.country}'}',
                   ),
-                  onTap: () => openPlaceInMaps(p),
+                  onTap: hasCoords
+                      ? () => openPlaceInMaps(p)
+                      : () => locatePlace(context, ref, p),
                   trailing: PopupMenuButton<String>(
                     onSelected: (v) {
+                      if (v == 'locate') locatePlace(context, ref, p);
                       if (v == 'delete') {
                         ref.read(tripRepositoryProvider).deletePlace(p.id);
                       }
                     },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'delete', child: Text('Smazat')),
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                          value: 'locate',
+                          child: Text(hasCoords ? 'Změnit polohu' : 'Najít polohu')),
+                      const PopupMenuItem(value: 'delete', child: Text('Smazat')),
                     ],
                   ),
                 ),

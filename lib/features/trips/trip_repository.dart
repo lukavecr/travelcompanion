@@ -197,6 +197,18 @@ class TripRepository {
     return id;
   }
 
+  Future<void> setPlaceLocation(String id,
+          {required double lat, required double lng, String? country}) =>
+      (db.update(db.places)..where((p) => p.id.equals(id))).write(
+        PlacesCompanion(
+          lat: Value(lat),
+          lng: Value(lng),
+          country: country == null ? const Value.absent() : Value(country),
+          updatedAt: Value(DateTime.now()),
+          syncState: const Value('pending'),
+        ),
+      );
+
   Future<void> deletePlace(String id) =>
       (db.update(db.places)..where((p) => p.id.equals(id))).write(
         PlacesCompanion(

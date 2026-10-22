@@ -20,8 +20,9 @@
   (to by vyžadovalo placené Directions API). ✔ (5a) uloží se jako místo typu „doprava“ s odkazem do Map. Časy si uživatel dopíše z jízdenky.
 
 ## 2. Další funkce (dohodnuté kroky)
-1. **Mapa** (záložka Mapa): `flutter_map` + OpenStreetMap dlaždice, body z `Places`, bez karty. Poté stahování dlaždic pro offline oblast.
-2. **Nominatim hledání podle názvu** (u dokladu/místa bez souřadnic): doplnit souřadnice + zemi, vytvořit/propojit `Place`.
+1. **Mapa** ✔ (OpenFreeMap, anglické popisky). Zbývá: offline oblast (např. PMTiles výřez země přes `vector_map_tiles_pmtiles`), jazyk popisků z nastavení.
+2. **Nominatim hledání podle názvu** ✔ pro místa. Zbývá: u dokladů (vstupenka, hotel) vytvořit/propojit `Place`;
+   názvy z Google Map typu „JP9V JX2 Huong Pagoda“ obsahují Plus Code (`JP9V+JX2`) – dekódovat na souřadnice (balíček `open_location_code`) už při sdílení.
 3. **Nahrávání PDF** (letenky, rezervace z e-mailu): vykreslit stránku (`pdfx`), pak stejný sken jako u fotek.
 4. **Travel Vault** (pas, víza, očkování, pojištění, nouzové kontakty, ambasády): šifrovaně (AES‑GCM, klíč v Android Keystore, odemknutí biometrií), funguje offline,
    zálohování jen zašifrovaných dat, **nikdy** ne do AI. Tlačítko SOS s kontakty.

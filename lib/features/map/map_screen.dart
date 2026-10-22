@@ -3,9 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/map_tiles.dart';
 import '../../data/database.dart';
+import '../places/locate_place_screen.dart';
 import '../places/open_in_maps.dart';
 import '../places/place_types.dart';
 import '../trips/trip_repository.dart';
@@ -109,6 +110,50 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
+  /// Seznam míst bez polohy – klepnutím se otevře hledání podle názvu.
+  void _showUnknown(List<Place> list, Map<String, Trip> tripById) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => Consumer(
+        builder: (ctx, ref, _) {
+          // živý seznam: po doplnění polohy místo zmizí
+          final all = ref.watch(allPlacesProvider).value ?? const <Place>[];
+          final ids = {for (final p in list) p.id};
+          final left = all.where((p) => ids.contains(p.id) && !hasCoords(p)).toList();
+          return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.6,
+            builder: (ctx, scroll) => ListView(
+              controller: scroll,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  child: Text('Místa bez polohy – klepni a najdi je podle názvu'),
+                ),
+                if (left.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('Hotovo, všechna místa mají polohu.',
+                        textAlign: TextAlign.center),
+                  ),
+                for (final p in left)
+                  ListTile(
+                    leading: Icon(placeIcon(p.type), color: placeColor(p.type)),
+                    title: Text(p.name),
+                    subtitle: Text(tripById[p.tripId]?.name ?? ''),
+                    trailing: const Icon(Icons.search),
+                    onTap: () => locatePlace(ctx, ref, p),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final trips = ref.watch(tripsProvider).value ?? const <Trip>[];
@@ -167,14 +212,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
           if (unknown > 0)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
               child: Row(children: [
                 const Icon(Icons.info_outline, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(unknown == 1
-                      ? '1 místo nemá souřadnice, na mapě chybí.'
-                      : '$unknown míst nemá souřadnice, na mapě chybí.'),
+                  child: Text(switch (unknown) {
+                    1 => '1 místo nemá polohu',
+                    < 5 => '$unknown místa nemají polohu',
+                    _ => '$unknown míst nemá polohu',
+                  }),
+                ),
+                TextButton(
+                  onPressed: () => _showUnknown(
+                      places.where((p) => !hasCoords(p)).toList(), tripById),
+                  child: const Text('Doplnit'),
                 ),
               ]),
             ),
@@ -195,10 +247,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 },
               ),
               children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.lukrom.travelcompanion',
-                ),
+                const MapTiles(),
                 MarkerLayer(
                   markers: [
                     for (final p in located)
@@ -213,16 +262,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ),
                   ],
                 ),
-                RichAttributionWidget(
-                  attributions: [
-                    TextSourceAttribution(
-                      '© přispěvatelé OpenStreetMap',
-                      onTap: () => launchUrl(
-                          Uri.parse('https://www.openstreetmap.org/copyright'),
-                          mode: LaunchMode.externalApplication),
-                    ),
-                  ],
-                ),
+                const MapAttribution(),
               ],
             ),
           ),

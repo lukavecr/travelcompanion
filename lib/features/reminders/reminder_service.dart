@@ -4,6 +4,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../vault/vault_types.dart';
 
 /// Plánuje upozornění na položky dne. Čas položky se bere jako místní čas
 /// v pásmu, ve kterém je telefon při plánování. Při každém otevření aplikace
@@ -43,9 +44,26 @@ class ReminderService {
     } catch (_) {}
   }
 
+  static List<CalendarEvent> _events = const [];
+  static List<VaultItem> _vault = const [];
+
   /// Zruší všechna naplánovaná upozornění a naplánuje znovu ta budoucí.
   static Future<void> sync(List<CalendarEvent> events) {
-    _last = _last.then((_) => _run(events)).catchError((Object _) {});
+    _events = events;
+    return _schedule();
+  }
+
+  /// Konec platnosti pasu, víz, pojištění… (Vault). Text neobsahuje citlivé údaje,
+  /// jen typ dokladu a datum – oznámení je vidět i na zamčeném telefonu.
+  static Future<void> syncVault(List<VaultItem> items) {
+    _vault = items;
+    return _schedule();
+  }
+
+  static Future<void> _schedule() {
+    final events = _events;
+    final vault = _vault;
+    _last = _last.then((_) => _run(events, vault)).catchError((Object _) {});
     return _last;
   }
 
@@ -58,7 +76,7 @@ class ReminderService {
     return h;
   }
 
-  static Future<void> _run(List<CalendarEvent> events) async {
+  static Future<void> _run(List<CalendarEvent> events, List<VaultItem> vault) async {
     await init();
     await _plugin.cancelAll();
     final now = DateTime.now();
@@ -91,6 +109,36 @@ class ReminderService {
             ? AndroidScheduleMode.exactAllowWhileIdle
             : AndroidScheduleMode.inexactAllowWhileIdle,
       );
+    }
+
+    for (final v in vault) {
+      final exp = v.expiresAt;
+      if (exp == null) continue;
+      final t = vaultType(v.type);
+      for (final days in t.remindDays) {
+        final d = exp.subtract(Duration(days: days));
+        final fire = DateTime(d.year, d.month, d.day, 9);
+        if (!fire.isAfter(now)) continue;
+        await _plugin.zonedSchedule(
+          id: _idFor('${v.id}#$days'),
+          title: days == 0 ? '${t.label}: dnes končí platnost' : '${t.label}: blíží se konec platnosti',
+          body: days == 0
+              ? 'Platnost končí dnes (${fmtDate(exp)}). Detail najdeš ve Vaultu.'
+              : 'Platnost končí ${fmtDate(exp)} (${fmtDaysAhead(days)}). Detail najdeš ve Vaultu.',
+          scheduledDate:
+              tz.TZDateTime.fromMillisecondsSinceEpoch(tz.UTC, fire.millisecondsSinceEpoch),
+          notificationDetails: const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'vault_expiry',
+              'Konec platnosti dokladů',
+              channelDescription: 'Pas, víza, pojištění a další doklady z Vaultu',
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      }
     }
   }
 }

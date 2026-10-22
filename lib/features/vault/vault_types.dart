@@ -18,6 +18,7 @@ class VaultType {
     this.titleField,
     this.expiryField,
     this.warnBefore = const Duration(days: 30),
+    this.remindDays = const [30, 7, 0],
     this.singleton = false,
   });
   final String key;
@@ -26,7 +27,8 @@ class VaultType {
   final List<VaultField> fields;
   final String? titleField; // pole, které se ukáže jako název v seznamu
   final String? expiryField; // pole s datem platnosti
-  final Duration warnBefore; // kdy začít upozorňovat na konec platnosti
+  final Duration warnBefore; // kdy začít upozorňovat na konec platnosti (barva v seznamu)
+  final List<int> remindDays; // notifikace: kolik dní před koncem platnosti (0 = v den konce)
   final bool singleton; // jen jedna položka (zdravotní údaje)
 }
 
@@ -42,6 +44,7 @@ const vaultTypes = <VaultType>[
     expiryField: 'validUntil',
     // řada zemí chce pas platný ještě 6 měsíců po příjezdu
     warnBefore: Duration(days: 183),
+    remindDays: [183, 90, 30, 0],
     fields: [
       VaultField('name', 'Jméno a příjmení'),
       VaultField('number', 'Číslo pasu'),
@@ -58,6 +61,8 @@ const vaultTypes = <VaultType>[
     icon: Icons.approval_outlined,
     titleField: 'country',
     expiryField: 'validUntil',
+    warnBefore: Duration(days: 14),
+    remindDays: [14, 3, 1, 0],
     fields: [
       VaultField('country', 'Země'),
       VaultField('kind', 'Typ víza (turistické, e-visa…)'),
@@ -75,6 +80,7 @@ const vaultTypes = <VaultType>[
     icon: Icons.health_and_safety_outlined,
     titleField: 'company',
     expiryField: 'validUntil',
+    remindDays: [30, 7, 1, 0],
     fields: [
       VaultField('company', 'Pojišťovna'),
       VaultField('policy', 'Číslo smlouvy'),
@@ -142,6 +148,26 @@ const vaultTypes = <VaultType>[
     ],
   ),
 ];
+
+/// „za 6 měsíců“, „za 14 dní“, „zítra“, „dnes“.
+String fmtDaysAhead(int days) {
+  if (days <= 0) return 'dnes';
+  if (days == 1) return 'zítra';
+  if (days >= 60) {
+    final m = (days / 30.4).round();
+    return 'za $m ${m < 5 ? 'měsíce' : 'měsíců'}';
+  }
+  return 'za $days ${days < 5 ? 'dny' : 'dní'}';
+}
+
+/// Text pro formulář: kdy přijde upozornění.
+String remindPlanText(VaultType t) {
+  final before = t.remindDays
+      .where((d) => d > 0)
+      .map((d) => d == 1 ? '1 den' : fmtDaysAhead(d).replaceFirst('za ', ''));
+  final onDay = t.remindDays.contains(0);
+  return 'Upozorním ${before.join(', ')} předem${onDay ? ' a v den konce platnosti' : ''} (v 9:00).';
+}
 
 VaultType vaultType(String key) =>
     vaultTypes.firstWhere((t) => t.key == key, orElse: () => vaultTypes.last);

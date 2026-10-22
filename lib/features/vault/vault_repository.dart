@@ -172,5 +172,13 @@ class VaultRepository {
 final vaultRepositoryProvider =
     Provider((ref) => VaultRepository(ref.watch(databaseProvider)));
 
+/// Položky s datem konce platnosti (pro notifikace; nepotřebuje odemčený Vault).
+final vaultExpiryProvider = StreamProvider<List<VaultItem>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.vaultItems)
+        ..where((v) => v.deletedAt.isNull() & v.expiresAt.isNotNull()))
+      .watch();
+});
+
 final vaultRowsProvider = StreamProvider.autoDispose<List<VaultItem>>(
     (ref) => ref.watch(vaultRepositoryProvider).watchRows());

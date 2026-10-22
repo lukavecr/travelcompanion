@@ -44,6 +44,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   Keystore přes `flutter_secure_storage` (`core/db_crypto.dart`), načte se v `main()` → `databaseKeyProvider`; drift_flutter `setup` volá
   `PRAGMA key`. Starou nešifrovanou DB `encryptLegacyDatabase` jednorázově převede (`PRAGMA rekey`, mimo WAL, se zálohou).
   Odinstalace aplikace = ztráta klíče → data jen ze zálohy Firestore. Kontrola z PC: `dart run tool/crypto_probe.dart`.
+- Testy: `flutter test` (`test/vault_types_test.dart` – texty upozornění, Plus Code).
 - **Zámek aplikace** (`features/lock/app_lock.dart`, `local_auth` 3): při spuštění a po >60 s v pozadí; biometrie nebo PIN telefonu.
   `MainActivity` musí být `FlutterFragmentActivity`. Emulátor nemá zámek obrazovky → ukáže „Pokračovat bez zámku“
   (zámek emulátoru nenastavovat bez souhlasu uživatele). Smazání všech dat se potvrzuje stejným ověřením.
@@ -76,6 +77,8 @@ proto je důležitá spolehlivost offline a záloha dat.
   `vault_sync.dart` (záloha do `users/{uid}/vault` a `vault_files` – jen šifrovaně; volá se ze `SyncService.syncNow`),
   `vault_screen.dart` (založení/obnova heslem, odemčení otiskem, seznam), `vault_item_screen.dart`, `sos_screen.dart`
   (SMS s polohou nouzovým kontaktům přes aplikaci Zprávy + karta pro záchranáře v angličtině).
+  Notifikace konce platnosti: `ReminderService.syncVault` (z `vaultExpiryProvider`, bere nešifrované `type` + `expiresAt`,
+  takže funguje i se zamčeným Vaultem), dny předem v `VaultType.remindDays`, v 9:00, text bez citlivých údajů.
   Vault se zamkne se zámkem aplikace. „Smazat všechna data“ Vault nemaže (klíče prefs `vault_*`), mazání jen po položkách.
   **Na emulátoru Vault nezakládat** – zapsal by se klíč s heslem do skutečného účtu uživatele.
 - `features/settings` (Nastavení: ozubené kolo na záložce Cesty – Záloha a účet, Smazat všechna data).

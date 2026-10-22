@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
+import '../reminders/reminder_service.dart';
 import 'vault_repository.dart';
 import 'vault_sync.dart';
 import 'vault_types.dart';
@@ -77,6 +78,10 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
   Future<void> _save() async {
     setState(() => _busy = true);
     final repo = ref.read(vaultRepositoryProvider);
+    final expiry = _def.expiryField == null ? null : _c[_def.expiryField]!.text.trim();
+    if (expiry != null && expiry.isNotEmpty) {
+      await ReminderService.ensurePermissions(); // povolení oznámení (jen poprvé se zeptá)
+    }
     await repo.save(
       id: widget.existing?.id,
       type: widget.type,
@@ -127,6 +132,18 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
         children: [
           for (final f in _def.fields) ...[
             _field(f),
+            if (f.key == _def.expiryField)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                child: Row(children: [
+                  const Icon(Icons.notifications_active_outlined, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(remindPlanText(_def),
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                ]),
+              ),
             const SizedBox(height: 12),
           ],
           const SizedBox(height: 8),

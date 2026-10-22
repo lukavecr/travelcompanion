@@ -6,6 +6,7 @@ import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
 import 'features/lock/app_lock.dart';
+import 'features/vault/vault_repository.dart';
 import 'core/theme.dart';
 import 'data/database.dart';
 import 'features/auth/auth_providers.dart';
@@ -44,6 +45,14 @@ class _TravelAppState extends ConsumerState<TravelApp>
       (prev, next) {
         final list = next.value;
         if (list != null) ReminderService.sync(list);
+      },
+      fireImmediately: true,
+    );
+    ref.listenManual<AsyncValue<List<VaultItem>>>(
+      vaultExpiryProvider,
+      (prev, next) {
+        final list = next.value;
+        if (list != null) ReminderService.syncVault(list);
       },
       fireImmediately: true,
     );

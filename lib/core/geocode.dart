@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 
 import 'country_info.dart';
 
-const _headers = {'User-Agent': 'TravelCompanionAI/1.0 (osobni aplikace)'};
+// Nominatim chce v User-Agent kontakt na autora aplikace.
+const _headers = {'User-Agent': 'TravelCompanion/1.0 (lrtechcz@gmail.com)'};
 
 /// Nominatim dovoluje max. 1 dotaz za sekundu.
 DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);

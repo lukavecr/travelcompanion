@@ -23,6 +23,8 @@ proto je důležitá spolehlivost offline a záloha dat.
 - Obrázky se zálohují **zmenšené do Firestore** (base64, ≤ 650 kB, kolekce `users/{uid}/files/{id}`), ne do Storage.
 - Firebase projekt: `travel-companion-ai-e300c`, Auth e-mail/heslo, Firestore (pravidla: jen `users/{uid}/**` pro přihlášeného vlastníka).
 - Application ID: `com.lukrom.travelcompanion`.
+- E-mail projektu: **lrtechcz@gmail.com** (web, kontakty, účty služeb). Soukromý e-mail uživatele nikam nové nedávat.
+  Přechod účtů (Firebase, GitHub, Play, sítě) viz `docs/UCTY.md`.
 
 ## Verze a nástrahy (zjištěno při práci)
 - Flutter 3.47.x stable, Riverpod **3.x** (`WidgetRef.listen` nemá `fireImmediately` → použij `ref.listenManual` v `initState`),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
+import 'features/lock/app_lock.dart';
 import 'core/theme.dart';
 import 'data/database.dart';
 import 'features/auth/auth_providers.dart';
@@ -91,6 +92,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => AppLockGate(child: child ?? const SizedBox()),
     );
   }
 }

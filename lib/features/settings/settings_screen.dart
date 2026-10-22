@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/dialogs.dart';
+import '../lock/app_lock.dart';
 import '../sync/sync_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -41,42 +43,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     if (first != true || !mounted) return;
 
-    final word = TextEditingController();
-    final second = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Opravdu?'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Pro potvrzení napiš SMAZAT'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: word,
-                autofocus: true,
-                textCapitalization: TextCapitalization.characters,
-                onChanged: (_) => setState(() {}),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false), child: const Text('Zrušit')),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(ctx).colorScheme.error,
-                  foregroundColor: Theme.of(ctx).colorScheme.onError),
-              onPressed: word.text.trim().toUpperCase() == 'SMAZAT'
-                  ? () => Navigator.pop(ctx, true)
-                  : null,
-              child: const Text('Smazat vše'),
-            ),
-          ],
-        ),
-      ),
-    );
+    // druhé potvrzení: otisk prstu / obličej / PIN telefonu
+    final hasLock = await DeviceAuth.deviceHasLock();
+    if (!mounted) return;
+    final second = hasLock
+        ? await DeviceAuth.confirm('Potvrď smazání všech dat')
+        : await confirm(context,
+            'Telefon nemá zámek obrazovky, proto se smazání potvrzuje jen tady. Opravdu smazat vše?');
     if (second != true || !mounted) return;
 
     setState(() => _wiping = true);

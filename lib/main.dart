@@ -3,10 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/db_crypto.dart';
+import 'data/database.dart';
 import 'firebase_options.dart'; // vygeneruje `flutterfire configure`
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: TravelApp()));
+  final key = await databaseKey();
+  await encryptLegacyDatabase(key);
+  runApp(ProviderScope(
+    overrides: [databaseKeyProvider.overrideWithValue(key)],
+    child: const TravelApp(),
+  ));
 }

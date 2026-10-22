@@ -40,6 +40,19 @@ proto je důležitá spolehlivost offline a záloha dat.
   Kontrola z PC: `dart run tool/share_probe.dart "<sdílený text>"`.
 - Mapy: CARTO basemaps už chtějí API klíč, wikimedia dlaždice jsou jen pro Wikimedii, tile.openstreetmap.org zakazuje hromadné stahování
   (offline oblasti tedy ne odtud). OpenFreeMap je zdarma bez klíče a bez limitu.
+- **Šifrování DB**: `pubspec.yaml` → `hooks: user_defines: sqlite3: source: sqlite3mc` (SQLite3MultipleCiphers). Klíč (32 B hex) v Android
+  Keystore přes `flutter_secure_storage` (`core/db_crypto.dart`), načte se v `main()` → `databaseKeyProvider`; drift_flutter `setup` volá
+  `PRAGMA key`. Starou nešifrovanou DB `encryptLegacyDatabase` jednorázově převede (`PRAGMA rekey`, mimo WAL, se zálohou).
+  Odinstalace aplikace = ztráta klíče → data jen ze zálohy Firestore. Kontrola z PC: `dart run tool/crypto_probe.dart`.
+- **Zámek aplikace** (`features/lock/app_lock.dart`, `local_auth` 3): při spuštění a po >60 s v pozadí; biometrie nebo PIN telefonu.
+  `MainActivity` musí být `FlutterFragmentActivity`. Emulátor nemá zámek obrazovky → ukáže „Pokračovat bez zámku“
+  (zámek emulátoru nenastavovat bez souhlasu uživatele). Smazání všech dat se potvrzuje stejným ověřením.
+- Záloha ve Firestore zatím **není** šifrovaná na straně aplikace (jen u Googlu); fotky dokladů leží v soukromé složce aplikace
+  (šifrováno Androidem, ne aplikací). Vault bude šifrovat end-to-end.
+- **Avast** na PC kontroluje HTTPS vlastním certifikátem → Java/Gradle tomu nevěří (PKIX chyba při stahování knihoven).
+  Řešení: `~/.gradle/gradle.properties` → `systemProp.javax.net.ssl.trustStore=C:/Users/lukav/.gradle/truststore-avast.p12`
+  (kopie `jbr/lib/security/cacerts` + `C:\ProgramData\Avast Software\Avast\wscert.pem`, heslo `changeit`).
+  Build se stahováním knihoven spouštěj mimo sandbox nástroje.
 - Xiaomi/MIUI zabíjí upozornění, dokud uživatel nevypne úsporu baterie pro aplikaci.
 - Česká typografie ve stringech: „uvozovky“, ne ASCII. Neinstaluj balíček `intl`, formát dat/čísel řeší `lib/core/format.dart`.
 

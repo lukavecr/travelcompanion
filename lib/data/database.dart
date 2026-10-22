@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/db_crypto.dart';
+
 part 'database.g.dart';
 
 /// Společné sloupce pro offline synchronizaci.
@@ -129,7 +131,12 @@ class VaultItems extends Table with SyncColumns {
   VaultItems,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(name: 'travelcompanion'));
+  /// [key] = klíč šifrování z Android Keystore (viz `core/db_crypto.dart`).
+  AppDatabase(String key)
+      : super(driftDatabase(
+          name: dbName,
+          native: DriftNativeOptions(setup: (db) => db.execute(keyPragma(key))),
+        ));
   AppDatabase.forTesting(super.e);
 
   @override
@@ -165,8 +172,11 @@ class AppDatabase extends _$AppDatabase {
       );
 }
 
+/// Klíč databáze – načte se v `main()` před spuštěním aplikace.
+final databaseKeyProvider = Provider<String>((ref) => throw UnimplementedError());
+
 final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
+  final db = AppDatabase(ref.watch(databaseKeyProvider));
   ref.onDispose(db.close);
   return db;
 });

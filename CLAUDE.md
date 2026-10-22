@@ -56,6 +56,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   adresa / název přes Nominatim, náhled na mapě, klepnutí do mapy = ruční bod).
 - `core/plus_code.dart` (vlastní dekodér Open Location Code – balíček `open_location_code` pro Dart 3 neexistuje),
   `core/place_locator.dart` (`locateByText`: Plus Code → adresa → zkrácené varianty → obec/okres).
+- `features/settings` (Nastavení: ozubené kolo na záložce Cesty – Záloha a účet, Smazat všechna data).
+- `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);
+  rozpad podle zemí je jen informační graf v Přehledu.
 - `features/trips` (cesty + plán dne + ubytování od–do + čas + upozornění), `places`, `share_intake` (Android Share Intent z Google Map),
   `documents` (sken fotky → kódy + OCR → formulář → doklad + položka plánu), `money` (výdaje, kurzy, statistiky, účtenky),
   `reminders` (flutter_local_notifications), `sync` (Firestore záloha), `auth`, `shell`.
@@ -73,6 +76,8 @@ proto je důležitá spolehlivost offline a záloha dat.
 - `Photos`, `VaultItems` (zatím nepoužité)
 
 **Pravidlo:** každý zápis do tabulky musí nastavit `updatedAt = now` a `syncState = 'pending'`, mazání je jen soft delete.
+Jediná výjimka: Nastavení → „Smazat všechna data“ (`SyncService.wipeAllData`) – nejdřív smaže Firestore, pak natvrdo telefon
+(bez `VaultItems`); když cloud selže, telefon se nemaže. Na emulátoru **nespouštět** – je přihlášený ke skutečnému účtu uživatele.
 Změna schématu = zvýšit `schemaVersion` + migrace (`m.addColumn`) + `dart run build_runner build`.
 
 ### Synchronizace (`features/sync/sync_service.dart`)

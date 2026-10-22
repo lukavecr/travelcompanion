@@ -14,7 +14,7 @@
 - Vstupenka na chrám: poznat zemi (Japonsko) a později umístit na mapu. ✔ země (písmo kana, měna 円, klíčová slova). Mapa/souřadnice = bod 3.
 - Účtenka Universal Studios: špatná částka (41800 CZK místo 1800 JPY) → měna z písma/円, kategorie „atrakce“, název obchodu. ⚠ ověřit; OCR občas čte „¥“ jako „4“.
 - Rezervace výletu v Thajsku: údaje přiřazeny špatně → párování popisek↔hodnota podle polohy (`field_extractor.dart`). ⚠ ověřit na vzorku, případně doplnit další popisky (pick-up, hotel, tour name, adults…).
-- Záložka Peníze: nahoře jen název „Peníze“, pod ním řádek **cest** ze záložky Cesty (+ „Vše“), pod ním řádek **zemí** vybrané cesty (Celkem, země, Bez země, + Země). ✔ (5a) – **potvrď s uživatelem**, že to je to, co chtěl (zadání bylo nejednoznačné).
+- Záložka Peníze: **potvrzeno uživatelem** – jen jeden řádek „Vše + cesty“, žádný řádek zemí ani další volby. ✔
 - Sdílení míst z Google Map: doplnit **zemi** (Nominatim reverse). ✔ (5a)
 - Sdílená **trasa veřejnou dopravou** z Google Map: z odkazu jde získat jen odkud/kam, **ne** časy spojů ani přestupy
   (to by vyžadovalo placené Directions API). ✔ (5a) uloží se jako místo typu „doprava“ s odkazem do Map. Časy si uživatel dopíše z jízdenky.
@@ -26,8 +26,11 @@
 3. **Nahrávání PDF** (letenky, rezervace z e-mailu): vykreslit stránku (`pdfx`), pak stejný sken jako u fotek.
 4. **Travel Vault** (pas, víza, očkování, pojištění, nouzové kontakty, ambasády): šifrovaně (AES‑GCM, klíč v Android Keystore, odemknutí biometrií), funguje offline,
    zálohování jen zašifrovaných dat, **nikdy** ne do AI. Tlačítko SOS s kontakty.
+   Mazání ve Vaultu **po jednotlivých položkách** (uživatel nechce hromadně smazat např. pas nebo řidičák; pojištění smazat může).
+   „Smazat všechna data“ v Nastavení Vault nemaže.
 5. Hlavní měna cesty volitelná (teď pevně CZK), přepočet při změně.
-6. Nastavení (výchozí země/měna, jazyk), odhlášení bez míchání dat mezi účty (lokální DB není per-uživatel).
+6. Nastavení ✔ základ (Záloha a účet, Smazat všechna data). Zbývá: výchozí země/měna, jazyk aplikace i popisků mapy,
+   odhlášení bez míchání dat mezi účty (lokální DB není per-uživatel).
 7. Řazení položek dne přetažením i mezi dny.
 8. Podpora iOS (ML Kit, Firebase `GoogleService-Info.plist`, oznámení) – až bude Mac.
 9. Testy (Drift v paměti, parsery BCBP/field_extractor/guess), CI (`.github/workflows/ci.yml` je hotový základ).

@@ -23,12 +23,6 @@ class _Bar {
   final VoidCallback? onTap;
 }
 
-bool _matches(Expense e, String? sel) {
-  if (sel == null) return true;
-  final c = (e.country ?? '').trim();
-  return sel == _none ? c.isEmpty : c == sel;
-}
-
 class MoneyScreen extends ConsumerStatefulWidget {
   const MoneyScreen({super.key});
 
@@ -39,7 +33,6 @@ class MoneyScreen extends ConsumerStatefulWidget {
 class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   String? _tripId; // null = všechny cesty
   bool _init = false;
-  String? _country; // jen uvnitř jedné cesty
   int _tab = 1; // 0 výdaje, 1 přehled
   bool _filling = false;
   bool _filledOnce = false;
@@ -66,7 +59,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     await ref.read(expenseRepositoryProvider).setBudget(trip.id, v > 0 ? v : null);
   }
 
-  Future<void> _addExpense(List<Trip> trips, Trip? trip, String? sel) async {
+  Future<void> _addExpense(List<Trip> trips, Trip? trip) async {
     var tripId = trip?.id;
     if (tripId == null) {
       final picked = await showModalBottomSheet<String>(
@@ -91,7 +84,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     }
     context.go(
       '/money/form',
-      extra: ExpenseFormArgs(tripId, null, (sel == null || sel == _none) ? null : sel),
+      extra: ExpenseFormArgs(tripId, null),
     );
   }
 
@@ -140,29 +133,8 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     }
     final allTotal = tripTotals.values.fold<double>(0, (a, b) => a + b);
 
-    // výdaje vybrané cesty a země v ní
-    final inTrip = trip == null ? all : all.where((e) => e.tripId == trip!.id).toList();
-    final planned = tripCountries(trip);
-    final countryTotals = <String, double>{for (final c in planned) c: 0};
-    var hasNone = false;
-    for (final e in inTrip) {
-      final c = (e.country ?? '').trim();
-      if (c.isEmpty) {
-        hasNone = true;
-      } else {
-        countryTotals[c] = (countryTotals[c] ?? 0) + (e.amountMain ?? 0);
-      }
-    }
-    final countryNames = <String>[
-      ...planned,
-      ...(countryTotals.keys.where((c) => !planned.contains(c)).toList()..sort()),
-    ];
-
-    String? sel = trip == null ? null : _country;
-    if (sel != null && sel != _none && !countryTotals.containsKey(sel)) sel = null;
-    if (sel == _none && !hasNone) sel = null;
-
-    final expenses = inTrip.where((e) => _matches(e, sel)).toList();
+    // výdaje vybrané cesty (nebo všech)
+    final expenses = trip == null ? all : all.where((e) => e.tripId == trip!.id).toList();
 
     var total = 0.0;
     var missing = 0;
@@ -177,7 +149,6 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     final today = dayOnly(DateTime.now());
     int days;
     if (trip != null &&
-        sel == null &&
         trip.startDate != null &&
         !today.isBefore(dayOnly(trip.startDate!))) {
       final end = trip.endDate != null && dayOnly(trip.endDate!).isBefore(today)
@@ -188,7 +159,6 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
       days = math.max(1, expenses.map((e) => dayOnly(e.spentAt)).toSet().length);
     }
 
-    final selLabel = sel == null ? null : (sel == _none ? 'Bez země' : sel);
     final currentTrip = trip;
 
     return Scaffold(
@@ -202,16 +172,14 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
             : null,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addExpense(trips, currentTrip, sel),
+        onPressed: () => _addExpense(trips, currentTrip),
         icon: const Icon(Icons.add),
-        label: Text(selLabel == null || sel == _none
-            ? 'Přidat výdaj'
-            : 'Přidat výdaj ($selLabel)'),
+        label: const Text('Přidat výdaj'),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
         children: [
-          // 1. řádek: cesty ze záložky Cesty
+          // jediný řádek: Vše + cesty ze záložky Cesty
           SizedBox(
             height: 48,
             child: ListView(
@@ -224,10 +192,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                       avatar: const Icon(Icons.dashboard, size: 18),
                       label: Text('Vše · ${fmtMoney(allTotal)}'),
                       selected: trip == null,
-                      onSelected: (_) => setState(() {
-                        _tripId = null;
-                        _country = null;
-                      }),
+                      onSelected: (_) => setState(() => _tripId = null),
                     ),
                   ),
                 for (final t in trips)
@@ -238,85 +203,12 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                           ? '${t.name} · ${fmtMoney(tripTotals[t.id]!)}'
                           : t.name),
                       selected: trip?.id == t.id,
-                      onSelected: (_) => setState(() {
-                        _tripId = t.id;
-                        _country = null;
-                      }),
+                      onSelected: (_) => setState(() => _tripId = t.id),
                     ),
                   ),
               ],
             ),
           ),
-          // 2. řádek: země vybrané cesty
-          if (trip != null)
-            SizedBox(
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text('Celkem · ${fmtMoney(tripTotals[trip.id] ?? 0)}'),
-                      selected: sel == null,
-                      onSelected: (_) => setState(() => _country = null),
-                    ),
-                  ),
-                  for (final c in countryNames)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onLongPress: planned.contains(c)
-                            ? () async {
-                                final ok = await confirm(context,
-                                    'Odebrat zemi „$c“ z cesty? Výdaje zůstanou.');
-                                if (ok) {
-                                  await ref.read(tripRepositoryProvider).setCountries(
-                                      currentTrip!.id,
-                                      planned.where((x) => x != c).toList());
-                                }
-                              }
-                            : null,
-                        child: ChoiceChip(
-                          label: Text((countryTotals[c] ?? 0) > 0
-                              ? '$c · ${fmtMoney(countryTotals[c]!)}'
-                              : c),
-                          selected: sel == c,
-                          onSelected: (_) => setState(() => _country = c),
-                        ),
-                      ),
-                    ),
-                  if (hasNone)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: const Text('Bez země'),
-                        selected: sel == _none,
-                        onSelected: (_) => setState(() => _country = _none),
-                      ),
-                    ),
-                  ActionChip(
-                    avatar: const Icon(Icons.add, size: 18),
-                    label: const Text('Země'),
-                    onPressed: () async {
-                      final text = await askText(context,
-                          title: 'Přidat zemi k cestě',
-                          label: 'Země (i víc, oddělené čárkou)');
-                      if (text == null) return;
-                      final merged = [...planned];
-                      for (final c in parseCountryList(text)) {
-                        if (!merged.any((x) => x.toLowerCase() == c.toLowerCase())) {
-                          merged.add(c);
-                        }
-                      }
-                      await ref
-                          .read(tripRepositoryProvider)
-                          .setCountries(currentTrip!.id, merged);
-                    },
-                  ),
-                ],
-              ),
-            ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -326,15 +218,13 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                   Text(
                       trip == null
                           ? 'Celkem za všechny cesty'
-                          : selLabel == null
-                              ? 'Celkem: ${trip.name}'
-                              : 'Utraceno: $selLabel',
+                          : 'Celkem: ${trip.name}',
                       style: Theme.of(context).textTheme.bodySmall),
                   Text('${fmtMoney(total)} $cur',
                       style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 4),
                   Text('≈ ${fmtMoney(total / days)} $cur na den ($days dní)'),
-                  if (trip != null && sel == null) ...[
+                  if (trip != null) ...[
                     const SizedBox(height: 12),
                     InkWell(
                       onTap: () => _editBudget(currentTrip!),
@@ -398,7 +288,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
           if (_tab == 0)
             ..._expenseList(context, trips, trip, cur, expenses)
           else
-            ..._stats(context, trips, trip, cur, expenses, sel, tripTotals, countryTotals),
+            ..._stats(context, trips, trip, cur, expenses, tripTotals),
         ],
       ),
     );
@@ -481,9 +371,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     Trip? trip,
     String cur,
     List<Expense> list,
-    String? sel,
     Map<String, double> tripTotals,
-    Map<String, double> countryTotals,
   ) {
     final conv = list.where((e) => e.amountMain != null).toList();
     if (conv.isEmpty) {
@@ -532,10 +420,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
             tripTotals[t.id]!,
             palette[i++ % palette.length],
             icon: Icons.flight_takeoff,
-            onTap: () => setState(() {
-              _tripId = t.id;
-              _country = null;
-            }),
+            onTap: () => setState(() => _tripId = t.id),
           ),
     ]..sort((a, b) => b.value.compareTo(a.value));
 
@@ -549,7 +434,6 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
         e.value,
         palette[j++ % palette.length],
         icon: Icons.public,
-        onTap: () => setState(() => _country = key),
       );
     }).toList();
 
@@ -575,8 +459,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
     return [
       if (trip == null && tripBars.length > 1)
         section('Podle cest (klepnutím otevřeš cestu)', tripBars),
-      if (trip != null && sel == null)
-        section('Podle zemí (klepnutím otevřeš zemi)', countryBars),
+      if (trip != null && countryBars.length > 1) section('Podle zemí', countryBars),
       section('Podle kategorií', catBars),
       section('Podle dnů (posledních 14)', dayBars),
     ];

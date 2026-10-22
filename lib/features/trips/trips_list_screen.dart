@@ -104,6 +104,11 @@ class TripsListScreen extends ConsumerWidget {
             icon: const Icon(Icons.cloud_outlined),
             onPressed: () => context.push('/sync'),
           ),
+          IconButton(
+            tooltip: 'Nastavení',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

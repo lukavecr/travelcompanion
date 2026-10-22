@@ -444,6 +444,75 @@ class SyncService {
   }
 }
 
+extension WipeAll on SyncService {
+  /// Smaže všechna data: nejdřív zálohu ve Firestore, pak telefon.
+  /// Vault (VaultItems) a účet zůstávají. Výjimka z pravidla „jen soft delete“ –
+  /// řádky se mažou natvrdo, aby se znovu neodeslaly ani nestáhly.
+  /// Když selže cloud, telefon se nemaže (vyhodí výjimku).
+  Future<void> wipeAllData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('Nejsi přihlášený.');
+    if (_running) throw Exception('Právě probíhá synchronizace, zkus to za chvíli.');
+    _running = true;
+    _debounce?.cancel();
+    try {
+      // 1) cloud
+      for (final name in [..._tables.map((t) => t.name), 'files']) {
+        final col = _col(user.uid, name);
+        while (true) {
+          final snap = await col
+              .limit(200)
+              .get(const GetOptions(source: Source.server))
+              .timeout(const Duration(seconds: 30));
+          if (snap.docs.isEmpty) break;
+          final batch = FirebaseFirestore.instance.batch();
+          for (final d in snap.docs) {
+            batch.delete(d.reference);
+          }
+          await batch.commit().timeout(const Duration(seconds: 30));
+        }
+      }
+
+      // 2) soubory v telefonu (fotky dokladů a účtenek)
+      final paths = <String>[
+        for (final d in await db.select(db.documents).get()) d.localPath,
+        for (final e in await db.select(db.expenses).get()) e.receiptPath ?? '',
+      ];
+      for (final path in paths) {
+        if (path.isEmpty || path.startsWith('sync:')) continue;
+        try {
+          await File(path).delete();
+        } catch (_) {}
+      }
+
+      // 3) databáze v telefonu (bez Vaultu)
+      await db.transaction(() async {
+        for (final t in <TableInfo<Table, dynamic>>[
+          db.tickets,
+          db.calendarEvents,
+          db.expenses,
+          db.documents,
+          db.places,
+          db.photos,
+          db.trips,
+        ]) {
+          await db.delete(t).go();
+        }
+      });
+
+      // 4) stav synchronizace
+      final prefs = await _p;
+      for (final k in prefs.getKeys().where((k) => k.startsWith('sync_')).toList()) {
+        await prefs.remove(k);
+      }
+      _uploaded.clear();
+      status.value = const SyncStatus();
+    } finally {
+      _running = false;
+    }
+  }
+}
+
 final syncServiceProvider = Provider<SyncService>((ref) {
   final s = SyncService(ref.watch(databaseProvider));
   ref.onDispose(s.dispose);

@@ -13,6 +13,7 @@ import '../features/map/map_screen.dart';
 import '../features/money/expense_form_screen.dart';
 import '../features/money/money_screen.dart';
 import '../features/places/places_screen.dart';
+import '../features/settings/settings_screen.dart';
 import '../features/share_intake/share_place_screen.dart';
 import '../features/shell/placeholder_screen.dart';
 import '../features/sync/sync_screen.dart';
@@ -41,6 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/sync', builder: (context, state) => const SyncScreen()),
+      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(
         path: '/share',
         builder: (context, state) =>

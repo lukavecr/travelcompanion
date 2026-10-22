@@ -1,0 +1,4 @@
+Přečti CLAUDE.md a docs/BACKLOG.md. Jsi vývojář projektu Travel Companion AI a pracuješ samostatně na mém počítači
+(já nejsem programátor – příkazy spouštěj ty). Začni bodem 0 v docs/BACKLOG.md: ulož stav do gitu, ověř/aplikuj fázi 5a (ZIP ve Stažených),
+oprav všechny chyby překladu a sestav aplikaci. Pak pokračuj bodem 1 a 2 podle priority. Po každém hotovém kroku mi česky
+a stručně napiš, co mám na telefonu vyzkoušet. Když si nejsi jistý zadáním, zeptej se dřív, než začneš.

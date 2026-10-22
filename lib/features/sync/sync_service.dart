@@ -1,0 +1,451 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math' as math;
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drift/drift.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../data/database.dart';
+
+class SyncStatus {
+  const SyncStatus({
+    this.running = false,
+    this.lastSync,
+    this.error,
+    this.pending = 0,
+  });
+  final bool running;
+  final DateTime? lastSync;
+  final String? error;
+  final int pending;
+}
+
+/// Jedna tabulka z pohledu synchronizace. Pracuje s JSON mapami, takže
+/// se stejný kód použije pro všechny tabulky.
+class _T {
+  _T(
+    this.name, {
+    required this.pending,
+    required this.markSynced,
+    required this.localUpdatedAt,
+    required this.upsertJson,
+  });
+  final String name;
+  final Future<List<Map<String, dynamic>>> Function() pending;
+  final Future<void> Function(Map<String, dynamic> json) markSynced;
+  final Future<int?> Function(String id) localUpdatedAt;
+  final Future<void> Function(Map<String, dynamic> json) upsertJson;
+}
+
+const _realKeys = {'budget', 'lat', 'lng', 'amount', 'fxRate', 'amountMain', 'price'};
+const _maxImageBytes = 650000; // Firestore dokument má limit 1 MiB (base64 +33 %)
+
+class SyncService {
+  SyncService(this.db) {
+    _loadPrefs();
+  }
+  final AppDatabase db;
+  final status = ValueNotifier<SyncStatus>(const SyncStatus());
+
+  bool _running = false;
+  Timer? _debounce;
+  StreamSubscription<Set<TableUpdate>>? _sub;
+  SharedPreferences? _prefs;
+  final Set<String> _uploaded = {};
+
+  Future<SharedPreferences> get _p async =>
+      _prefs ??= await SharedPreferences.getInstance();
+
+  Future<void> _loadPrefs() async {
+    final prefs = await _p;
+    _uploaded.addAll(prefs.getStringList('sync_uploaded') ?? const []);
+    final ms = prefs.getInt('sync_last');
+    if (ms != null) {
+      status.value = SyncStatus(lastSync: DateTime.fromMillisecondsSinceEpoch(ms));
+    }
+  }
+
+  /// Po změně dat v telefonu (a krátké pauze) odešle, co čeká.
+  void start() {
+    _sub ??= db.tableUpdates().listen((_) {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(seconds: 4), syncIfPending);
+    });
+  }
+
+  void dispose() {
+    _debounce?.cancel();
+    _sub?.cancel();
+  }
+
+  late final List<_T> _tables = [
+    _T(
+      'trips',
+      pending: () async => [
+        for (final r in await (db.select(db.trips)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.trips)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(TripsCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.trips)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db
+          .into(db.trips)
+          .insertOnConflictUpdate(Trip.fromJson({...j, 'syncState': 'synced'})),
+    ),
+    _T(
+      'places',
+      pending: () async => [
+        for (final r in await (db.select(db.places)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.places)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(PlacesCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.places)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db
+          .into(db.places)
+          .insertOnConflictUpdate(Place.fromJson({...j, 'syncState': 'synced'})),
+    ),
+    _T(
+      'documents',
+      pending: () async => [
+        for (final r in await (db.select(db.documents)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.documents)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(DocumentsCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.documents)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db.into(db.documents).insertOnConflictUpdate(
+          Document.fromJson({...j, 'syncState': 'synced'})),
+    ),
+    _T(
+      'expenses',
+      pending: () async => [
+        for (final r in await (db.select(db.expenses)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.expenses)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(ExpensesCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.expenses)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db.into(db.expenses).insertOnConflictUpdate(
+          Expense.fromJson({...j, 'syncState': 'synced'})),
+    ),
+    _T(
+      'calendarEvents',
+      pending: () async => [
+        for (final r in await (db.select(db.calendarEvents)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.calendarEvents)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(CalendarEventsCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.calendarEvents)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db.into(db.calendarEvents).insertOnConflictUpdate(
+          CalendarEvent.fromJson({...j, 'syncState': 'synced'})),
+    ),
+    _T(
+      'tickets',
+      pending: () async => [
+        for (final r in await (db.select(db.tickets)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.tickets)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(TicketsCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.tickets)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db.into(db.tickets).insertOnConflictUpdate(
+          Ticket.fromJson({...j, 'syncState': 'synced'})),
+    ),
+  ];
+
+  Future<int> _pendingCount() async {
+    var n = 0;
+    for (final t in _tables) {
+      n += (await t.pending()).length;
+    }
+    return n;
+  }
+
+  Future<void> syncIfPending() async {
+    if (_running || FirebaseAuth.instance.currentUser == null) return;
+    final n = await _pendingCount();
+    status.value = SyncStatus(
+        lastSync: status.value.lastSync, error: status.value.error, pending: n);
+    if (n > 0) await syncNow();
+  }
+
+  Future<void> syncNow() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (_running || user == null) return;
+    _running = true;
+    status.value = SyncStatus(
+        running: true,
+        lastSync: status.value.lastSync,
+        pending: status.value.pending);
+    String? error;
+    try {
+      await _push(user.uid);
+      await _pull(user.uid);
+      await _retryMissingFiles(user.uid);
+    } catch (e) {
+      error = e.toString();
+    }
+    final pending = await _pendingCount();
+    final now = DateTime.now();
+    if (error == null) {
+      await (await _p).setInt('sync_last', now.millisecondsSinceEpoch);
+    }
+    status.value = SyncStatus(
+      lastSync: error == null ? now : status.value.lastSync,
+      error: error,
+      pending: pending,
+    );
+    _running = false;
+  }
+
+  CollectionReference<Map<String, dynamic>> _col(String uid, String name) =>
+      FirebaseFirestore.instance.collection('users').doc(uid).collection(name);
+
+  // ---------- odeslání ----------
+  Future<void> _push(String uid) async {
+    for (final t in _tables) {
+      final rows = await t.pending();
+      for (var i = 0; i < rows.length; i += 100) {
+        final chunk = rows.sublist(i, math.min(i + 100, rows.length));
+        final batch = FirebaseFirestore.instance.batch();
+        for (final r in chunk) {
+          final id = r['id'] as String;
+          final out = Map<String, dynamic>.from(r);
+
+          if (t.name == 'documents') {
+            final path = out['localPath'] as String?;
+            if (path != null && path.isNotEmpty && !path.startsWith('sync:')) {
+              await _upload(uid, id, path);
+            }
+            out['localPath'] = 'sync:file';
+          } else if (t.name == 'expenses') {
+            final path = out['receiptPath'] as String?;
+            if (path != null && path.isNotEmpty && !path.startsWith('sync:')) {
+              await _upload(uid, id, path);
+            }
+            if (path != null) out['receiptPath'] = 'sync:receipt';
+          }
+          batch.set(_col(uid, t.name).doc(id), out);
+        }
+        await batch.commit().timeout(const Duration(seconds: 20));
+        for (final r in chunk) {
+          await t.markSynced(r);
+        }
+      }
+    }
+  }
+
+  // ---------- stažení ----------
+  Future<void> _pull(String uid) async {
+    final prefs = await _p;
+    for (final t in _tables) {
+      final key = 'sync_last_${uid}_${t.name}';
+      final last = prefs.getInt(key) ?? 0;
+      final snap = await _col(uid, t.name)
+          .where('updatedAt', isGreaterThan: last)
+          .orderBy('updatedAt')
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 30));
+
+      var okUpTo = last;
+      for (final d in snap.docs) {
+        final j = Map<String, dynamic>.from(d.data());
+        final id = j['id'] as String;
+        final remoteMs = (j['updatedAt'] as num).toInt();
+        j['updatedAt'] = remoteMs;
+        for (final k in _realKeys) {
+          final v = j[k];
+          if (v is int) j[k] = v.toDouble();
+        }
+
+        final localMs = await t.localUpdatedAt(id);
+        if (localMs == null || localMs < remoteMs) {
+          var needsFile = false;
+          if (t.name == 'documents') {
+            final local = await (db.select(db.documents)
+                  ..where((x) => x.id.equals(id)))
+                .getSingleOrNull();
+            final keep = local != null &&
+                local.localPath.isNotEmpty &&
+                !local.localPath.startsWith('sync:') &&
+                File(local.localPath).existsSync();
+            j['localPath'] = keep ? local.localPath : '';
+            needsFile = !keep;
+          } else if (t.name == 'expenses' && j['receiptPath'] != null) {
+            final local = await (db.select(db.expenses)
+                  ..where((x) => x.id.equals(id)))
+                .getSingleOrNull();
+            final lp = local?.receiptPath;
+            final keep = lp != null &&
+                lp.isNotEmpty &&
+                !lp.startsWith('sync:') &&
+                File(lp).existsSync();
+            j['receiptPath'] = keep ? lp : '';
+            needsFile = !keep;
+          }
+          await t.upsertJson(j);
+          if (needsFile) await _fetchFileFor(uid, t.name, id);
+        }
+        okUpTo = math.max(okUpTo, remoteMs);
+      }
+      if (okUpTo > last) await prefs.setInt(key, okUpTo);
+    }
+  }
+
+  // ---------- soubory (zmenšené obrázky ve Firestore) ----------
+  Future<Uint8List?> _compress(String path) async {
+    var quality = 75;
+    var size = 1600;
+    for (var i = 0; i < 4; i++) {
+      final out = await FlutterImageCompress.compressWithFile(
+        path,
+        minWidth: size,
+        minHeight: size,
+        quality: quality,
+        format: CompressFormat.jpeg,
+      );
+      if (out == null) return null;
+      if (out.length <= _maxImageBytes) return out;
+      quality -= 10;
+      size = (size * 0.8).round();
+    }
+    return null;
+  }
+
+  Future<void> _upload(String uid, String id, String path) async {
+    final key = '$id|$path';
+    if (_uploaded.contains(key)) return;
+    if (!await File(path).exists()) return;
+    final bytes = await _compress(path);
+    if (bytes == null) return; // nejde zmenšit, doklad se zazálohuje bez obrázku
+    await _col(uid, 'files').doc(id).set({
+      'b64': base64Encode(bytes),
+      'updatedAt': DateTime.now().millisecondsSinceEpoch,
+    }).timeout(const Duration(seconds: 30));
+    _uploaded.add(key);
+    await (await _p).setStringList('sync_uploaded', _uploaded.toList());
+  }
+
+  Future<String?> _download(String uid, String id) async {
+    try {
+      final snap = await _col(uid, 'files')
+          .doc(id)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 30));
+      final b64 = snap.data()?['b64'] as String?;
+      if (b64 == null) return null;
+      final base = await getApplicationDocumentsDirectory();
+      final dir = Directory(p.join(base.path, 'documents'));
+      if (!await dir.exists()) await dir.create(recursive: true);
+      final path = p.join(dir.path, '$id.jpg');
+      await File(path).writeAsBytes(base64Decode(b64));
+      return path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _fetchFileFor(String uid, String table, String id) async {
+    final path = await _download(uid, id);
+    if (path == null) return;
+    if (table == 'documents') {
+      await (db.update(db.documents)..where((x) => x.id.equals(id)))
+          .write(DocumentsCompanion(localPath: Value(path)));
+    } else {
+      await (db.update(db.expenses)..where((x) => x.id.equals(id)))
+          .write(ExpensesCompanion(receiptPath: Value(path)));
+    }
+  }
+
+  /// Obrázky, které se při stažení nepodařilo dostat, zkusí znovu.
+  Future<void> _retryMissingFiles(String uid) async {
+    final docs = await (db.select(db.documents)
+          ..where((d) => d.localPath.equals('') & d.deletedAt.isNull()))
+        .get();
+    for (final d in docs) {
+      await _fetchFileFor(uid, 'documents', d.id);
+    }
+    final exps = await (db.select(db.expenses)
+          ..where((e) => e.receiptPath.equals('') & e.deletedAt.isNull()))
+        .get();
+    for (final e in exps) {
+      await _fetchFileFor(uid, 'expenses', e.id);
+    }
+  }
+}
+
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final s = SyncService(ref.watch(databaseProvider));
+  ref.onDispose(s.dispose);
+  return s;
+});

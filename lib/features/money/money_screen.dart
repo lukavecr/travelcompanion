@@ -1,0 +1,625 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/dialogs.dart';
+import '../../core/format.dart';
+import '../../data/database.dart';
+import '../trips/trip_repository.dart';
+import 'categories.dart';
+import 'expense_form_screen.dart';
+import 'expense_repository.dart';
+
+const _none = '__none'; // výdaje bez země
+
+class _Bar {
+  const _Bar(this.label, this.value, this.color, {this.icon, this.onTap});
+  final String label;
+  final double value;
+  final Color color;
+  final IconData? icon;
+  final VoidCallback? onTap;
+}
+
+bool _matches(Expense e, String? sel) {
+  if (sel == null) return true;
+  final c = (e.country ?? '').trim();
+  return sel == _none ? c.isEmpty : c == sel;
+}
+
+class MoneyScreen extends ConsumerStatefulWidget {
+  const MoneyScreen({super.key});
+
+  @override
+  ConsumerState<MoneyScreen> createState() => _MoneyScreenState();
+}
+
+class _MoneyScreenState extends ConsumerState<MoneyScreen> {
+  String? _tripId; // null = všechny cesty
+  bool _init = false;
+  String? _country; // jen uvnitř jedné cesty
+  int _tab = 1; // 0 výdaje, 1 přehled
+  bool _filling = false;
+  bool _filledOnce = false;
+
+  Future<void> _fillAll(List<Trip> trips) async {
+    setState(() => _filling = true);
+    final repo = ref.read(expenseRepositoryProvider);
+    for (final t in trips) {
+      await repo.backfillRates(t.id, t.mainCurrency);
+    }
+    if (mounted) setState(() => _filling = false);
+  }
+
+  Future<void> _editBudget(Trip trip) async {
+    final text = await askText(
+      context,
+      title: 'Rozpočet cesty (${trip.mainCurrency})',
+      initial: trip.budget == null ? '' : trip.budget!.round().toString(),
+      label: 'Částka (0 = bez rozpočtu)',
+    );
+    if (text == null) return;
+    final v = parseAmount(text);
+    if (v == null) return;
+    await ref.read(expenseRepositoryProvider).setBudget(trip.id, v > 0 ? v : null);
+  }
+
+  Future<void> _addExpense(List<Trip> trips, Trip? trip, String? sel) async {
+    var tripId = trip?.id;
+    if (tripId == null) {
+      final picked = await showModalBottomSheet<String>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(title: Text('Do které cesty výdaj patří?')),
+              for (final t in trips)
+                ListTile(
+                  leading: const Icon(Icons.flight_takeoff),
+                  title: Text(t.name),
+                  onTap: () => Navigator.pop(ctx, t.id),
+                ),
+            ],
+          ),
+        ),
+      );
+      if (picked == null || !mounted) return;
+      tripId = picked;
+    }
+    context.go(
+      '/money/form',
+      extra: ExpenseFormArgs(tripId, null, (sel == null || sel == _none) ? null : sel),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final trips = ref.watch(tripsProvider).value ?? const <Trip>[];
+    final allRaw = ref.watch(allExpensesProvider).value ?? const <Expense>[];
+
+    if (trips.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Peníze')),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('Nejdřív vytvoř cestu v záložce Cesty.',
+                textAlign: TextAlign.center),
+          ),
+        ),
+      );
+    }
+
+    if (!_init) {
+      _init = true;
+      _tripId = trips.length > 1 ? null : trips.first.id;
+    }
+    Trip? trip;
+    for (final t in trips) {
+      if (t.id == _tripId) trip = t;
+    }
+    if (trip == null) _tripId = null;
+
+    if (!_filledOnce) {
+      _filledOnce = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fillAll(trips);
+      });
+    }
+
+    final ids = {for (final t in trips) t.id};
+    final all = allRaw.where((e) => ids.contains(e.tripId)).toList();
+    final cur = trips.first.mainCurrency;
+
+    final tripTotals = <String, double>{for (final t in trips) t.id: 0};
+    for (final e in all) {
+      tripTotals[e.tripId] = (tripTotals[e.tripId] ?? 0) + (e.amountMain ?? 0);
+    }
+    final allTotal = tripTotals.values.fold<double>(0, (a, b) => a + b);
+
+    // výdaje vybrané cesty a země v ní
+    final inTrip = trip == null ? all : all.where((e) => e.tripId == trip!.id).toList();
+    final planned = tripCountries(trip);
+    final countryTotals = <String, double>{for (final c in planned) c: 0};
+    var hasNone = false;
+    for (final e in inTrip) {
+      final c = (e.country ?? '').trim();
+      if (c.isEmpty) {
+        hasNone = true;
+      } else {
+        countryTotals[c] = (countryTotals[c] ?? 0) + (e.amountMain ?? 0);
+      }
+    }
+    final countryNames = <String>[
+      ...planned,
+      ...(countryTotals.keys.where((c) => !planned.contains(c)).toList()..sort()),
+    ];
+
+    String? sel = trip == null ? null : _country;
+    if (sel != null && sel != _none && !countryTotals.containsKey(sel)) sel = null;
+    if (sel == _none && !hasNone) sel = null;
+
+    final expenses = inTrip.where((e) => _matches(e, sel)).toList();
+
+    var total = 0.0;
+    var missing = 0;
+    for (final e in expenses) {
+      if (e.amountMain == null) {
+        missing++;
+      } else {
+        total += e.amountMain!;
+      }
+    }
+
+    final today = dayOnly(DateTime.now());
+    int days;
+    if (trip != null &&
+        sel == null &&
+        trip.startDate != null &&
+        !today.isBefore(dayOnly(trip.startDate!))) {
+      final end = trip.endDate != null && dayOnly(trip.endDate!).isBefore(today)
+          ? dayOnly(trip.endDate!)
+          : today;
+      days = math.max(1, end.difference(dayOnly(trip.startDate!)).inDays + 1);
+    } else {
+      days = math.max(1, expenses.map((e) => dayOnly(e.spentAt)).toSet().length);
+    }
+
+    final selLabel = sel == null ? null : (sel == _none ? 'Bez země' : sel);
+    final currentTrip = trip;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Peníze'),
+        bottom: _filling
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(4),
+                child: LinearProgressIndicator(),
+              )
+            : null,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _addExpense(trips, currentTrip, sel),
+        icon: const Icon(Icons.add),
+        label: Text(selLabel == null || sel == _none
+            ? 'Přidat výdaj'
+            : 'Přidat výdaj ($selLabel)'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
+        children: [
+          // 1. řádek: cesty ze záložky Cesty
+          SizedBox(
+            height: 48,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                if (trips.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      avatar: const Icon(Icons.dashboard, size: 18),
+                      label: Text('Vše · ${fmtMoney(allTotal)}'),
+                      selected: trip == null,
+                      onSelected: (_) => setState(() {
+                        _tripId = null;
+                        _country = null;
+                      }),
+                    ),
+                  ),
+                for (final t in trips)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text((tripTotals[t.id] ?? 0) > 0
+                          ? '${t.name} · ${fmtMoney(tripTotals[t.id]!)}'
+                          : t.name),
+                      selected: trip?.id == t.id,
+                      onSelected: (_) => setState(() {
+                        _tripId = t.id;
+                        _country = null;
+                      }),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // 2. řádek: země vybrané cesty
+          if (trip != null)
+            SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text('Celkem · ${fmtMoney(tripTotals[trip.id] ?? 0)}'),
+                      selected: sel == null,
+                      onSelected: (_) => setState(() => _country = null),
+                    ),
+                  ),
+                  for (final c in countryNames)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onLongPress: planned.contains(c)
+                            ? () async {
+                                final ok = await confirm(context,
+                                    'Odebrat zemi „$c“ z cesty? Výdaje zůstanou.');
+                                if (ok) {
+                                  await ref.read(tripRepositoryProvider).setCountries(
+                                      currentTrip!.id,
+                                      planned.where((x) => x != c).toList());
+                                }
+                              }
+                            : null,
+                        child: ChoiceChip(
+                          label: Text((countryTotals[c] ?? 0) > 0
+                              ? '$c · ${fmtMoney(countryTotals[c]!)}'
+                              : c),
+                          selected: sel == c,
+                          onSelected: (_) => setState(() => _country = c),
+                        ),
+                      ),
+                    ),
+                  if (hasNone)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: const Text('Bez země'),
+                        selected: sel == _none,
+                        onSelected: (_) => setState(() => _country = _none),
+                      ),
+                    ),
+                  ActionChip(
+                    avatar: const Icon(Icons.add, size: 18),
+                    label: const Text('Země'),
+                    onPressed: () async {
+                      final text = await askText(context,
+                          title: 'Přidat zemi k cestě',
+                          label: 'Země (i víc, oddělené čárkou)');
+                      if (text == null) return;
+                      final merged = [...planned];
+                      for (final c in parseCountryList(text)) {
+                        if (!merged.any((x) => x.toLowerCase() == c.toLowerCase())) {
+                          merged.add(c);
+                        }
+                      }
+                      await ref
+                          .read(tripRepositoryProvider)
+                          .setCountries(currentTrip!.id, merged);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      trip == null
+                          ? 'Celkem za všechny cesty'
+                          : selLabel == null
+                              ? 'Celkem: ${trip.name}'
+                              : 'Utraceno: $selLabel',
+                      style: Theme.of(context).textTheme.bodySmall),
+                  Text('${fmtMoney(total)} $cur',
+                      style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 4),
+                  Text('≈ ${fmtMoney(total / days)} $cur na den ($days dní)'),
+                  if (trip != null && sel == null) ...[
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () => _editBudget(currentTrip!),
+                      child: trip.budget == null
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4),
+                              child: Text('Nastavit rozpočet'),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: (total / trip.budget!).clamp(0.0, 1.0),
+                                    minHeight: 8,
+                                    color: total > trip.budget!
+                                        ? Theme.of(context).colorScheme.error
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(total > trip.budget!
+                                    ? 'Rozpočet ${fmtMoney(trip.budget!)} $cur překročen o ${fmtMoney(total - trip.budget!)} $cur'
+                                    : 'Zbývá ${fmtMoney(trip.budget! - total)} z ${fmtMoney(trip.budget!)} $cur'),
+                              ],
+                            ),
+                    ),
+                  ],
+                  if (missing > 0) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text('$missing výdajů zatím bez přepočtu na $cur'),
+                        ),
+                        TextButton(
+                          onPressed: _filling ? null : () => _fillAll(trips),
+                          child: const Text('Doplnit kurzy'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(
+                    value: 1, label: Text('Přehled'), icon: Icon(Icons.bar_chart)),
+                ButtonSegment(value: 0, label: Text('Výdaje'), icon: Icon(Icons.list)),
+              ],
+              selected: {_tab},
+              onSelectionChanged: (s) => setState(() => _tab = s.first),
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_tab == 0)
+            ..._expenseList(context, trips, trip, cur, expenses)
+          else
+            ..._stats(context, trips, trip, cur, expenses, sel, tripTotals, countryTotals),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _expenseList(BuildContext context, List<Trip> trips, Trip? trip,
+      String cur, List<Expense> list) {
+    if (list.isEmpty) {
+      return const [
+        Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('Zatím žádné výdaje.', textAlign: TextAlign.center),
+        ),
+      ];
+    }
+    String tripName(String id) {
+      for (final t in trips) {
+        if (t.id == id) return t.name;
+      }
+      return '';
+    }
+
+    final byDay = <DateTime, List<Expense>>{};
+    for (final e in list) {
+      byDay.putIfAbsent(dayOnly(e.spentAt), () => []).add(e);
+    }
+    final days = byDay.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return [
+      for (final d in days) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(fmtDay(d), style: Theme.of(context).textTheme.titleSmall),
+              ),
+              Text(
+                '${fmtMoney(byDay[d]!.fold<double>(0, (s, e) => s + (e.amountMain ?? 0)))} $cur',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        for (final e in byDay[d]!)
+          Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: categoryColor(e.category).withValues(alpha: 0.25),
+                child: Icon(categoryIcon(e.category),
+                    color: categoryColor(e.category), size: 20),
+              ),
+              title: Text(e.note?.isNotEmpty == true
+                  ? e.note!
+                  : (expenseCategories[e.category] ?? 'Výdaj')),
+              subtitle: Text([
+                if (trip == null) tripName(e.tripId),
+                if (e.country != null && e.country!.isNotEmpty) e.country!,
+                if (e.currency != cur)
+                  '${fmtMoney(e.amount, e.amount % 1 == 0 ? 0 : 2)} ${e.currency}',
+                if (e.receiptPath != null && e.receiptPath!.isNotEmpty) '🧾',
+              ].join(' · ')),
+              trailing: Text(
+                e.amountMain == null
+                    ? '—'
+                    : '${fmtMoney(e.amountMain!, e.amountMain! < 100 ? 2 : 0)} $cur',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              onTap: () =>
+                  context.go('/money/form', extra: ExpenseFormArgs(e.tripId, e)),
+            ),
+          ),
+      ],
+    ];
+  }
+
+  List<Widget> _stats(
+    BuildContext context,
+    List<Trip> trips,
+    Trip? trip,
+    String cur,
+    List<Expense> list,
+    String? sel,
+    Map<String, double> tripTotals,
+    Map<String, double> countryTotals,
+  ) {
+    final conv = list.where((e) => e.amountMain != null).toList();
+    if (conv.isEmpty) {
+      return const [
+        Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('Přehled se zobrazí po přidání výdajů.',
+              textAlign: TextAlign.center),
+        ),
+      ];
+    }
+
+    final cat = <String, double>{};
+    final country = <String, double>{};
+    final day = <DateTime, double>{};
+    for (final e in conv) {
+      cat[e.category] = (cat[e.category] ?? 0) + e.amountMain!;
+      final c = (e.country == null || e.country!.trim().isEmpty)
+          ? _none
+          : e.country!.trim();
+      country[c] = (country[c] ?? 0) + e.amountMain!;
+      final d = dayOnly(e.spentAt);
+      day[d] = (day[d] ?? 0) + e.amountMain!;
+    }
+
+    const palette = [
+      Color(0xFF2DD4A7),
+      Color(0xFF4FA3F7),
+      Color(0xFFF5A623),
+      Color(0xFF9B7BEA),
+      Color(0xFFE86A92),
+    ];
+
+    final catBars = (cat.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+        .map((e) => _Bar(expenseCategories[e.key] ?? e.key, e.value,
+            categoryColor(e.key),
+            icon: categoryIcon(e.key)))
+        .toList();
+
+    var i = 0;
+    final tripBars = [
+      for (final t in trips)
+        if ((tripTotals[t.id] ?? 0) > 0)
+          _Bar(
+            t.name,
+            tripTotals[t.id]!,
+            palette[i++ % palette.length],
+            icon: Icons.flight_takeoff,
+            onTap: () => setState(() {
+              _tripId = t.id;
+              _country = null;
+            }),
+          ),
+    ]..sort((a, b) => b.value.compareTo(a.value));
+
+    var j = 0;
+    final countryBars = (country.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value)))
+        .map((e) {
+      final key = e.key;
+      return _Bar(
+        key == _none ? 'Bez země' : key,
+        e.value,
+        palette[j++ % palette.length],
+        icon: Icons.public,
+        onTap: () => setState(() => _country = key),
+      );
+    }).toList();
+
+    final dayKeys = day.keys.toList()..sort((a, b) => b.compareTo(a));
+    final dayBars = [
+      for (final d in dayKeys.take(14)) _Bar(fmtDay(d), day[d]!, palette[1]),
+    ];
+
+    Widget section(String title, List<_Bar> bars) => Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                _barList(bars, cur),
+              ],
+            ),
+          ),
+        );
+
+    return [
+      if (trip == null && tripBars.length > 1)
+        section('Podle cest (klepnutím otevřeš cestu)', tripBars),
+      if (trip != null && sel == null)
+        section('Podle zemí (klepnutím otevřeš zemi)', countryBars),
+      section('Podle kategorií', catBars),
+      section('Podle dnů (posledních 14)', dayBars),
+    ];
+  }
+
+  Widget _barList(List<_Bar> bars, String unit) {
+    final maxV = bars.map((b) => b.value).reduce(math.max);
+    final sum = bars.fold<double>(0, (s, b) => s + b.value);
+    return Column(
+      children: [
+        for (final b in bars)
+          InkWell(
+            onTap: b.onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      if (b.icon != null) ...[
+                        Icon(b.icon, size: 18, color: b.color),
+                        const SizedBox(width: 6),
+                      ],
+                      Expanded(child: Text(b.label)),
+                      Text('${fmtMoney(b.value)} $unit · ${(b.value / sum * 100).round()} %'),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: maxV == 0 ? 0 : b.value / maxV,
+                      minHeight: 8,
+                      color: b.color,
+                      backgroundColor: b.color.withValues(alpha: 0.15),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}

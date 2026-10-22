@@ -162,3 +162,7 @@ p { margin: 0; }
 .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .table-wrap table { min-width: 560px; }
 .todo { background: color-mix(in srgb, var(--warm) 18%, transparent); color: var(--warm); padding: 1px 6px; border-radius: 4px; font-family: var(--mono); font-size: 0.9em; }
+
+/* značka vývojáře (LR Tech CZ) v zápatí */
+.dev { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; font-weight: 600; }
+.dev img { border-radius: 50%; box-shadow: 0 0 0 1px var(--line); }

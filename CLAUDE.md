@@ -69,6 +69,15 @@ proto je důležitá spolehlivost offline a záloha dat.
   adresa / název přes Nominatim, náhled na mapě, klepnutí do mapy = ruční bod).
 - `core/plus_code.dart` (vlastní dekodér Open Location Code – balíček `open_location_code` pro Dart 3 neexistuje),
   `core/place_locator.dart` (`locateByText`: Plus Code → adresa → zkrácené varianty → obec/okres).
+- `features/vault` – **Travel Vault**: `vault_crypto.dart` (hlavní klíč 256 bit; v Keystore pro odemčení otiskem +
+  zabalený heslem Vaultu PBKDF2-SHA256 310k ve Firestore `users/{uid}/vault_meta/key` pro obnovu; AES-256-GCM přes `cryptography`),
+  `vault_types.dart` (pas, víza, pojištění, očkování, další doklady, nouzové kontakty, zdravotní údaje – pole a upozornění na platnost),
+  `vault_repository.dart` (položky = šifrovaný JSON v `VaultItems.encryptedBlob`; fotky šifrované v `app_flutter/vault/*.bin`),
+  `vault_sync.dart` (záloha do `users/{uid}/vault` a `vault_files` – jen šifrovaně; volá se ze `SyncService.syncNow`),
+  `vault_screen.dart` (založení/obnova heslem, odemčení otiskem, seznam), `vault_item_screen.dart`, `sos_screen.dart`
+  (SMS s polohou nouzovým kontaktům přes aplikaci Zprávy + karta pro záchranáře v angličtině).
+  Vault se zamkne se zámkem aplikace. „Smazat všechna data“ Vault nemaže (klíče prefs `vault_*`), mazání jen po položkách.
+  **Na emulátoru Vault nezakládat** – zapsal by se klíč s heslem do skutečného účtu uživatele.
 - `features/settings` (Nastavení: ozubené kolo na záložce Cesty – Záloha a účet, Smazat všechna data).
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);
   rozpad podle zemí je jen informační graf v Přehledu.
@@ -86,7 +95,7 @@ proto je důležitá spolehlivost offline a záloha dat.
 - `Tickets` (documentId, carrier, number, bookingRef, departAt, arriveAt, fromPlace, toPlace, qrData, barcodeData,
   barcodeFormat, passenger, seat, gate, price, currency)
 - `Expenses` (tripId, amount, currency, amountMain, fxRate, category, spentAt, country, receiptDocumentId?, source, note, receiptPath)
-- `Photos`, `VaultItems` (zatím nepoužité)
+- `VaultItems` (type, encryptedBlob = AES-GCM JSON {fields, photos}, expiresAt), `Photos` (zatím nepoužité)
 
 **Pravidlo:** každý zápis do tabulky musí nastavit `updatedAt = now` a `syncState = 'pending'`, mazání je jen soft delete.
 Jediná výjimka: Nastavení → „Smazat všechna data“ (`SyncService.wipeAllData`) – nejdřív smaže Firestore, pak natvrdo telefon

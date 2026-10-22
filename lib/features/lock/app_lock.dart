@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 
+import '../vault/vault_crypto.dart';
+
 /// Ověření otiskem / obličejem, případně PINem či gestem telefonu.
 /// Vrací true i tehdy, když telefon zámek nemá (to hlásí [deviceHasLock]).
 class DeviceAuth {
@@ -89,6 +91,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       final away = _pausedAt == null ? Duration.zero : DateTime.now().difference(_pausedAt!);
       _pausedAt = null;
       if (!_locked && away >= AppLockGate.graceAfterPause) {
+        VaultKeys.instance.lock();
         setState(() => _locked = true);
         _unlock();
       }

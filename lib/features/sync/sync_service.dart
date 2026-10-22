@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database.dart';
+import '../vault/vault_sync.dart';
 
 class SyncStatus {
   const SyncStatus({
@@ -228,7 +229,7 @@ class SyncService {
     for (final t in _tables) {
       n += (await t.pending()).length;
     }
-    return n;
+    return n + await vaultPendingCount(db);
   }
 
   Future<void> syncIfPending() async {
@@ -252,6 +253,7 @@ class SyncService {
       await _push(user.uid);
       await _pull(user.uid);
       await _retryMissingFiles(user.uid);
+      await syncVault(db, user.uid);
     } catch (e) {
       error = e.toString();
     }

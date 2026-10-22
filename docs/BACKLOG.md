@@ -26,7 +26,9 @@
 3. ~~Nahrávání PDF~~ – uživatel nechce, stačí fotky a screenshoty.
 3b. **Bezpečnost** ✔ šifrovaná DB, zámek aplikace (biometrie/PIN), smazání potvrzené ověřením.
    Zbývá: šifrovat i fotky dokladů a zálohu ve Firestore (stejný přístup jako Vault), skrýt náhled v přehledu aplikací (FLAG_SECURE).
-4. **Travel Vault** (pas, víza, očkování, pojištění, nouzové kontakty, ambasády): šifrovaně (AES‑GCM, klíč v Android Keystore, odemknutí biometrií), funguje offline,
+4. ✔ **Travel Vault** (hotovo: šifrovaně, heslo Vaultu pro obnovu, mazání po položkách, SOS = SMS s polohou + karta
+   pro záchranáře). Zbývá: upozornění (notifikace) před koncem platnosti pasu/víza/pojištění, změna hesla Vaultu,
+   ambasády. Původní zadání: (pas, víza, očkování, pojištění, nouzové kontakty, ambasády): šifrovaně (AES‑GCM, klíč v Android Keystore, odemknutí biometrií), funguje offline,
    zálohování jen zašifrovaných dat, **nikdy** ne do AI. Tlačítko SOS s kontakty.
    Mazání ve Vaultu **po jednotlivých položkách** (uživatel nechce hromadně smazat např. pas nebo řidičák; pojištění smazat může).
    „Smazat všechna data“ v Nastavení Vault nemaže.

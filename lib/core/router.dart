@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,19 +14,15 @@ import '../features/money/money_screen.dart';
 import '../features/places/places_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/share_intake/share_place_screen.dart';
-import '../features/shell/placeholder_screen.dart';
 import '../features/sync/sync_screen.dart';
 import '../features/shell/shell_scaffold.dart';
 import '../features/trips/trip_detail_screen.dart';
 import '../features/trips/trips_list_screen.dart';
+import '../features/vault/vault_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authStateProvider);
 
-  GoRoute tab(String path, String title, IconData icon) => GoRoute(
-        path: path,
-        builder: (context, state) => PlaceholderScreen(title: title, icon: icon),
-      );
 
   return GoRouter(
     initialLocation: '/trips',
@@ -110,7 +105,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               ],
             ),
           ]),
-          StatefulShellBranch(routes: [tab('/vault', 'Vault', Icons.lock)]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/vault', builder: (context, state) => const VaultScreen()),
+          ]),
         ],
       ),
     ],

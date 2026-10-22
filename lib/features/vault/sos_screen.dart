@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../../core/geocode.dart';
+import 'emergency_numbers.dart';
 import 'vault_repository.dart';
 import '../../l10n/tr.dart';
 
@@ -23,6 +25,7 @@ class _SosScreenState extends ConsumerState<SosScreen> {
   Position? _pos;
   String? _posError;
   bool _locating = false;
+  String? _country; // země podle polohy (kvůli tísňovým číslům), uživatel ji může změnit
 
   @override
   void initState() {
@@ -51,6 +54,10 @@ class _SosScreenState extends ConsumerState<SosScreen> {
             accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 20)),
       );
       if (mounted) setState(() => _pos = p);
+      if (_country == null) {
+        final c = await reverseCountry(p.latitude, p.longitude);
+        if (mounted && c != null) setState(() => _country = c);
+      }
     } catch (e) {
       if (mounted) setState(() => _posError = _pos == null ? '$e' : null);
     }
@@ -112,6 +119,11 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+              _EmergencyCard(
+                country: _country,
+                onPick: (c) => setState(() => _country = c),
+              ),
+              const SizedBox(height: 12),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
@@ -133,10 +145,20 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.person),
                     title: Text(c.title),
-                    subtitle: Text([
-                      if (c.fields['relation']?.isNotEmpty == true) c.fields['relation']!,
-                      c.fields['phone']!,
-                    ].join(' · ')),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text([
+                          if (c.fields['relation']?.isNotEmpty == true) c.fields['relation']!,
+                          c.fields['phone']!,
+                        ].join(' · ')),
+                        // bez mezinárodní předvolby se z ciziny nedovoláš ani nepošleš SMS
+                        if (!c.fields['phone']!.trim().startsWith('+') &&
+                            !c.fields['phone']!.trim().startsWith('00'))
+                          Text(tr('Chybí předvolba (např. +420) – z ciziny by se číslo nedovolalo.'),
+                              style: const TextStyle(color: Colors.orange)),
+                      ],
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -278,6 +300,76 @@ class RescuerCard extends StatelessWidget {
                   style: TextStyle(color: Colors.black54)),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tísňová čísla země, kde právě jsi (podle polohy), s možností vybrat zemi ručně.
+class _EmergencyCard extends StatelessWidget {
+  const _EmergencyCard({required this.country, required this.onPick});
+  final String? country;
+  final ValueChanged<String> onPick;
+
+  Future<void> _pick(BuildContext context) async {
+    final names = emergencyNumbers.keys.toList()..sort();
+    final c = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [for (final n in names) ListTile(title: Text(n), onTap: () => Navigator.pop(ctx, n))],
+        ),
+      ),
+    );
+    if (c != null) onPick(c);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final numbers = emergencyNumbers[country] ?? const [(EmergencyKind.general, '112')];
+    return Card(
+      color: Colors.red.shade900.withValues(alpha: 0.15),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.local_phone, color: Colors.red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  country == null
+                      ? tr('Tísňová čísla')
+                      : tr('Tísňová čísla – {country}', {'country': country}),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton(onPressed: () => _pick(context), child: Text(tr('Jiná země'))),
+            ]),
+            if (country == null || !emergencyNumbers.containsKey(country))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(tr('112 funguje z mobilu v EU a v mnoha dalších zemích.'),
+                    style: Theme.of(context).textTheme.bodySmall),
+              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final (kind, number) in numbers)
+                  FilledButton.tonalIcon(
+                    onPressed: () => launchUrl(Uri(scheme: 'tel', path: number)),
+                    icon: const Icon(Icons.call),
+                    label: Text('${emergencyLabel(kind)} $number'),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

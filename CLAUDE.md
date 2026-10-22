@@ -113,7 +113,16 @@ proto je důležitá spolehlivost offline a záloha dat.
   (fmtDate/fmtDay/fmtTime), router (úvodní záložka), zámek, upozornění, mapa. Změna → `_onSettings` v `app.dart` překreslí celý strom.
   Začátek týdne: `core/week_start_localizations.dart` – **generovaný** obal MaterialLocalizations (`python tool/gen_week_start.py`).
   Výchozí měna: `ExpenseRepository.changeMainCurrency` přepočte všechny cesty (rozpočet dnešním kurzem, výdaje kurzem ze dne výdaje).
-  Jazyk: zatím jen kalendáře (flutter_localizations) a názvy na mapě; **překlad textů aplikace (cs, en, de, es) je další krok**.
+- **Překlad (cs, en, de, es)**: `lib/l10n/tr.dart` → `tr('český text', {'x': …})`, klíčem je čeština. Překlady se píší do
+  `tool/translations_src.py` a generují `python tool/gen_translations.py` (vytvoří `lib/l10n/en|de|es.dart`, hlídá chybějící
+  texty a proměnné `{x}`). Nové texty v kódu vždy obalit `tr()`; kontrola nepřeložených: `python tool/find_suspects.py`.
+  Data (názvy zemí, slova pro OCR, karta pro záchranáře) se nepřekládají. Pomůcky jednorázového převodu: `tool/wrap_strings.py`,
+  `tool/fix_const.py`. Popisky typů/polí Vaultu se překládají v getteru `label`.
+- **Web** (`website/`): angličtina v kořeni = zdroj, `python tool/build_website.py` vytvoří `website/cs|de|es/` podle
+  `tool/website_i18n.py` (přepínač jazyků, hreflang). Po úpravě anglického textu doplnit překlad, jinak build skončí chybou.
+  Zveřejnění: `firebase deploy --only hosting` (jen se souhlasem uživatele).
+- SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
+- Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);
   rozpad podle zemí je jen informační graf v Přehledu.
 - `features/trips` (cesty + plán dne + ubytování od–do + čas + upozornění), `places`, `share_intake` (Android Share Intent z Google Map),

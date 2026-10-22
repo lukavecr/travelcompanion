@@ -627,6 +627,20 @@ T = {
 'V jazyce aplikace': ('In the app language', 'In der App-Sprache', 'En el idioma de la app'),
 'V jazyce aplikace (Tokyo, Hanoi…)': ('In the app language (Tokyo, Hanoi…)', 'In der App-Sprache (Tokio, Hanoi…)', 'En el idioma de la app (Tokio, Hanói…)'),
 'Odkaz vede na:': ('The link leads to:', 'Der Link führt zu:', 'El enlace lleva a:'),
+# --- tísňová čísla ---
+'Tísňová linka': ('Emergency', 'Notruf', 'Emergencias'),
+'Policie': ('Police', 'Polizei', 'Policía'),
+'Záchranka': ('Ambulance', 'Rettung', 'Ambulancia'),
+'Hasiči': ('Fire', 'Feuerwehr', 'Bomberos'),
+'Turistická policie': ('Tourist police', 'Touristenpolizei', 'Policía turística'),
+'Tísňová čísla': ('Emergency numbers', 'Notrufnummern', 'Números de emergencia'),
+'Tísňová čísla – {country}': ('Emergency numbers – {country}', 'Notrufnummern – {country}', 'Números de emergencia – {country}'),
+'Jiná země': ('Other country', 'Anderes Land', 'Otro país'),
+'112 funguje z mobilu v EU a v mnoha dalších zemích.': ('112 works from mobiles in the EU and many other countries.', '112 funktioniert vom Handy in der EU und vielen anderen Ländern.', 'El 112 funciona desde el móvil en la UE y en muchos otros países.'),
+'Chybí předvolba (např. +420) – z ciziny by se číslo nedovolalo.': (
+    'Country code missing (e.g. +420) – the number would not work from abroad.',
+    'Ländervorwahl fehlt (z. B. +49) – aus dem Ausland wäre die Nummer nicht erreichbar.',
+    'Falta el prefijo del país (p. ej. +34): desde el extranjero el número no funcionaría.'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

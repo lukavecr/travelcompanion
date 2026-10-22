@@ -102,6 +102,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   /// Změna nastavení: překreslit celou aplikaci (formáty data, měna…), stav obrazovek zůstává.
   void _onSettings() {
     if (!mounted) return;
+    ReminderService.reschedule(); // texty upozornění v novém jazyce / nový čas
     setState(() {});
     void mark(Element e) {
       e.markNeedsBuild();

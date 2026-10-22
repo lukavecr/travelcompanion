@@ -261,7 +261,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return [
       _tile(Icons.language, tr('Jazyk'), AppSettings.languages[st.language], () async {
         final v = await _choose(c, tr('Jazyk aplikace'), AppSettings.languages, st.language,
-            note: tr('Překlad všech textů aplikace připravuji. ' 'Zatím se podle jazyka mění kalendáře a názvy na mapě.'));
+            note: tr('Názvy zemí a obsah, který jsi zadal, zůstávají tak, jak jsou.'));
         if (v != null) await st.setLanguage(v);
       }),
       _tile(Icons.brightness_6, tr('Barevný motiv'), themes[st.themeMode], () async {

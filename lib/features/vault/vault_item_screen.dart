@@ -170,7 +170,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
               ),
               _AddPhoto(
                 icon: Icons.photo_library,
-                label: 'Z galerie',
+                label: tr('Z galerie'),
                 onTap: _busy ? null : () => _addPhoto(ImageSource.gallery),
               ),
             ],

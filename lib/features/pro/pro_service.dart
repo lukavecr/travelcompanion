@@ -27,7 +27,7 @@ class ProService extends ChangeNotifier {
 
   /// SHA-256 e-mailů majitele (Pro napořád, bez nákupu). E-mail sám v aplikaci není.
   static const _ownerHashes = {
-    'f08b1b9d6587d1e90304264b292c5ccfaf07796b52dfd4096279b751bdd615a3', // Roman – soukromý e-mail (odebrat, až se aplikace přepne na nový)
+    'f08b1b9d6587d1e90304264b292c5ccfaf07796b52dfd4096279b751bdd615a3', // Roman – přihlášení do aplikace (uživatelský účet)
     'b7b5618c1153d20c7ac84bf0274106ac281804d32ea4ea84bda973ee96c05d36', // lrtechcz – e-mail pro aplikaci
   };
 

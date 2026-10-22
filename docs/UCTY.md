@@ -44,6 +44,7 @@ Pak Claude na PC: `firebase logout` + `firebase login` novým účtem (otevře s
 ### 6. Doména (pokud ji koupíte)
 - Registrovat na nový e-mail.
 
-## Rozhodnout
-- **Přihlášení v aplikaci**: vaše cestovní data jsou teď pod účtem se soukromým e-mailem. Buď zůstane (je to účet
-  uživatele, ne vývojáře), nebo se v aplikaci přidá „Změnit e-mail“ a data se přesunou s ním.
+## Rozhodnuto
+- **Přihlášení v aplikaci zůstává na soukromém e-mailu** (Roman = běžný uživatel aplikace). Je to účet ve Firebase
+  Authentication, nezávislý na tom, kdo projekt spravuje. Odebrání soukromého účtu z členů projektu přihlášení nevadí.
+- Soukromý Google účet (Gmail) se **nemaže** – jen přestane být správcem projektu.

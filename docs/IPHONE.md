@@ -16,20 +16,12 @@ a do iPhonu ji z tohoto PC nahraje program **Sideloadly** s tvým běžným Appl
 4. Napiš Claudovi svoje uživatelské jméno na GitHubu. Claude kód nahraje
    (otevře se okno prohlížeče s přihlášením na GitHub – potvrď ho).
 
-### 2. Tajné nastavení Firebase
-Soubor s nastavením Firebase se na GitHub nenahrává, vloží se jako „secret“.
-1. Na GitHubu v repozitáři: **Settings → Secrets and variables → Actions → New repository secret**
-2. Name: `FIREBASE_OPTIONS_DART`
-3. Secret: celý obsah souboru `C:\dev\travelcompanion\build\firebase_options.base64.txt`
-   (otevři v Poznámkovém bloku, Ctrl+A, Ctrl+C, vlož)
-4. **Add secret**
-
-### 3. Sideloadly na PC
+### 2. Sideloadly na PC
 1. Nainstaluj **iTunes** a **iCloud** z webu Apple (ne z Microsoft Store):
    <https://www.apple.com/itunes/> – Sideloadly je potřebuje kvůli ovladačům iPhonu.
 2. Stáhni a nainstaluj Sideloadly z <https://sideloadly.io>.
 
-### 4. iPhone
+### 3. iPhone
 1. Připoj iPhone kabelem k PC, na iPhonu potvrď **Důvěřovat tomuto počítači**.
 2. (Po první instalaci) **Nastavení → Soukromí a zabezpečení → Režim pro vývojáře → zapnout** (iPhone se restartuje).
 

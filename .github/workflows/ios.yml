@@ -20,15 +20,6 @@ jobs:
           flutter-version: 3.47.7
           cache: true
 
-      - name: Firebase konfigurace (z tajných nastavení repozitáře)
-        env:
-          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
-        run: |
-          if [ -z "$FIREBASE_OPTIONS_DART" ]; then
-            echo "::error::Chybí secret FIREBASE_OPTIONS_DART (viz docs/IPHONE.md)"; exit 1
-          fi
-          echo "$FIREBASE_OPTIONS_DART" | base64 --decode > lib/firebase_options.dart
-
       - run: flutter pub get
 
       - name: Sestavit pro iPhone (bez podpisu – podepíše Sideloadly)

@@ -12,7 +12,8 @@ proto je důležitá spolehlivost offline a záloha dat.
 - Prostředí: Windows 11, PowerShell, projekt `C:\dev\travelcompanion`, Android emulátor
   (`emulator-5554`, Pixel 8) a skutečný telefon Xiaomi (arm64-v8a).
 - Před většími změnami `git commit` (projekt nemusí být v gitu – když není, udělej `git init` a první commit).
-- Nikdy nevypisuj do odpovědí tajné klíče. (`google-services.json` / `firebase_options.dart` jsou jen identifikátory, ale necommituj je na veřejný repozitář.)
+- Nikdy nevypisuj do odpovědí tajné klíče. (`google-services.json` / `firebase_options.dart` jsou jen identifikátory; `firebase_options.dart`
+  je commitnutý v soukromém repozitáři – repozitář proto nikdy nezveřejňuj.)
 
 ## Pevná omezení (uživatel NEMÁ a NECHCE zadávat platební kartu)
 - Žádný Google Maps SDK, žádný Firebase Storage, žádný Blaze plán / Cloud Functions, žádné placené AI API.
@@ -56,8 +57,8 @@ proto je důležitá spolehlivost offline a záloha dat.
   Build se stahováním knihoven spouštěj mimo sandbox nástroje.
 - **iPhone** (`docs/IPHONE.md`): sestavení jen na Macu → GitHub Actions `.github/workflows/ios.yml` (ruční spuštění,
   `flutter build ios --no-codesign` → `TravelCompanion.ipa`), instalace Sideloadly s bezplatným Apple ID (platí 7 dní).
-  `lib/firebase_options.dart` je v gitignore → na GitHubu jako secret `FIREBASE_OPTIONS_DART` (base64; připravený soubor
-  `build/firebase_options.base64.txt`). iOS app je ve Firebase už zaregistrovaná (iosBundleId v firebase_options).
+  `lib/firebase_options.dart` je v **soukromém** repozitáři github.com/lukavecr/travelcompanion (rozhodnutí uživatele –
+  bez secretu); repozitář nesmí být veřejný. `google-services.json` zůstává mimo git. iOS app je ve Firebase už zaregistrovaná (iosBundleId v firebase_options).
   `ios/Podfile`: iOS 15.5 (ML Kit), `GoogleMLKit/TextRecognitionJapanese`. Info.plist: popisy oprávnění (kamera, fotky,
   poloha, Face ID). Sdílení z Map na iOS nejde (Share Extension + App Groups = placený účet) → tlačítko „Vložit odkaz“ na Mapě.
   SMS na iOS: `sms:/open?addresses=…&body=…`.

@@ -15,6 +15,11 @@ proto je důležitá spolehlivost offline a záloha dat.
 - Nikdy nevypisuj do odpovědí tajné klíče. (`google-services.json` / `firebase_options.dart` jsou jen identifikátory; `firebase_options.dart`
   je commitnutý v soukromém repozitáři – repozitář proto nikdy nezveřejňuj.)
 
+## Kontakt a účty
+- Pro aplikaci a všechno kolem ní používá uživatel **lrtechcz@gmail.com** (web, Nominatim User-Agent, git autor, Google Play,
+  Firebase, GitHub). Soukromý e-mail už nikam nepřidávat. Owner Pro: `_ownerHashes` v `pro_service.dart` (starý hash odebrat,
+  až se přihlášení v aplikaci přepne na nový e-mail – Záloha a účet → Změnit e-mail účtu).
+
 ## Pevná omezení (uživatel NEMÁ a NECHCE zadávat platební kartu)
 - Žádný Google Maps SDK, žádný Firebase Storage, žádný Blaze plán / Cloud Functions, žádné placené AI API.
 - Proto: čtení dokladů **na zařízení** (Google ML Kit – QR/čárové kódy + OCR latinka i japonština),

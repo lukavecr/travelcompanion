@@ -100,6 +100,12 @@ class SyncScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
+                icon: const Icon(Icons.alternate_email),
+                label: const Text('Změnit e-mail účtu'),
+                onPressed: s.running ? null : () => _changeEmail(context),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
                 icon: const Icon(Icons.logout),
                 label: const Text('Odhlásit se'),
                 onPressed: s.running
@@ -122,6 +128,73 @@ class SyncScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Změna e-mailu účtu: data i Pro zůstávají (stejný účet), mění se jen přihlašovací adresa.
+/// Firebase pošle na novou adresu potvrzovací odkaz; změna platí až po jeho otevření.
+Future<void> _changeEmail(BuildContext context) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null || user.email == null) return;
+  final emailC = TextEditingController();
+  final passC = TextEditingController();
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Změnit e-mail účtu'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Teď: ${user.email}'),
+          const SizedBox(height: 12),
+          TextField(
+            controller: emailC,
+            keyboardType: TextInputType.emailAddress,
+            autofocus: true,
+            decoration: const InputDecoration(
+                labelText: 'Nový e-mail', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: passC,
+            obscureText: true,
+            decoration: const InputDecoration(
+                labelText: 'Současné heslo', border: OutlineInputBorder()),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Zrušit')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Změnit')),
+      ],
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  final newEmail = emailC.text.trim();
+  String msg;
+  try {
+    await user.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: user.email!, password: passC.text));
+    await user.verifyBeforeUpdateEmail(newEmail);
+    msg = 'Na $newEmail přišel e-mail s odkazem. Po jeho otevření se změna dokončí '
+        'a přihlásíš se novou adresou (heslo zůstává).';
+  } on FirebaseAuthException catch (e) {
+    msg = switch (e.code) {
+      'wrong-password' || 'invalid-credential' => 'Špatné heslo.',
+      'invalid-email' => 'Neplatný e-mail.',
+      'email-already-in-use' => 'Na tuhle adresu už je jiný účet.',
+      'network-request-failed' => 'Nejsi připojený k internetu.',
+      _ => 'Nepovedlo se (${e.code}).',
+    };
+  }
+  if (context.mounted) {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: Text(msg),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
       ),
     );
   }

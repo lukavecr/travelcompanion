@@ -15,6 +15,7 @@ import 'doc_types.dart';
 import 'document_repository.dart';
 import 'guess.dart';
 import 'scan_service.dart';
+import '../../l10n/tr.dart';
 
 /// Nový doklad (z naskenovaného obrázku) i úprava existujícího dokladu.
 class NewDocumentScreen extends ConsumerStatefulWidget {
@@ -102,7 +103,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     _bcbp = found;
     if (found != null) {
       _type = 'flight';
-      _title.text = 'Let ${found.flight} ${found.from} → ${found.to}';
+      _title.text = tr('Let {flight} {from} → {to}', {'flight': found.flight, 'from': found.from, 'to': found.to});
       _number.text = found.flight;
       _from.text = found.from;
       _to.text = found.to;
@@ -191,7 +192,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     setState(() => _saving = true);
     final repo = ref.read(documentRepositoryProvider);
     final title = _title.text.trim().isEmpty
-        ? (docTypes[_type] ?? 'Doklad')
+        ? (docTypes[_type] ?? tr('Doklad'))
         : _title.text.trim();
     final departAt = _date == null
         ? null
@@ -266,12 +267,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     final planned = tripCountries(currentTrip);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_editing ? 'Upravit doklad' : 'Nový doklad')),
+      appBar: AppBar(title: Text(_editing ? tr('Upravit doklad') : tr('Nový doklad'))),
       body: trips.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: Text('Nejdřív vytvoř cestu v záložce Cesty.',
+                child: Text(tr('Nejdřív vytvoř cestu v záložce Cesty.'),
                     textAlign: TextAlign.center),
               ),
             )
@@ -279,7 +280,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 GestureDetector(
-                  onTap: () => openFullImage(context, 'Doklad', scan.path),
+                  onTap: () => openFullImage(context, tr('Doklad'), scan.path),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
@@ -287,8 +288,8 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       child: Image.file(
                         File(scan.path),
                         fit: BoxFit.cover,
-                        errorBuilder: (context, e, s) => const Center(
-                            child: Text('Obrázek není k dispozici')),
+                        errorBuilder: (context, e, s) => Center(
+                            child: Text(tr('Obrázek není k dispozici'))),
                       ),
                     ),
                   ),
@@ -297,13 +298,13 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 if (!_editing)
                   Text(
                     _bcbp != null
-                        ? 'Rozpoznán palubní lístek – údaje jsou předvyplněné.'
+                        ? tr('Rozpoznán palubní lístek – údaje jsou předvyplněné.')
                         : scan.fields.isNotEmpty || scan.codes.isNotEmpty
-                            ? 'Něco se rozpoznalo, údaje zkontroluj.'
-                            : 'Nic se nepodařilo spolehlivě přečíst, údaje doplň ručně.',
+                            ? tr('Něco se rozpoznalo, údaje zkontroluj.')
+                            : tr('Nic se nepodařilo spolehlivě přečíst, údaje doplň ručně.'),
                   ),
                 const SizedBox(height: 16),
-                Text('Typ', style: Theme.of(context).textTheme.titleSmall),
+                Text(tr('Typ'), style: Theme.of(context).textTheme.titleSmall),
                 Wrap(
                   spacing: 8,
                   children: [
@@ -316,7 +317,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('Do které cesty',
+                Text(tr('Do které cesty'),
                     style: Theme.of(context).textTheme.titleSmall),
                 Wrap(
                   spacing: 8,
@@ -332,12 +333,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _title,
-                  decoration: const InputDecoration(labelText: 'Název'),
+                  decoration: InputDecoration(labelText: tr('Název')),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _country,
-                  decoration: const InputDecoration(labelText: 'Země'),
+                  decoration: InputDecoration(labelText: tr('Země')),
                 ),
                 if (planned.isNotEmpty)
                   Wrap(
@@ -357,14 +358,14 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       Expanded(
                         child: TextField(
                           controller: _from,
-                          decoration: const InputDecoration(labelText: 'Odkud'),
+                          decoration: InputDecoration(labelText: tr('Odkud')),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
                           controller: _to,
-                          decoration: const InputDecoration(labelText: 'Kam'),
+                          decoration: InputDecoration(labelText: tr('Kam')),
                         ),
                       ),
                     ],
@@ -376,15 +377,15 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                         child: TextField(
                           controller: _carrier,
                           decoration:
-                              const InputDecoration(labelText: 'Dopravce'),
+                              InputDecoration(labelText: tr('Dopravce')),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
                           controller: _number,
-                          decoration: const InputDecoration(
-                              labelText: 'Číslo letu / spoje'),
+                          decoration: InputDecoration(
+                              labelText: tr('Číslo letu / spoje')),
                         ),
                       ),
                     ],
@@ -395,16 +396,16 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       Expanded(
                         child: TextField(
                           controller: _seat,
-                          decoration: const InputDecoration(
-                              labelText: 'Sedadlo / vůz'),
+                          decoration: InputDecoration(
+                              labelText: tr('Sedadlo / vůz')),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
                           controller: _gate,
-                          decoration: const InputDecoration(
-                              labelText: 'Gate / nástupiště'),
+                          decoration: InputDecoration(
+                              labelText: tr('Gate / nástupiště')),
                         ),
                       ),
                     ],
@@ -413,14 +414,14 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 ],
                 TextField(
                   controller: _passenger,
-                  decoration: const InputDecoration(
-                      labelText: 'Jméno (cestující / zákazník)'),
+                  decoration: InputDecoration(
+                      labelText: tr('Jméno (cestující / zákazník)')),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _ref,
                   decoration:
-                      const InputDecoration(labelText: 'Číslo rezervace'),
+                      InputDecoration(labelText: tr('Číslo rezervace')),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -428,7 +429,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.event),
-                        label: Text(_date == null ? 'Datum' : fmtDate(_date!)),
+                        label: Text(_date == null ? tr('Datum') : fmtDate(_date!)),
                         onPressed: () async {
                           final d = await showDatePicker(
                             context: context,
@@ -450,7 +451,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.schedule),
                         label: Text(
-                            _minutes == null ? 'Čas' : fmtTime(_minutes!)),
+                            _minutes == null ? tr('Čas') : fmtTime(_minutes!)),
                         onPressed: () async {
                           final start = _minutes ?? 540;
                           final t = await showTimePicker(
@@ -469,13 +470,13 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 if (_date != null && !_editing)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Přidat do plánu dne'),
+                    title: Text(tr('Přidat do plánu dne')),
                     value: _addToPlan,
                     onChanged: (v) => setState(() => _addToPlan = v),
                   ),
                 if (!_editing && scan.codes.length > 1) ...[
                   const SizedBox(height: 8),
-                  Text('Který kód zobrazit',
+                  Text(tr('Který kód zobrazit'),
                       style: Theme.of(context).textTheme.titleSmall),
                   Wrap(
                     spacing: 8,
@@ -495,11 +496,11 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: _saving ? null : _save,
-                  child: Text(_editing ? 'Uložit změny' : 'Uložit doklad'),
+                  child: Text(_editing ? tr('Uložit změny') : tr('Uložit doklad')),
                 ),
                 const SizedBox(height: 12),
                 ExpansionTile(
-                  title: const Text('Rozpoznaný text (pro kontrolu)'),
+                  title: Text(tr('Rozpoznaný text (pro kontrolu)')),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(12),

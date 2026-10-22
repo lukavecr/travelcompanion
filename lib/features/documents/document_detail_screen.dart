@@ -10,6 +10,7 @@ import 'bcbp.dart';
 import 'doc_types.dart';
 import 'docs_list_screen.dart';
 import 'document_repository.dart';
+import '../../l10n/tr.dart';
 
 class _Code {
   const _Code(this.barcode, this.kind);
@@ -85,10 +86,10 @@ Widget _codeView(String code, _Code c0) {
         drawText: c0.kind == 'linear',
         color: Colors.black,
         backgroundColor: Colors.white,
-        errorBuilder: (context, error) => const Padding(
+        errorBuilder: (context, error) => Padding(
           padding: EdgeInsets.all(16),
           child: Text(
-            'Kód se nepodařilo znovu vykreslit, použij originál.',
+            tr('Kód se nepodařilo znovu vykreslit, použij originál.'),
             style: TextStyle(color: Colors.black),
           ),
         ),
@@ -197,7 +198,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
     final barcode = hasCode ? _barcodeFor(t?.barcodeFormat, code) : null;
     final canRender = hasCode && _canRender(barcode, code);
     final bcbp = hasCode ? parseBcbp(code) : null;
-    final title = view.doc.title ?? docTypes[view.doc.type] ?? 'Doklad';
+    final title = view.doc.title ?? docTypes[view.doc.type] ?? tr('Doklad');
     final showOriginal = _showOriginal ?? !canRender;
 
     String? pick(String? saved, String? fromCode) =>
@@ -225,16 +226,16 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                 return;
               }
               if (choice == 'delete' &&
-                  await confirm(context, 'Smazat doklad?')) {
+                  await confirm(context, tr('Smazat doklad?'))) {
                 await ref
                     .read(documentRepositoryProvider)
                     .deleteDocument(view.doc.id);
                 if (context.mounted) context.go('/docs');
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'edit', child: Text('Upravit')),
-              PopupMenuItem(value: 'delete', child: Text('Smazat')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'edit', child: Text(tr('Upravit'))),
+              PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
             ],
           ),
         ],
@@ -245,15 +246,15 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
           if (canRender)
             Center(
               child: SegmentedButton<bool>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: false,
-                    label: Text('Kód'),
+                    label: Text(tr('Kód')),
                     icon: Icon(Icons.qr_code_2),
                   ),
                   ButtonSegment(
                     value: true,
-                    label: Text('Originál'),
+                    label: Text(tr('Originál')),
                     icon: Icon(Icons.image),
                   ),
                 ],
@@ -263,10 +264,10 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
               ),
             )
           else if (hasCode)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 4),
               child: Text(
-                'Tento kód nejde znovu vykreslit, proto je zobrazen originál.',
+                tr('Tento kód nejde znovu vykreslit, proto je zobrazen originál.'),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -281,10 +282,10 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                       child: Image.file(
                         File(view.doc.localPath),
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stack) => const Padding(
+                        errorBuilder: (context, error, stack) => Padding(
                           padding: EdgeInsets.all(24),
                           child: Text(
-                              'Obrázek se zatím nepodařilo stáhnout ze zálohy.'),
+                              tr('Obrázek se zatím nepodařilo stáhnout ze zálohy.')),
                         ),
                       ),
                     ),
@@ -299,24 +300,24 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                   ),
           ),
           const SizedBox(height: 6),
-          const Center(child: Text('Klepnutím zvětšíš na celou obrazovku')),
+          Center(child: Text(tr('Klepnutím zvětšíš na celou obrazovku'))),
           const SizedBox(height: 16),
-          _row('Typ', docTypes[view.doc.type]),
-          _row('Cesta', view.trip.name),
-          _row('Datum', t?.departAt == null ? null : docDateLabel(t!.departAt)),
-          _row('Země', view.doc.country),
-          _row('Cestující / jméno', pick(t?.passenger, bcbp?.name)),
-          _row('Sedadlo / vůz', pick(t?.seat, bcbp?.seat)),
-          _row('Gate / nástupiště', t?.gate),
-          _row('Odkud', pick(t?.fromPlace, bcbp?.from)),
-          _row('Kam', pick(t?.toPlace, bcbp?.to)),
-          _row('Dopravce', pick(t?.carrier, bcbp?.carrier)),
-          _row('Číslo', pick(t?.number, bcbp?.flight)),
-          _row('Rezervace', pick(t?.bookingRef, bcbp?.pnr)),
+          _row(tr('Typ'), docTypes[view.doc.type]),
+          _row(tr('Cesta'), view.trip.name),
+          _row(tr('Datum'), t?.departAt == null ? null : docDateLabel(t!.departAt)),
+          _row(tr('Země'), view.doc.country),
+          _row(tr('Cestující / jméno'), pick(t?.passenger, bcbp?.name)),
+          _row(tr('Sedadlo / vůz'), pick(t?.seat, bcbp?.seat)),
+          _row(tr('Gate / nástupiště'), t?.gate),
+          _row(tr('Odkud'), pick(t?.fromPlace, bcbp?.from)),
+          _row(tr('Kam'), pick(t?.toPlace, bcbp?.to)),
+          _row(tr('Dopravce'), pick(t?.carrier, bcbp?.carrier)),
+          _row(tr('Číslo'), pick(t?.number, bcbp?.flight)),
+          _row(tr('Rezervace'), pick(t?.bookingRef, bcbp?.pnr)),
           if (hasCode)
             ExpansionTile(
               tilePadding: EdgeInsets.zero,
-              title: const Text('Data kódu'),
+              title: Text(tr('Data kódu')),
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8),

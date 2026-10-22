@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/tr.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Travel Companion AI',
+                  Text(tr('Travel Companion AI'),
                       style: Theme.of(context).textTheme.headlineMedium,
                       textAlign: TextAlign.center),
                   const SizedBox(height: 32),
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Heslo'),
+                    decoration: InputDecoration(labelText: tr('Heslo')),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
@@ -80,12 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   FilledButton(
                     onPressed: _busy ? null : _signIn,
-                    child: const Text('Přihlásit se'),
+                    child: Text(tr('Přihlásit se')),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: _busy ? null : _register,
-                    child: const Text('Vytvořit účet'),
+                    child: Text(tr('Vytvořit účet')),
                   ),
                 ],
               ),

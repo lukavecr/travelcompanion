@@ -5,6 +5,7 @@ import 'package:local_auth_android/local_auth_android.dart';
 
 import '../../core/app_settings.dart';
 import '../vault/vault_crypto.dart';
+import '../../l10n/tr.dart';
 
 /// Ověření otiskem / obličejem, případně PINem či gestem telefonu.
 /// Vrací true i tehdy, když telefon zámek nemá (to hlásí [deviceHasLock]).
@@ -34,11 +35,11 @@ class DeviceAuth {
       return await _auth.authenticate(
         localizedReason: reason,
         persistAcrossBackgrounding: true,
-        authMessages: const [
+        authMessages: [
           AndroidAuthMessages(
-            signInTitle: 'Travel Companion',
-            signInHint: 'Otisk prstu, obličej nebo PIN telefonu',
-            cancelButton: 'Zrušit',
+            signInTitle: tr('Travel Companion'),
+            signInHint: tr('Otisk prstu, obličej nebo PIN telefonu'),
+            cancelButton: tr('Zrušit'),
           ),
         ],
       );
@@ -103,7 +104,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       if (mounted) setState(() => _noDeviceLock = true);
       return;
     }
-    final ok = await DeviceAuth.confirm('Odemkni Travel Companion');
+    final ok = await DeviceAuth.confirm(tr('Odemkni Travel Companion'));
     if (!mounted) return;
     if (ok) {
       setState(() => _locked = false);
@@ -134,28 +135,27 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
                       Icon(Icons.lock_outline,
                           size: 72, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(height: 16),
-                      Text('Travel Companion je zamčená',
+                      Text(tr('Travel Companion je zamčená'),
                           style: Theme.of(context).textTheme.titleLarge,
                           textAlign: TextAlign.center),
                       const SizedBox(height: 8),
                       Text(
                         _noDeviceLock
-                            ? 'Telefon nemá nastavený zámek obrazovky. Pro ochranu dat si v Nastavení '
-                                'telefonu nastav PIN a otisk prstu.'
-                            : 'Odemkni otiskem prstu, obličejem nebo PINem telefonu.',
+                            ? tr('Telefon nemá nastavený zámek obrazovky. Pro ochranu dat si v Nastavení ' 'telefonu nastav PIN a otisk prstu.')
+                            : tr('Odemkni otiskem prstu, obličejem nebo PINem telefonu.'),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       if (_noDeviceLock)
                         OutlinedButton(
                           onPressed: () => setState(() => _locked = false),
-                          child: const Text('Pokračovat bez zámku'),
+                          child: Text(tr('Pokračovat bez zámku')),
                         )
                       else
                         FilledButton.icon(
                           onPressed: _unlock,
                           icon: const Icon(Icons.fingerprint),
-                          label: const Text('Odemknout'),
+                          label: Text(tr('Odemknout')),
                         ),
                     ],
                   ),

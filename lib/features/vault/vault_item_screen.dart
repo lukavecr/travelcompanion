@@ -11,6 +11,7 @@ import '../reminders/reminder_service.dart';
 import 'vault_repository.dart';
 import 'vault_sync.dart';
 import 'vault_types.dart';
+import '../../l10n/tr.dart';
 
 /// Nová položka nebo úprava (všechna pole podle typu + šifrované fotky).
 class VaultItemScreen extends ConsumerStatefulWidget {
@@ -101,7 +102,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
   Future<void> _delete() async {
     final e = widget.existing!;
     final ok = await confirm(context,
-        'Smazat „${e.title}“ (${_def.label}) včetně fotek? Smaže se i ze zálohy.');
+        tr('Smazat „{title}“ ({label}) včetně fotek? Smaže se i ze zálohy.', {'title': e.title, 'label': _def.label}));
     if (!ok) return;
     await ref.read(vaultRepositoryProvider).delete(e);
     _saved = true;
@@ -113,11 +114,11 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
     final editing = widget.existing != null;
     return Scaffold(
       appBar: AppBar(
-        title: Text(editing ? _def.label : 'Nové: ${_def.label}'),
+        title: Text(editing ? _def.label : tr('Nové: {label}', {'label': _def.label})),
         actions: [
           if (editing)
             IconButton(
-              tooltip: 'Smazat',
+              tooltip: tr('Smazat'),
               icon: const Icon(Icons.delete_outline),
               onPressed: _busy ? null : _delete,
             ),
@@ -147,7 +148,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
             const SizedBox(height: 12),
           ],
           const SizedBox(height: 8),
-          Text('Fotky (šifrovaně)', style: Theme.of(context).textTheme.titleSmall),
+          Text(tr('Fotky (šifrovaně)'), style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -164,7 +165,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
                 ),
               _AddPhoto(
                 icon: Icons.photo_camera,
-                label: 'Vyfotit',
+                label: tr('Vyfotit'),
                 onTap: _busy ? null : () => _addPhoto(ImageSource.camera),
               ),
               _AddPhoto(
@@ -178,7 +179,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
           FilledButton.icon(
             onPressed: _busy ? null : _save,
             icon: const Icon(Icons.save),
-            label: const Text('Uložit'),
+            label: Text(tr('Uložit')),
           ),
         ],
       ),
@@ -214,7 +215,7 @@ class _VaultItemScreenState extends ConsumerState<VaultItemScreen> {
             labelText: f.label,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              tooltip: 'Zavolat',
+              tooltip: tr('Zavolat'),
               icon: const Icon(Icons.call),
               onPressed: () {
                 final n = c.text.replaceAll(RegExp(r'[^0-9+]'), '');
@@ -291,7 +292,7 @@ class _PhotoThumb extends ConsumerWidget {
                     ),
                   )),
           onLongPress: () async {
-            if (await confirm(context, 'Odebrat fotku?')) onRemove();
+            if (await confirm(context, tr('Odebrat fotku?'))) onRemove();
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),

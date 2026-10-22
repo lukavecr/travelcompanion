@@ -10,6 +10,7 @@ import '../../data/database.dart';
 import '../share_intake/share_parser.dart';
 import '../trips/trip_repository.dart';
 import 'place_types.dart';
+import '../../l10n/tr.dart';
 
 /// Najde polohu místa podle názvu a uloží ji (souřadnice + země).
 Future<void> locatePlace(BuildContext context, WidgetRef ref, Place p) async {
@@ -30,7 +31,7 @@ Future<void> locatePlace(BuildContext context, WidgetRef ref, Place p) async {
       .setPlaceLocation(p.id, lat: r.lat, lng: r.lng, country: r.country);
   if (context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Poloha místa „${p.name}“ uložena')));
+        SnackBar(content: Text(tr('Poloha místa „{name}“ uložena', {'name': p.name}))));
   }
 }
 
@@ -75,7 +76,7 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
         if (r.coords != null) {
           found = GeoResult(
             name: r.name ?? widget.name ?? '',
-            address: r.address ?? 'Poloha z odkazu Google Map',
+            address: r.address ?? tr('Poloha z odkazu Google Map'),
             lat: r.coords!.lat,
             lng: r.coords!.lng,
             country: await reverseCountry(r.coords!.lat, r.coords!.lng),
@@ -116,15 +117,15 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
       setState(() {
         _results = r;
         _message = r.isEmpty
-            ? 'Nic nenalezeno. Zkus kratší nebo anglický název, nebo najdi místo na mapě a klepni na něj.'
+            ? tr('Nic nenalezeno. Zkus kratší nebo anglický název, nebo najdi místo na mapě a klepni na něj.')
             : approx
-                ? 'Přesně to nenašlo – ukazuji nejbližší shodu. Případně klepni do mapy na přesné místo.'
+                ? tr('Přesně to nenašlo – ukazuji nejbližší shodu. Případně klepni do mapy na přesné místo.')
                 : null;
       });
       if (r.isNotEmpty) _pick(r.first);
     } catch (_) {
       if (mounted) {
-        setState(() => _message = 'Hledání se nepovedlo – jsi připojený k internetu?');
+        setState(() => _message = tr('Hledání se nepovedlo – jsi připojený k internetu?'));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -146,7 +147,7 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
   Widget build(BuildContext context) {
     final picked = _picked;
     return Scaffold(
-      appBar: AppBar(title: const Text('Najít polohu')),
+      appBar: AppBar(title: Text(tr('Najít polohu'))),
       body: Column(
         children: [
           Padding(
@@ -156,7 +157,7 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _search(),
               decoration: InputDecoration(
-                labelText: 'Název místa, město, adresa',
+                labelText: tr('Název místa, město, adresa'),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
@@ -178,8 +179,8 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
                 ),
                 // ruční volba: klepnutí do mapy na přesné místo
                 onTap: (_, p) => setState(() => _picked = GeoResult(
-                      name: widget.name ?? 'Vybraný bod',
-                      address: 'Bod vybraný na mapě',
+                      name: widget.name ?? tr('Vybraný bod'),
+                      address: tr('Bod vybraný na mapě'),
                       lat: p.latitude,
                       lng: p.longitude,
                     )),
@@ -201,9 +202,9 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
               ],
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(16, 6, 16, 0),
-            child: Text('Tip: můžeš i klepnout do mapy na přesné místo.',
+            child: Text(tr('Tip: můžeš i klepnout do mapy na přesné místo.'),
                 style: TextStyle(fontSize: 13)),
           ),
           if (_message != null)
@@ -234,7 +235,7 @@ class _LocatePlaceScreenState extends State<LocatePlaceScreen> {
           child: FilledButton.icon(
             onPressed: picked == null ? null : () => Navigator.pop(context, picked),
             icon: const Icon(Icons.check),
-            label: Text(picked == null ? 'Vyber místo ze seznamu' : 'Použít „${picked.name}“'),
+            label: Text(picked == null ? tr('Vyber místo ze seznamu') : tr('Použít „{name}“', {'name': picked.name})),
           ),
         ),
       ),

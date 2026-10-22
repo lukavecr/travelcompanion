@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import 'vault_repository.dart';
+import '../../l10n/tr.dart';
 
 /// SOS: SMS s polohou nouzovým kontaktům + karta pro záchranáře (anglicky).
 /// Data bere z Vaultu (nouzové kontakty, zdravotní údaje, pojištění).
@@ -36,12 +37,12 @@ class _SosScreenState extends ConsumerState<SosScreen> {
     });
     try {
       if (!await Geolocator.isLocationServiceEnabled()) {
-        throw 'Zapni v telefonu Polohu (GPS).';
+        throw tr('Zapni v telefonu Polohu (GPS).');
       }
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        throw 'Aplikace nemá povolenou polohu.';
+        throw tr('Aplikace nemá povolenou polohu.');
       }
       final last = await Geolocator.getLastKnownPosition();
       if (last != null && mounted) setState(() => _pos = last);
@@ -59,10 +60,9 @@ class _SosScreenState extends ConsumerState<SosScreen> {
   String _smsText() {
     final p = _pos;
     final where = p == null
-        ? 'Polohu se nepodařilo zjistit.'
-        : 'Moje poloha: https://maps.google.com/?q=${p.latitude.toStringAsFixed(6)},${p.longitude.toStringAsFixed(6)} '
-            '(přesnost ±${p.accuracy.round()} m)';
-    return 'SOS – potřebuji pomoc. $where';
+        ? tr('Polohu se nepodařilo zjistit.')
+        : tr('Moje poloha: https://maps.google.com/?q={toStringAsFixed},{toStringAsFixed2} ' '(přesnost ±{round} m)', {'toStringAsFixed': p.latitude.toStringAsFixed(6), 'toStringAsFixed2': p.longitude.toStringAsFixed(6), 'round': p.accuracy.round()});
+    return tr('SOS – potřebuji pomoc. {where}', {'where': where});
   }
 
   Future<void> _sms(List<String> phones) async {
@@ -104,10 +104,10 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                           width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                       : Icon(_pos == null ? Icons.location_off : Icons.my_location),
                   title: Text(_pos == null
-                      ? (_locating ? 'Zjišťuji polohu…' : 'Poloha neznámá')
+                      ? (_locating ? tr('Zjišťuji polohu…') : tr('Poloha neznámá'))
                       : '${_pos!.latitude.toStringAsFixed(5)}, ${_pos!.longitude.toStringAsFixed(5)}'),
                   subtitle: Text(_posError ??
-                      (_pos == null ? '' : 'přesnost ±${_pos!.accuracy.round()} m')),
+                      (_pos == null ? '' : tr('přesnost ±{round} m', {'round': _pos!.accuracy.round()}))),
                   trailing: IconButton(icon: const Icon(Icons.refresh), onPressed: _locate),
                 ),
               ),
@@ -124,8 +124,8 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                     : () => _sms([for (final c in contacts) _phone(c.fields['phone']!)]),
                 icon: const Icon(Icons.sms),
                 label: Text(contacts.isEmpty
-                    ? 'Přidej nouzové kontakty do Vaultu'
-                    : 'Poslat SMS s polohou všem (${contacts.length})'),
+                    ? tr('Přidej nouzové kontakty do Vaultu')
+                    : tr('Poslat SMS s polohou všem ({length})', {'length': contacts.length})),
               ),
               const SizedBox(height: 8),
               for (final c in contacts)
@@ -146,7 +146,7 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                           onPressed: () => _sms([_phone(c.fields['phone']!)]),
                         ),
                         IconButton(
-                          tooltip: 'Zavolat',
+                          tooltip: tr('Zavolat'),
                           icon: const Icon(Icons.call),
                           onPressed: () => launchUrl(
                               Uri(scheme: 'tel', path: _phone(c.fields['phone']!))),
@@ -163,13 +163,11 @@ class _SosScreenState extends ConsumerState<SosScreen> {
                   builder: (_) => RescuerCard(items: items),
                 )),
                 icon: const Icon(Icons.medical_information),
-                label: const Text('Karta pro záchranáře (anglicky)'),
+                label: Text(tr('Karta pro záchranáře (anglicky)')),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Tip: tísňovou linku vytočíš i bez odemčení telefonu (tlačítko „Tísňové volání“ '
-                'na zamykací obrazovce). Zdravotní údaje si můžeš dát i do „Nouzových informací“ '
-                'v Nastavení telefonu – záchranáři je uvidí bez odemčení.',
+              Text(
+                tr('Tip: tísňovou linku vytočíš i bez odemčení telefonu (tlačítko „Tísňové volání“ ' 'na zamykací obrazovce). Zdravotní údaje si můžeš dát i do „Nouzových informací“ ' 'v Nastavení telefonu – záchranáři je uvidí bez odemčení.'),
               ),
             ],
           ),
@@ -240,12 +238,12 @@ class RescuerCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           row('Name', name, big: true),
-          row('Date of birth', birth == null ? null : fmtDate(birth)),
+          row(tr('Date of birth'), birth == null ? null : fmtDate(birth)),
           row('Nationality', f(passport, 'nationality')),
-          row('Blood type', f(med, 'bloodType'), big: true),
+          row(tr('Blood type'), f(med, 'bloodType'), big: true),
           row('Allergies', f(med, 'allergies')),
           row('Medications', f(med, 'medications')),
-          row('Medical conditions', f(med, 'conditions')),
+          row(tr('Medical conditions'), f(med, 'conditions')),
           row('Doctor', f(med, 'doctor')),
           if (contacts.isNotEmpty) ...[
             const Divider(height: 32),
@@ -266,7 +264,7 @@ class RescuerCard extends StatelessWidget {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black)),
             for (final i in insurance) ...[
               row('Company', f(i, 'company')),
-              row('Policy number', f(i, 'policy')),
+              row(tr('Policy number'), f(i, 'policy')),
               row('24/7 assistance', f(i, 'assistance'),
                   onTap: f(i, 'assistance') == null
                       ? null
@@ -274,9 +272,9 @@ class RescuerCard extends StatelessWidget {
             ],
           ],
           if (med == null)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 24),
-              child: Text('(Doplň ve Vaultu „Zdravotní údaje“ – tady se pak ukážou.)',
+              child: Text(tr('(Doplň ve Vaultu „Zdravotní údaje“ – tady se pak ukážou.)'),
                   style: TextStyle(color: Colors.black54)),
             ),
         ],

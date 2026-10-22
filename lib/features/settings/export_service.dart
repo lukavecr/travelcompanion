@@ -10,6 +10,7 @@ import '../../core/app_settings.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import '../money/categories.dart';
+import '../../l10n/tr.dart';
 
 /// Export dat (Nastavení → Data). Soubor se nabídne přes systémové sdílení
 /// (uložit do Souborů / na Disk, poslat e-mailem…). Vault se neexportuje (je šifrovaný).
@@ -49,8 +50,8 @@ class ExportService {
     }
 
     final b = StringBuffer()
-      ..writeln(['Datum', 'Cesta', 'Kategorie', 'Poznámka', 'Částka', 'Měna', 'Částka v měně cesty',
-              'Měna cesty', 'Kurz', 'Země']
+      ..writeln([tr('Datum'), tr('Cesta'), tr('Kategorie'), tr('Poznámka'), tr('Částka'), tr('Měna'), tr('Částka v měně cesty'),
+              tr('Měna cesty'), tr('Kurz'), tr('Země')]
           .join(sep));
     for (final e in rows) {
       final t = trips[e.tripId];
@@ -69,7 +70,7 @@ class ExportService {
     }
     // BOM, aby Excel poznal UTF-8 (háčky a čárky)
     final f = await _write('vydaje-${_stamp()}.csv', [0xEF, 0xBB, 0xBF, ...utf8.encode(b.toString())]);
-    await _share(f, 'text/csv', 'Travel Companion – výdaje');
+    await _share(f, 'text/csv', tr('Travel Companion – výdaje'));
   }
 
   /// Všechna data (kromě Vaultu a fotek) jako JSON – pro zálohu u sebe nebo žádost dle GDPR.
@@ -79,7 +80,7 @@ class ExportService {
             if ((r.toJson()['deletedAt']) == null) r.toJson(),
         ];
     final data = {
-      'app': 'Travel Companion',
+      'app': tr('Travel Companion'),
       'exportedAt': DateTime.now().toIso8601String(),
       'trips': live(await db.select(db.trips).get()),
       'places': live(await db.select(db.places).get()),
@@ -90,6 +91,6 @@ class ExportService {
     };
     final json = const JsonEncoder.withIndent('  ').convert(data);
     final f = await _write('travel-companion-${_stamp()}.json', utf8.encode(json));
-    await _share(f, 'application/json', 'Travel Companion – export dat');
+    await _share(f, 'application/json', tr('Travel Companion – export dat'));
   }
 }

@@ -6,6 +6,7 @@ import '../../core/app_settings.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import '../vault/vault_types.dart';
+import '../../l10n/tr.dart';
 
 /// Plánuje upozornění na položky dne. Čas položky se bere jako místní čas
 /// v pásmu, ve kterém je telefon při plánování. Při každém otevření aplikace
@@ -106,14 +107,14 @@ class ReminderService {
       await _plugin.zonedSchedule(
         id: _idFor(e.id),
         title: e.title,
-        body: 'Za ${fmtLead(lead)} · ${fmtTime(start)}',
+        body: tr('Za {lead} · {time}', {'lead': fmtLead(lead), 'time': fmtTime(start)}),
         scheduledDate:
             tz.TZDateTime.fromMillisecondsSinceEpoch(tz.UTC, fire.millisecondsSinceEpoch),
-        notificationDetails: const NotificationDetails(
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             'reminders',
-            'Upozornění na plán',
-            channelDescription: 'Upozornění před položkami plánu dne',
+            tr('Upozornění na plán'),
+            channelDescription: tr('Upozornění před položkami plánu dne'),
             importance: Importance.high,
             priority: Priority.high,
           ),
@@ -135,17 +136,17 @@ class ReminderService {
         if (!fire.isAfter(now)) continue;
         await _plugin.zonedSchedule(
           id: _idFor('${v.id}#$days'),
-          title: days == 0 ? '${t.label}: dnes končí platnost' : '${t.label}: blíží se konec platnosti',
+          title: days == 0 ? tr('{label}: dnes končí platnost', {'label': t.label}) : tr('{label}: blíží se konec platnosti', {'label': t.label}),
           body: days == 0
-              ? 'Platnost končí dnes (${fmtDate(exp)}). Detail najdeš ve Vaultu.'
-              : 'Platnost končí ${fmtDate(exp)} (${fmtDaysAhead(days)}). Detail najdeš ve Vaultu.',
+              ? tr('Platnost končí dnes ({exp}). Detail najdeš ve Vaultu.', {'exp': fmtDate(exp)})
+              : tr('Platnost končí {exp} ({days}). Detail najdeš ve Vaultu.', {'exp': fmtDate(exp), 'days': fmtDaysAhead(days)}),
           scheduledDate:
               tz.TZDateTime.fromMillisecondsSinceEpoch(tz.UTC, fire.millisecondsSinceEpoch),
-          notificationDetails: const NotificationDetails(
+          notificationDetails: NotificationDetails(
             android: AndroidNotificationDetails(
               'vault_expiry',
-              'Konec platnosti dokladů',
-              channelDescription: 'Pas, víza, pojištění a další doklady z Vaultu',
+              tr('Konec platnosti dokladů'),
+              channelDescription: tr('Pas, víza, pojištění a další doklady z Vaultu'),
               importance: Importance.high,
               priority: Priority.high,
             ),

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import '../../l10n/tr.dart';
 
-const expenseCategories = <String, String>{
-  'food': 'Jídlo',
-  'transport': 'Doprava',
-  'lodging': 'Ubytování',
-  'attractions': 'Atrakce',
-  'shopping': 'Nákupy',
-  'other': 'Ostatní',
+/// Názvy kategorií v jazyce aplikace (getter – mění se s jazykem).
+Map<String, String> get expenseCategories => <String, String>{
+  'food': tr('Jídlo'),
+  'transport': tr('Doprava'),
+  'lodging': tr('Ubytování'),
+  'attractions': tr('Atrakce'),
+  'shopping': tr('Nákupy'),
+  'other': tr('Ostatní'),
 };
 
 IconData categoryIcon(String c) {

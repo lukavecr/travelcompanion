@@ -18,6 +18,7 @@ import 'features/auth/auth_providers.dart';
 import 'features/reminders/reminder_service.dart';
 import 'features/sync/sync_service.dart';
 import 'features/trips/trip_repository.dart';
+import 'l10n/tr.dart';
 
 class TravelApp extends ConsumerStatefulWidget {
   const TravelApp({super.key});
@@ -120,7 +121,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Travel Companion AI',
+      title: tr('Travel Companion AI'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

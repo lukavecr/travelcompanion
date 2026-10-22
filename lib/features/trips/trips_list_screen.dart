@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../data/database.dart';
 import '../pro/paywall.dart';
 import 'trip_repository.dart';
+import '../../l10n/tr.dart';
 
 class TripFormResult {
   const TripFormResult(this.name, this.range, this.countries);
@@ -22,8 +23,9 @@ Future<TripFormResult?> askTrip(
   String initialName = '',
   DateTimeRange? initialRange,
   String initialCountries = '',
-  String confirmLabel = 'Uložit',
+  String? confirmLabel,
 }) async {
+  final okLabel = confirmLabel ?? tr('Uložit');
   final nameController = TextEditingController(text: initialName);
   final countriesController = TextEditingController(text: initialCountries);
   var range = initialRange;
@@ -39,15 +41,15 @@ Future<TripFormResult?> askTrip(
             TextField(
               controller: nameController,
               autofocus: initialName.isEmpty,
-              decoration: const InputDecoration(
-                labelText: 'Název (např. Cesta kolem světa 2027)',
+              decoration: InputDecoration(
+                labelText: tr('Název (např. Cesta kolem světa 2027)'),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: countriesController,
-              decoration: const InputDecoration(
-                labelText: 'Země cesty (oddělené čárkou)',
+              decoration: InputDecoration(
+                labelText: tr('Země cesty (oddělené čárkou)'),
                 hintText: 'Thajsko, Vietnam, Japonsko',
               ),
             ),
@@ -55,7 +57,7 @@ Future<TripFormResult?> askTrip(
             OutlinedButton.icon(
               icon: const Icon(Icons.date_range),
               label: Text(range == null
-                  ? 'Vybrat termín'
+                  ? tr('Vybrat termín')
                   : '${fmtDate(range!.start)} – ${fmtDate(range!.end)}'),
               onPressed: () async {
                 final r = await showDateRangePicker(
@@ -63,7 +65,7 @@ Future<TripFormResult?> askTrip(
                   firstDate: DateTime(2020),
                   lastDate: DateTime(2040),
                   initialDateRange: range,
-                  helpText: 'Od kdy do kdy',
+                  helpText: tr('Od kdy do kdy'),
                 );
                 if (r != null) setState(() => range = r);
               },
@@ -73,11 +75,11 @@ Future<TripFormResult?> askTrip(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Zrušit'),
+            child: Text(tr('Zrušit')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(confirmLabel),
+            child: Text(okLabel),
           ),
         ],
       ),
@@ -99,15 +101,15 @@ class TripsListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Moje cesty'),
+        title: Text(tr('Moje cesty')),
         actions: [
           IconButton(
-            tooltip: 'Záloha a účet',
+            tooltip: tr('Záloha a účet'),
             icon: const Icon(Icons.cloud_outlined),
             onPressed: () => context.push('/sync'),
           ),
           IconButton(
-            tooltip: 'Nastavení',
+            tooltip: tr('Nastavení'),
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push('/settings'),
           ),
@@ -118,7 +120,7 @@ class TripsListScreen extends ConsumerWidget {
           if (!await ensureCanAdd(context, ref.read(databaseProvider), ProLimit.trip)) return;
           if (!context.mounted) return;
           final r = await askTrip(context,
-              heading: 'Nová cesta', confirmLabel: 'Vytvořit');
+              heading: tr('Nová cesta'), confirmLabel: tr('Vytvořit'));
           if (r != null) {
             await repo.addTrip(
                 name: r.name,
@@ -128,18 +130,18 @@ class TripsListScreen extends ConsumerWidget {
           }
         },
         icon: const Icon(Icons.add),
-        label: const Text('Nová cesta'),
+        label: Text(tr('Nová cesta')),
       ),
       body: trips.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Chyba: $e')),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Zatím tu nemáš žádnou cestu.\nKlepni na „Nová cesta“.',
+                  tr('Zatím tu nemáš žádnou cestu.\nKlepni na „Nová cesta“.'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -152,7 +154,7 @@ class TripsListScreen extends ConsumerWidget {
               final t = list[i];
               final dates = (t.startDate != null && t.endDate != null)
                   ? '${fmtDate(t.startDate!)} – ${fmtDate(t.endDate!)}'
-                  : 'Bez termínu';
+                  : tr('Bez termínu');
               return Card(
                 child: ListTile(
                   leading: const Icon(Icons.flight_takeoff),
@@ -163,7 +165,7 @@ class TripsListScreen extends ConsumerWidget {
                       if (v == 'edit') {
                         final r = await askTrip(
                           context,
-                          heading: 'Upravit cestu',
+                          heading: tr('Upravit cestu'),
                           initialName: t.name,
                           initialCountries: tripCountries(t).join(', '),
                           initialRange: (t.startDate != null && t.endDate != null)
@@ -178,13 +180,13 @@ class TripsListScreen extends ConsumerWidget {
                               countries: r.countries);
                         }
                       } else if (v == 'delete' &&
-                          await confirm(context, 'Smazat cestu „${t.name}“?')) {
+                          await confirm(context, tr('Smazat cestu „{name}“?', {'name': t.name}))) {
                         await repo.deleteTrip(t.id);
                       }
                     },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Upravit (název, termín)')),
-                      PopupMenuItem(value: 'delete', child: Text('Smazat')),
+                    itemBuilder: (_) => [
+                      PopupMenuItem(value: 'edit', child: Text(tr('Upravit (název, termín)'))),
+                      PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
                     ],
                   ),
                   onTap: () => context.go('/trips/trip/${t.id}'),

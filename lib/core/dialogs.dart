@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'format.dart';
+import '../l10n/tr.dart';
 
 /// Jednoduchý dialog s jedním textovým polem. Vrátí null, když uživatel zruší.
 Future<String?> askText(
   BuildContext context, {
   required String title,
   String initial = '',
-  String label = 'Název',
+  String? label,
 }) async {
+  label ??= tr('Název');
   final controller = TextEditingController(text: initial);
   final result = await showDialog<String>(
     context: context,
@@ -23,11 +25,11 @@ Future<String?> askText(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Zrušit'),
+          child: Text(tr('Zrušit')),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, controller.text),
-          child: const Text('Uložit'),
+          child: Text(tr('Uložit')),
         ),
       ],
     ),
@@ -44,11 +46,11 @@ Future<bool> confirm(BuildContext context, String question) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Ne'),
+          child: Text(tr('Ne')),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Ano'),
+          child: Text(tr('Ano')),
         ),
       ],
     ),
@@ -88,7 +90,7 @@ Future<EventFormResult?> askEvent(
             TextField(
               controller: controller,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Název'),
+              decoration: InputDecoration(labelText: tr('Název')),
             ),
             const SizedBox(height: 12),
             Row(
@@ -96,7 +98,7 @@ Future<EventFormResult?> askEvent(
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.schedule),
-                    label: Text(mins == null ? 'Čas (nepovinné)' : fmtTime(mins!)),
+                    label: Text(mins == null ? tr('Čas (nepovinné)') : fmtTime(mins!)),
                     onPressed: () async {
                       final start = mins ?? 540;
                       final t = await showTimePicker(
@@ -110,7 +112,7 @@ Future<EventFormResult?> askEvent(
                 ),
                 if (mins != null)
                   IconButton(
-                    tooltip: 'Smazat čas',
+                    tooltip: tr('Smazat čas'),
                     icon: const Icon(Icons.clear),
                     onPressed: () => setState(() {
                       mins = null;
@@ -121,9 +123,9 @@ Future<EventFormResult?> askEvent(
             ),
             if (mins != null) ...[
               const SizedBox(height: 16),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Upozornit předem'),
+                child: Text(tr('Upozornit předem')),
               ),
               const SizedBox(height: 4),
               Wrap(
@@ -145,11 +147,11 @@ Future<EventFormResult?> askEvent(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Zrušit'),
+            child: Text(tr('Zrušit')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Uložit'),
+            child: Text(tr('Uložit')),
           ),
         ],
       ),

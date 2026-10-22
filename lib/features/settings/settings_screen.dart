@@ -16,6 +16,7 @@ import '../pro/paywall.dart';
 import '../pro/pro_service.dart';
 import '../sync/sync_service.dart';
 import 'export_service.dart';
+import '../../l10n/tr.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -32,22 +33,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded),
-        title: const Text('Smazat všechna data?'),
-        content: const Text(
-          'Smaže se v telefonu i v záloze:\n'
-          '• cesty a plán\n• místa\n• doklady a jejich fotky\n• výdaje a účtenky\n\n'
-          'Zůstane: Vault, tvůj účet a přihlášení.\n\n'
-          'Vrátit to nepůjde.',
+        title: Text(tr('Smazat všechna data?')),
+        content: Text(
+          tr('Smaže se v telefonu i v záloze:\n' '• cesty a plán\n• místa\n• doklady a jejich fotky\n• výdaje a účtenky\n\n' 'Zůstane: Vault, tvůj účet a přihlášení.\n\n' 'Vrátit to nepůjde.'),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false), child: const Text('Zrušit')),
+              onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Zrušit'))),
           FilledButton(
             style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(ctx).colorScheme.error,
                 foregroundColor: Theme.of(ctx).colorScheme.onError),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Pokračovat'),
+            child: Text(tr('Pokračovat')),
           ),
         ],
       ),
@@ -58,9 +56,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final hasLock = await DeviceAuth.deviceHasLock();
     if (!mounted) return;
     final second = hasLock
-        ? await DeviceAuth.confirm('Potvrď smazání všech dat')
+        ? await DeviceAuth.confirm(tr('Potvrď smazání všech dat'))
         : await confirm(context,
-            'Telefon nemá zámek obrazovky, proto se smazání potvrzuje jen tady. Opravdu smazat vše?');
+            tr('Telefon nemá zámek obrazovky, proto se smazání potvrzuje jen tady. Opravdu smazat vše?'));
     if (second != true || !mounted) return;
 
     setState(() => _wiping = true);
@@ -74,8 +72,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _wiping = false);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(error == null
-          ? 'Všechna data jsou smazaná.'
-          : 'Smazání se nepovedlo (jsi online?). V telefonu se nic nesmazalo.\n$error'),
+          ? tr('Všechna data jsou smazaná.')
+          : tr('Smazání se nepovedlo (jsi online?). V telefonu se nic nesmazalo.\n{error}', {'error': error})),
     ));
     if (error == null) context.go('/trips');
   }
@@ -86,24 +84,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         icon: const Icon(Icons.person_remove),
-        title: const Text('Smazat účet?'),
-        content: const Text(
-          'Smaže se úplně všechno – cesty, místa, doklady, výdaje i celý Vault – '
-          'v telefonu i v záloze, a nakonec tvůj účet.\n\nVrátit to nepůjde.',
+        title: Text(tr('Smazat účet?')),
+        content: Text(
+          tr('Smaže se úplně všechno – cesty, místa, doklady, výdaje i celý Vault – ' 'v telefonu i v záloze, a nakonec tvůj účet.\n\nVrátit to nepůjde.'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Zrušit')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Zrušit'))),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: err, foregroundColor: Colors.white),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Pokračovat'),
+            child: Text(tr('Pokračovat')),
           ),
         ],
       ),
     );
     if (ok != true || !mounted) return;
     if (await DeviceAuth.deviceHasLock() &&
-        !await DeviceAuth.confirm('Potvrď smazání účtu')) {
+        !await DeviceAuth.confirm(tr('Potvrď smazání účtu'))) {
       return;
     }
     if (!mounted) return;
@@ -115,7 +112,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted) return;
     setState(() => _wiping = false);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(error ?? 'Účet i všechna data jsou smazané.'),
+      content: Text(error ?? tr('Účet i všechna data jsou smazané.')),
     ));
     // po smazání se aplikace sama vrátí na přihlášení
   }
@@ -125,21 +122,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Heslo účtu'),
+        title: Text(tr('Heslo účtu')),
         content: TextField(
           controller: c,
           obscureText: true,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Heslo, kterým se přihlašuješ',
+          decoration: InputDecoration(
+            labelText: tr('Heslo, kterým se přihlašuješ'),
             border: OutlineInputBorder(),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zrušit')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr('Zrušit'))),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, c.text),
-            child: const Text('Smazat účet'),
+            child: Text(tr('Smazat účet')),
           ),
         ],
       ),
@@ -223,29 +220,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return [
       _tile(
           Icons.workspace_premium,
-          pro ? 'Travel Companion Pro – aktivní' : 'Travel Companion Pro',
+          pro ? tr('Travel Companion Pro – aktivní') : tr('Travel Companion Pro'),
           pro
-              ? 'Bez omezení, se zálohou do cloudu'
-              : 'Zdarma: 1 aktivní cesta, 10 dokladů, 30 výdajů, bez zálohy',
+              ? tr('Bez omezení, se zálohou do cloudu')
+              : tr('Zdarma: 1 aktivní cesta, 10 dokladů, 30 výdajů, bez zálohy'),
           () => openPaywall(c),
           color: pro ? Colors.amber : null),
-      _tile(Icons.cloud_outlined, 'Záloha a účet', 'Synchronizace, změna e-mailu, odhlášení',
+      _tile(Icons.cloud_outlined, tr('Záloha a účet'), tr('Synchronizace, změna e-mailu, odhlášení'),
           () => c.push('/sync')),
-      _tile(Icons.lock_clock, 'Zámek aplikace', AppSettings.lockOptions[st.lockAfterSeconds],
+      _tile(Icons.lock_clock, tr('Zámek aplikace'), AppSettings.lockOptions[st.lockAfterSeconds],
           () async {
         final v = await _choose<int>(
-            c, 'Kdy aplikaci zamknout po odchodu', AppSettings.lockOptions, st.lockAfterSeconds,
-            note: 'Odemyká se otiskem prstu, obličejem nebo PINem telefonu.');
+            c, tr('Kdy aplikaci zamknout po odchodu'), AppSettings.lockOptions, st.lockAfterSeconds,
+            note: tr('Odemyká se otiskem prstu, obličejem nebo PINem telefonu.'));
         if (v == null || !c.mounted) return;
         if (v == -1 &&
             !await confirm(c,
-                'Bez zámku uvidí tvoje doklady každý, kdo vezme odemčený telefon. Opravdu?')) {
+                tr('Bez zámku uvidí tvoje doklady každý, kdo vezme odemčený telefon. Opravdu?'))) {
           return;
         }
         await st.setLockAfter(v);
       }),
-      _header(c, 'Nebezpečná zóna', color: danger),
-      _tile(Icons.person_remove, 'Smazat účet', 'Všechna data včetně Vaultu a účet samotný.',
+      _header(c, tr('Nebezpečná zóna'), color: danger),
+      _tile(Icons.person_remove, tr('Smazat účet'), tr('Všechna data včetně Vaultu a účet samotný.'),
           _wiping ? null : _deleteAccount,
           color: danger),
     ];
@@ -255,49 +252,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   List<Widget> _personal(BuildContext c) {
     final st = AppSettings.instance;
-    const themes = {
-      ThemeMode.system: 'Podle telefonu',
-      ThemeMode.light: 'Světlý',
-      ThemeMode.dark: 'Tmavý',
+    final themes = {
+      ThemeMode.system: tr('Podle telefonu'),
+      ThemeMode.light: tr('Světlý'),
+      ThemeMode.dark: tr('Tmavý'),
     };
-    const weeks = {1: 'Pondělí', 0: 'Neděle', 6: 'Sobota'};
+    final weeks = {1: tr('Pondělí'), 0: tr('Neděle'), 6: tr('Sobota')};
     return [
-      _tile(Icons.language, 'Jazyk', AppSettings.languages[st.language], () async {
-        final v = await _choose(c, 'Jazyk aplikace', AppSettings.languages, st.language,
-            note: 'Překlad všech textů aplikace připravuji. '
-                'Zatím se podle jazyka mění kalendáře a názvy na mapě.');
+      _tile(Icons.language, tr('Jazyk'), AppSettings.languages[st.language], () async {
+        final v = await _choose(c, tr('Jazyk aplikace'), AppSettings.languages, st.language,
+            note: tr('Překlad všech textů aplikace připravuji. ' 'Zatím se podle jazyka mění kalendáře a názvy na mapě.'));
         if (v != null) await st.setLanguage(v);
       }),
-      _tile(Icons.brightness_6, 'Barevný motiv', themes[st.themeMode], () async {
-        final v = await _choose(c, 'Barevný motiv', themes, st.themeMode);
+      _tile(Icons.brightness_6, tr('Barevný motiv'), themes[st.themeMode], () async {
+        final v = await _choose(c, tr('Barevný motiv'), themes, st.themeMode);
         if (v != null) await st.setThemeMode(v);
       }),
-      _tile(Icons.payments_outlined, 'Výchozí měna', st.homeCurrency, () => _pickCurrency(c)),
-      _tile(Icons.calendar_view_week, 'Začátek týdne', weeks[st.weekStart], () async {
-        final v = await _choose(c, 'Týden začíná', weeks, st.weekStart);
+      _tile(Icons.payments_outlined, tr('Výchozí měna'), st.homeCurrency, () => _pickCurrency(c)),
+      _tile(Icons.calendar_view_week, tr('Začátek týdne'), weeks[st.weekStart], () async {
+        final v = await _choose(c, tr('Týden začíná'), weeks, st.weekStart);
         if (v != null) await st.setWeekStart(v);
       }),
-      _tile(Icons.event, 'Formát data', AppSettings.dateFormats[st.dateFormat], () async {
-        final v = await _choose(c, 'Formát data', AppSettings.dateFormats, st.dateFormat);
+      _tile(Icons.event, tr('Formát data'), AppSettings.dateFormats[st.dateFormat], () async {
+        final v = await _choose(c, tr('Formát data'), AppSettings.dateFormats, st.dateFormat);
         if (v != null) await st.setDateFormat(v);
       }),
-      _tile(Icons.schedule, 'Formát času', st.use24h ? '24 hodin (14:30)' : '12 hodin (2:30 PM)',
+      _tile(Icons.schedule, tr('Formát času'), st.use24h ? '24 hodin (14:30)' : '12 hodin (2:30 PM)',
           () async {
-        final v = await _choose(c, 'Formát času',
+        final v = await _choose(c, tr('Formát času'),
             const {true: '24 hodin (14:30)', false: '12 hodin (2:30 PM)'}, st.use24h);
         if (v != null) await st.setUse24h(v);
       }),
-      _tile(Icons.home_outlined, 'Úvodní záložka', AppSettings.startTabs[st.startTab], () async {
-        final v = await _choose(c, 'Na čem se aplikace otevře', AppSettings.startTabs, st.startTab,
-            note: 'Projeví se při příštím spuštění.');
+      _tile(Icons.home_outlined, tr('Úvodní záložka'), AppSettings.startTabs[st.startTab], () async {
+        final v = await _choose(c, tr('Na čem se aplikace otevře'), AppSettings.startTabs, st.startTab,
+            note: tr('Projeví se při příštím spuštění.'));
         if (v != null) await st.setStartTab(v);
       }),
-      _tile(Icons.translate, 'Názvy na mapě',
-          st.mapLocalNames ? 'Místní (東京, Hà Nội…)' : 'V jazyce aplikace', () async {
+      _tile(Icons.translate, tr('Názvy na mapě'),
+          st.mapLocalNames ? tr('Místní (東京, Hà Nội…)') : 'V jazyce aplikace', () async {
         final v = await _choose(
             c,
-            'Názvy měst a míst na mapě',
-            const {false: 'V jazyce aplikace (Tokyo, Hanoi…)', true: 'Místní (東京, Hà Nội…)'},
+            tr('Názvy měst a míst na mapě'),
+            {false: 'V jazyce aplikace (Tokyo, Hanoi…)', true: tr('Místní (東京, Hà Nội…)')},
             st.mapLocalNames);
         if (v != null) await st.setMapLocalNames(v);
       }),
@@ -307,11 +303,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _pickCurrency(BuildContext c) async {
     final st = AppSettings.instance;
     final v = await _choose(
-        c, 'Výchozí měna', {for (final cur in AppSettings.currencies) cur: cur}, st.homeCurrency,
-        note: 'V této měně uvidíš součty výdajů a rozpočty. Nové cesty ji dostanou automaticky.');
+        c, tr('Výchozí měna'), {for (final cur in AppSettings.currencies) cur: cur}, st.homeCurrency,
+        note: tr('V této měně uvidíš součty výdajů a rozpočty. Nové cesty ji dostanou automaticky.'));
     if (v == null || v == st.homeCurrency || !c.mounted) return;
     final ok = await confirm(
-        c, 'Přepočítat všechny cesty a výdaje na $v? Použijí se kurzy ECB ze dne každého výdaje.');
+        c, tr('Přepočítat všechny cesty a výdaje na {v}? Použijí se kurzy ECB ze dne každého výdaje.', {'v': v}));
     if (!ok || !mounted) return;
     setState(() => _wiping = true);
     await st.setHomeCurrency(v);
@@ -319,9 +315,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted) return;
     setState(() => _wiping = false);
     _snack(missing == 0
-        ? 'Hotovo, vše je v $v.'
-        : 'Hotovo. $missing výdajů zatím bez přepočtu (bez internetu nebo měna mimo ECB) '
-            '– dopočítají se později.');
+        ? tr('Hotovo, vše je v {v}.', {'v': v})
+        : tr('Hotovo. {missing} výdajů zatím bez přepočtu (bez internetu nebo měna mimo ECB) ' '– dopočítají se později.', {'missing': missing}));
   }
 
   // ---------- Data ----------
@@ -334,8 +329,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       Card(
         child: SwitchListTile(
           secondary: const Icon(Icons.notifications_active_outlined),
-          title: const Text('Upozornění na konec platnosti'),
-          subtitle: const Text('Pas, víza, pojištění… z Vaultu'),
+          title: Text(tr('Upozornění na konec platnosti')),
+          subtitle: Text(tr('Pas, víza, pojištění… z Vaultu')),
           value: st.expiryReminders,
           onChanged: (v) async {
             await st.setExpiryReminders(v);
@@ -344,7 +339,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       if (st.expiryReminders)
-        _tile(Icons.alarm, 'Čas upozornění', fmtTime(st.expiryReminderMinutes), () async {
+        _tile(Icons.alarm, tr('Čas upozornění'), fmtTime(st.expiryReminderMinutes), () async {
           final t = await showTimePicker(
             context: c,
             initialTime: TimeOfDay(
@@ -354,13 +349,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           await st.setExpiryReminderMinutes(t.hour * 60 + t.minute);
           await ReminderService.reschedule();
         }),
-      _header(c, 'Export'),
-      _tile(Icons.table_chart_outlined, 'Výdaje do tabulky (CSV)', 'Pro Excel nebo Tabulky Google',
+      _header(c, tr('Export')),
+      _tile(Icons.table_chart_outlined, tr('Výdaje do tabulky (CSV)'), tr('Pro Excel nebo Tabulky Google'),
           () => export.exportExpensesCsv()),
-      _tile(Icons.data_object, 'Všechna data (JSON)',
-          'Cesty, místa, plán, doklady, výdaje – bez Vaultu', () => export.exportAllJson()),
-      _header(c, 'Nebezpečná zóna', color: danger),
-      _tile(Icons.delete_forever, 'Smazat všechna data', 'Telefon i záloha. Vault a účet zůstanou.',
+      _tile(Icons.data_object, tr('Všechna data (JSON)'),
+          tr('Cesty, místa, plán, doklady, výdaje – bez Vaultu'), () => export.exportAllJson()),
+      _header(c, tr('Nebezpečná zóna'), color: danger),
+      _tile(Icons.delete_forever, tr('Smazat všechna data'), tr('Telefon i záloha. Vault a účet zůstanou.'),
           _wiping ? null : _wipe,
           color: danger),
     ];
@@ -375,8 +370,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           future: PackageInfo.fromPlatform(),
           builder: (c, snap) => _tile(
               Icons.info_outline,
-              'Travel Companion',
-              snap.hasData ? 'Verze ${snap.data!.version} (${snap.data!.buildNumber})' : null,
+              tr('Travel Companion'),
+              snap.hasData ? tr('Verze {version} ({build})', {'version': snap.data!.version, 'build': snap.data!.buildNumber}) : null,
               null),
         ),
         Card(
@@ -384,16 +379,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading:
                 ClipOval(child: Image.asset('assets/lr-tech-logo.png', width: 40, height: 40)),
             title: const Text('LR Tech CZ'),
-            subtitle: const Text('Vývojář aplikace'),
+            subtitle: Text(tr('Vývojář aplikace')),
           ),
         ),
-        _tile(Icons.mail_outline, 'Kontakt a podpora', 'lrtechcz@gmail.com',
+        _tile(Icons.mail_outline, tr('Kontakt a podpora'), 'lrtechcz@gmail.com',
             () => launchUrl(Uri.parse('mailto:lrtechcz@gmail.com?subject=Travel%20Companion'))),
-        _tile(Icons.privacy_tip_outlined, 'Zásady ochrany soukromí', null,
+        _tile(Icons.privacy_tip_outlined, tr('Zásady ochrany soukromí'), null,
             () => launchUrl(Uri.parse('$_web/privacy'), mode: LaunchMode.externalApplication)),
         _tile(
             Icons.star_outline,
-            'Ohodnotit v Google Play',
+            tr('Ohodnotit v Google Play'),
             null,
             () => launchUrl(
                 Uri.parse(
@@ -401,11 +396,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 mode: LaunchMode.externalApplication)),
         _tile(
             Icons.article_outlined,
-            'Licence knihoven',
+            tr('Licence knihoven'),
             null,
             () => showLicensePage(
                   context: c,
-                  applicationName: 'Travel Companion',
+                  applicationName: tr('Travel Companion'),
                   applicationIcon: Padding(
                     padding: const EdgeInsets.all(8),
                     child: ClipOval(
@@ -420,7 +415,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final st = AppSettings.instance;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nastavení'),
+        title: Text(tr('Nastavení')),
         bottom: _wiping
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4), child: LinearProgressIndicator())
@@ -433,15 +428,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           builder: (context, _) => ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              _tile(Icons.person_outline, 'Účet',
-                  '${ProService.instance.isPro ? 'Pro' : 'Zdarma'} · záloha · zámek aplikace',
-                  () => _open('Účet', _account)),
-              _tile(Icons.tune, 'Personalizace',
-                  '${AppSettings.languages[st.language]} · ${st.homeCurrency} · motiv · formáty',
-                  () => _open('Personalizace', _personal)),
-              _tile(Icons.storage_outlined, 'Data', 'Upozornění · export · smazání dat',
-                  () => _open('Data', _data)),
-              _tile(Icons.info_outline, 'O aplikaci', 'Verze · kontakt · zásady · licence',
+              _tile(Icons.person_outline, tr('Účet'),
+                  tr('{n} · záloha · zámek aplikace', {'n': ProService.instance.isPro ? tr('Pro') : tr('Zdarma')}),
+                  () => _open(tr('Účet'), _account)),
+              _tile(Icons.tune, tr('Personalizace'),
+                  tr('{n} · {homeCurrency} · motiv · formáty', {'n': AppSettings.languages[st.language], 'homeCurrency': st.homeCurrency}),
+                  () => _open(tr('Personalizace'), _personal)),
+              _tile(Icons.storage_outlined, tr('Data'), tr('Upozornění · export · smazání dat'),
+                  () => _open(tr('Data'), _data)),
+              _tile(Icons.info_outline, 'O aplikaci', tr('Verze · kontakt · zásady · licence'),
                   () => _open('O aplikaci', _about)),
             ],
           ),

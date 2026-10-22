@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/tr.dart';
 
 /// Travel Companion Pro = roční předplatné v Google Play.
 ///
@@ -134,7 +135,7 @@ class ProService extends ChangeNotifier {
   Future<void> buy() async {
     final p = product;
     if (p == null) {
-      lastError = 'Předplatné teď nejde načíst z Google Play.';
+      lastError = tr('Předplatné teď nejde načíst z Google Play.');
       notifyListeners();
       return;
     }

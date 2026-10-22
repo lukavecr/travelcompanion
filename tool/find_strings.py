@@ -25,7 +25,9 @@ def strings(f):
             v = m.group(1)
             if CZ.search(v) or re.match(r"^[A-ZÁ-Ž][a-zá-ž]+( |$)", v):
                 before = line[:m.start()]
-                yield i, v, before.rstrip().endswith('t(')
+                k = before.rfind('tr(')
+                wrapped = k >= 0 and before[k:].count('(') > before[k:].count(')')
+                yield i, v, wrapped
 
 
 if __name__ == '__main__':

@@ -12,6 +12,7 @@ import '../pro/paywall.dart';
 import 'categories.dart';
 import 'expense_form_screen.dart';
 import 'expense_repository.dart';
+import '../../l10n/tr.dart';
 
 const _none = '__none'; // výdaje bez země
 
@@ -50,9 +51,9 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   Future<void> _editBudget(Trip trip) async {
     final text = await askText(
       context,
-      title: 'Rozpočet cesty (${trip.mainCurrency})',
+      title: tr('Rozpočet cesty ({mainCurrency})', {'mainCurrency': trip.mainCurrency}),
       initial: trip.budget == null ? '' : trip.budget!.round().toString(),
-      label: 'Částka (0 = bez rozpočtu)',
+      label: tr('Částka (0 = bez rozpočtu)'),
     );
     if (text == null) return;
     final v = parseAmount(text);
@@ -71,7 +72,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              const ListTile(title: Text('Do které cesty výdaj patří?')),
+              ListTile(title: Text(tr('Do které cesty výdaj patří?'))),
               for (final t in trips)
                 ListTile(
                   leading: const Icon(Icons.flight_takeoff),
@@ -98,11 +99,11 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
 
     if (trips.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Peníze')),
-        body: const Center(
+        appBar: AppBar(title: Text(tr('Peníze'))),
+        body: Center(
           child: Padding(
             padding: EdgeInsets.all(24),
-            child: Text('Nejdřív vytvoř cestu v záložce Cesty.',
+            child: Text(tr('Nejdřív vytvoř cestu v záložce Cesty.'),
                 textAlign: TextAlign.center),
           ),
         ),
@@ -166,7 +167,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Peníze'),
+        title: Text(tr('Peníze')),
         bottom: _filling
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -177,7 +178,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addExpense(trips, currentTrip),
         icon: const Icon(Icons.add),
-        label: const Text('Přidat výdaj'),
+        label: Text(tr('Přidat výdaj')),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
@@ -193,7 +194,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
                       avatar: const Icon(Icons.dashboard, size: 18),
-                      label: Text('Vše · ${fmtMoney(allTotal)}'),
+                      label: Text(tr('Vše · {allTotal}', {'allTotal': fmtMoney(allTotal)})),
                       selected: trip == null,
                       onSelected: (_) => setState(() => _tripId = null),
                     ),
@@ -220,21 +221,21 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                 children: [
                   Text(
                       trip == null
-                          ? 'Celkem za všechny cesty'
+                          ? tr('Celkem za všechny cesty')
                           : 'Celkem: ${trip.name}',
                       style: Theme.of(context).textTheme.bodySmall),
                   Text('${fmtMoney(total)} $cur',
                       style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 4),
-                  Text('≈ ${fmtMoney(total / days)} $cur na den ($days dní)'),
+                  Text(tr('≈ {days} {cur} na den ({days2} dní)', {'days': fmtMoney(total / days), 'cur': cur, 'days2': days})),
                   if (trip != null) ...[
                     const SizedBox(height: 12),
                     InkWell(
                       onTap: () => _editBudget(currentTrip!),
                       child: trip.budget == null
-                          ? const Padding(
+                          ? Padding(
                               padding: EdgeInsets.symmetric(vertical: 4),
-                              child: Text('Nastavit rozpočet'),
+                              child: Text(tr('Nastavit rozpočet')),
                             )
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,8 +252,8 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(total > trip.budget!
-                                    ? 'Rozpočet ${fmtMoney(trip.budget!)} $cur překročen o ${fmtMoney(total - trip.budget!)} $cur'
-                                    : 'Zbývá ${fmtMoney(trip.budget! - total)} z ${fmtMoney(trip.budget!)} $cur'),
+                                    ? tr('Rozpočet {budget} {cur} překročen o {budget2} {cur}', {'budget': fmtMoney(trip.budget!), 'cur': cur, 'budget2': fmtMoney(total - trip.budget!)})
+                                    : tr('Zbývá {total} z {budget} {cur}', {'total': fmtMoney(trip.budget! - total), 'budget': fmtMoney(trip.budget!), 'cur': cur})),
                               ],
                             ),
                     ),
@@ -262,11 +263,11 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text('$missing výdajů zatím bez přepočtu na $cur'),
+                          child: Text(tr('{missing} výdajů zatím bez přepočtu na {cur}', {'missing': missing, 'cur': cur})),
                         ),
                         TextButton(
                           onPressed: _filling ? null : () => _fillAll(trips),
-                          child: const Text('Doplnit kurzy'),
+                          child: Text(tr('Doplnit kurzy')),
                         ),
                       ],
                     ),
@@ -278,10 +279,10 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
           const SizedBox(height: 8),
           Center(
             child: SegmentedButton<int>(
-              segments: const [
+              segments: [
                 ButtonSegment(
-                    value: 1, label: Text('Přehled'), icon: Icon(Icons.bar_chart)),
-                ButtonSegment(value: 0, label: Text('Výdaje'), icon: Icon(Icons.list)),
+                    value: 1, label: Text(tr('Přehled')), icon: Icon(Icons.bar_chart)),
+                ButtonSegment(value: 0, label: Text(tr('Výdaje')), icon: Icon(Icons.list)),
               ],
               selected: {_tab},
               onSelectionChanged: (s) => setState(() => _tab = s.first),
@@ -300,10 +301,10 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   List<Widget> _expenseList(BuildContext context, List<Trip> trips, Trip? trip,
       String cur, List<Expense> list) {
     if (list.isEmpty) {
-      return const [
+      return [
         Padding(
           padding: EdgeInsets.all(24),
-          child: Text('Zatím žádné výdaje.', textAlign: TextAlign.center),
+          child: Text(tr('Zatím žádné výdaje.'), textAlign: TextAlign.center),
         ),
       ];
     }
@@ -346,7 +347,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
               ),
               title: Text(e.note?.isNotEmpty == true
                   ? e.note!
-                  : (expenseCategories[e.category] ?? 'Výdaj')),
+                  : (expenseCategories[e.category] ?? tr('Výdaj'))),
               subtitle: Text([
                 if (trip == null) tripName(e.tripId),
                 if (e.country != null && e.country!.isNotEmpty) e.country!,
@@ -378,10 +379,10 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
   ) {
     final conv = list.where((e) => e.amountMain != null).toList();
     if (conv.isEmpty) {
-      return const [
+      return [
         Padding(
           padding: EdgeInsets.all(24),
-          child: Text('Přehled se zobrazí po přidání výdajů.',
+          child: Text(tr('Přehled se zobrazí po přidání výdajů.'),
               textAlign: TextAlign.center),
         ),
       ];
@@ -433,7 +434,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
         .map((e) {
       final key = e.key;
       return _Bar(
-        key == _none ? 'Bez země' : key,
+        key == _none ? tr('Bez země') : key,
         e.value,
         palette[j++ % palette.length],
         icon: Icons.public,
@@ -461,10 +462,10 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
 
     return [
       if (trip == null && tripBars.length > 1)
-        section('Podle cest (klepnutím otevřeš cestu)', tripBars),
-      if (trip != null && countryBars.length > 1) section('Podle zemí', countryBars),
-      section('Podle kategorií', catBars),
-      section('Podle dnů (posledních 14)', dayBars),
+        section(tr('Podle cest (klepnutím otevřeš cestu)'), tripBars),
+      if (trip != null && countryBars.length > 1) section(tr('Podle zemí'), countryBars),
+      section(tr('Podle kategorií'), catBars),
+      section(tr('Podle dnů (posledních 14)'), dayBars),
     ];
   }
 

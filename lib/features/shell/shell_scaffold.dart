@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/tr.dart';
 
 class ShellScaffold extends StatelessWidget {
   const ShellScaffold({super.key, required this.shell});
@@ -14,14 +15,14 @@ class ShellScaffold extends StatelessWidget {
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (i) =>
             shell.goBranch(i, initialLocation: i == shell.currentIndex),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.flight_takeoff), label: 'Cesty'),
-          NavigationDestination(icon: Icon(Icons.map), label: 'Mapa'),
+        destinations: [
+          NavigationDestination(icon: Icon(Icons.flight_takeoff), label: tr('Cesty')),
+          NavigationDestination(icon: Icon(Icons.map), label: tr('Mapa')),
           NavigationDestination(
-              icon: Icon(Icons.confirmation_number), label: 'Doklady'),
+              icon: Icon(Icons.confirmation_number), label: tr('Doklady')),
           NavigationDestination(
-              icon: Icon(Icons.account_balance_wallet), label: 'Peníze'),
-          NavigationDestination(icon: Icon(Icons.lock), label: 'Vault'),
+              icon: Icon(Icons.account_balance_wallet), label: tr('Peníze')),
+          NavigationDestination(icon: Icon(Icons.lock), label: tr('Vault')),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/tr.dart';
 
 /// Uživatelská nastavení aplikace (v telefonu, SharedPreferences). Načtou se v `main()`
 /// před spuštěním, takže je mohou synchronně číst i formátovací funkce (`format.dart`).
@@ -7,12 +8,13 @@ class AppSettings extends ChangeNotifier {
   AppSettings._();
   static final instance = AppSettings._();
 
-  static const languages = {
-    'system': 'Podle telefonu',
-    'cs': 'Čeština',
-    'en': 'English',
-    'de': 'Deutsch',
-    'es': 'Español',
+  // jazyky se ukazují vždy svým vlastním názvem, jen „Podle telefonu“ se překládá
+  static Map<String, String> get languages => {
+    'system': tr('Podle telefonu'),
+    'cs': tr('Čeština'),
+    'en': tr('English'),
+    'de': tr('Deutsch'),
+    'es': tr('Español'),
   };
   static const supportedLanguages = ['cs', 'en', 'de', 'es'];
 
@@ -25,19 +27,19 @@ class AppSettings extends ChangeNotifier {
     'iso': '2026-10-23',
   };
 
-  static const startTabs = {
-    'trips': 'Cesty',
-    'map': 'Mapa',
-    'docs': 'Doklady',
-    'money': 'Peníze',
-    'vault': 'Vault',
+  static Map<String, String> get startTabs => {
+    'trips': tr('Cesty'),
+    'map': tr('Mapa'),
+    'docs': tr('Doklady'),
+    'money': tr('Peníze'),
+    'vault': tr('Vault'),
   };
 
-  static const lockOptions = {
-    0: 'Hned',
-    60: 'Po 1 minutě',
-    300: 'Po 5 minutách',
-    -1: 'Nezamykat',
+  static Map<int, String> get lockOptions => {
+    0: tr('Hned'),
+    60: tr('Po 1 minutě'),
+    300: tr('Po 5 minutách'),
+    -1: tr('Nezamykat'),
   };
 
   late SharedPreferences _p;

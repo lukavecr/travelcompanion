@@ -17,6 +17,7 @@ import '../places/locate_place_screen.dart';
 import '../places/open_in_maps.dart';
 import '../places/place_types.dart';
 import '../trips/trip_repository.dart';
+import '../../l10n/tr.dart';
 
 bool hasCoords(Place p) => !(p.lat == 0 && p.lng == 0); // 0,0 = neznámé
 
@@ -68,7 +69,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       return;
     }
     if (!await Geolocator.isLocationServiceEnabled()) {
-      _snack('Zapni v telefonu Polohu (GPS).');
+      _snack(tr('Zapni v telefonu Polohu (GPS).'));
       await Geolocator.openLocationSettings();
       return;
     }
@@ -77,11 +78,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       perm = await Geolocator.requestPermission();
     }
     if (perm == LocationPermission.denied) {
-      _snack('Bez povolení polohy tě na mapě neukážu.');
+      _snack(tr('Bez povolení polohy tě na mapě neukážu.'));
       return;
     }
     if (perm == LocationPermission.deniedForever) {
-      _snack('Poloha je pro aplikaci zakázaná – povol ji v Nastavení.');
+      _snack(tr('Poloha je pro aplikaci zakázaná – povol ji v Nastavení.'));
       await Geolocator.openAppSettings();
       return;
     }
@@ -116,7 +117,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         findPlusCode(text) != null ||
         RegExp(r'-?\d{1,3}\.\d+,\s*-?\d{1,3}\.\d+').hasMatch(text);
     if (!looksLikePlace) {
-      _snack('Ve schránce není odkaz na místo. V Google Mapách dej Sdílet → Kopírovat odkaz.');
+      _snack(tr('Ve schránce není odkaz na místo. V Google Mapách dej Sdílet → Kopírovat odkaz.'));
       return;
     }
     context.push('/share', extra: text);
@@ -140,7 +141,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(me ? 'Moje poloha' : 'Vybraný bod',
+              Text(me ? tr('Moje poloha') : tr('Vybraný bod'),
                   style: Theme.of(ctx).textTheme.titleLarge),
               const SizedBox(height: 4),
               Text('${p.latitude.toStringAsFixed(5)}, ${p.longitude.toStringAsFixed(5)}'
@@ -149,10 +150,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               FilledButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  _savePoint(p, me ? 'Moje poloha' : '');
+                  _savePoint(p, me ? tr('Moje poloha') : '');
                 },
                 icon: const Icon(Icons.add_location_alt),
-                label: const Text('Uložit jako místo'),
+                label: Text(tr('Uložit jako místo')),
               ),
             ],
           ),
@@ -210,7 +211,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 FilledButton.icon(
                   onPressed: () => openPlaceInMaps(p),
                   icon: const Icon(Icons.directions),
-                  label: const Text('Navigovat'),
+                  label: Text(tr('Navigovat')),
                 ),
                 if (trip != null)
                   OutlinedButton.icon(
@@ -219,7 +220,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       context.go('/trips/trip/${trip.id}/places');
                     },
                     icon: const Icon(Icons.list),
-                    label: const Text('Místa cesty'),
+                    label: Text(tr('Místa cesty')),
                   ),
               ]),
             ],
@@ -247,14 +248,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             builder: (ctx, scroll) => ListView(
               controller: scroll,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-                  child: Text('Místa bez polohy – klepni a najdi je podle názvu'),
+                  child: Text(tr('Místa bez polohy – klepni a najdi je podle názvu')),
                 ),
                 if (left.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(24),
-                    child: Text('Hotovo, všechna místa mají polohu.',
+                    child: Text(tr('Hotovo, všechna místa mají polohu.'),
                         textAlign: TextAlign.center),
                   ),
                 for (final p in left)
@@ -299,10 +300,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mapa'),
+        title: Text(tr('Mapa')),
         actions: [
           IconButton(
-            tooltip: 'Vložit odkaz z Google Map',
+            tooltip: tr('Vložit odkaz z Google Map'),
             icon: const Icon(Icons.content_paste_go),
             onPressed: _pasteLink,
           ),
@@ -321,7 +322,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
                       avatar: const Icon(Icons.public, size: 18),
-                      label: const Text('Vše'),
+                      label: Text(tr('Vše')),
                       selected: _tripId == null,
                       onSelected: (_) => setState(() => _tripId = null),
                     ),
@@ -346,15 +347,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(switch (unknown) {
-                    1 => '1 místo nemá polohu',
-                    < 5 => '$unknown místa nemají polohu',
-                    _ => '$unknown míst nemá polohu',
+                    1 => tr('1 místo nemá polohu'),
+                    < 5 => tr('{unknown} místa nemají polohu', {'unknown': unknown}),
+                    _ => tr('{unknown} míst nemá polohu', {'unknown': unknown}),
                   }),
                 ),
                 TextButton(
                   onPressed: () => _showUnknown(
                       places.where((p) => !hasCoords(p)).toList(), tripById),
-                  child: const Text('Doplnit'),
+                  child: Text(tr('Doplnit')),
                 ),
               ]),
             ),
@@ -433,7 +434,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           if (located.isNotEmpty) ...[
             FloatingActionButton.small(
               heroTag: 'fit',
-              tooltip: 'Zobrazit všechna místa',
+              tooltip: tr('Zobrazit všechna místa'),
               onPressed: _fit,
               child: const Icon(Icons.fit_screen),
             ),
@@ -441,7 +442,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ],
           FloatingActionButton(
             heroTag: 'me',
-            tooltip: 'Moje poloha',
+            tooltip: tr('Moje poloha'),
             onPressed: _showMe,
             child: Icon(_me == null ? Icons.my_location_outlined : Icons.my_location),
           ),

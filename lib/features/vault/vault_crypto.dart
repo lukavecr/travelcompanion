@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../lock/app_lock.dart';
+import '../../l10n/tr.dart';
 
 /// Šifrování Vaultu.
 ///
@@ -75,7 +76,7 @@ class VaultKeys extends ChangeNotifier {
   /// Vyžaduje internet (aby nevznikly dva různé Vaulty).
   Future<void> setup(String password) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('Nejsi přihlášený.');
+    if (uid == null) throw Exception(tr('Nejsi přihlášený.'));
     final master = _random(32);
     final salt = _random(16);
     final wrapKey = await _derive(password, salt, _iterations);
@@ -96,12 +97,12 @@ class VaultKeys extends ChangeNotifier {
   /// Obnova na novém telefonu heslem Vaultu. false = špatné heslo.
   Future<bool> restore(String password) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('Nejsi přihlášený.');
+    if (uid == null) throw Exception(tr('Nejsi přihlášený.'));
     final snap = await _metaRef(uid)
         .get(const GetOptions(source: Source.server))
         .timeout(const Duration(seconds: 20));
     final m = snap.data();
-    if (m == null) throw Exception('Vault v záloze není.');
+    if (m == null) throw Exception(tr('Vault v záloze není.'));
     final wrapKey = await _derive(
         password, base64Decode(m['salt'] as String), (m['iterations'] as num).toInt());
     try {
@@ -123,7 +124,7 @@ class VaultKeys extends ChangeNotifier {
   Future<bool> unlockWithDevice() async {
     if (unlocked) return true;
     final hasLock = await DeviceAuth.deviceHasLock();
-    if (hasLock && !await DeviceAuth.confirm('Odemkni Vault')) return false;
+    if (hasLock && !await DeviceAuth.confirm(tr('Odemkni Vault'))) return false;
     final b64 = await _storage.read(key: _localKeyName);
     if (b64 == null) return false;
     _key = SecretKey(base64Decode(b64));
@@ -133,7 +134,7 @@ class VaultKeys extends ChangeNotifier {
 
   SecretKey get _k {
     final k = _key;
-    if (k == null) throw StateError('Vault je zamčený');
+    if (k == null) throw StateError(tr('Vault je zamčený'));
     return k;
   }
 

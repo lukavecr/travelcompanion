@@ -17,6 +17,7 @@ import '../../data/database.dart';
 import '../pro/pro_service.dart';
 import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
+import '../../l10n/tr.dart';
 
 class SyncStatus {
   const SyncStatus({
@@ -457,8 +458,8 @@ extension WipeAll on SyncService {
   /// Když selže cloud, telefon se nemaže (vyhodí výjimku).
   Future<void> wipeAllData({bool includeVault = false}) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw Exception('Nejsi přihlášený.');
-    if (_running) throw Exception('Právě probíhá synchronizace, zkus to za chvíli.');
+    if (user == null) throw Exception(tr('Nejsi přihlášený.'));
+    if (_running) throw Exception(tr('Právě probíhá synchronizace, zkus to za chvíli.'));
     _running = true;
     _debounce?.cancel();
     try {
@@ -540,15 +541,15 @@ extension DeleteAccount on SyncService {
   /// Vrací chybovou hlášku pro uživatele, nebo null když se povedlo.
   Future<String?> deleteAccount(String password) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null || user.email == null) return 'Nejsi přihlášený.';
+    if (user == null || user.email == null) return tr('Nejsi přihlášený.');
     try {
       await user.reauthenticateWithCredential(
           EmailAuthProvider.credential(email: user.email!, password: password));
     } on FirebaseAuthException catch (e) {
       return switch (e.code) {
-        'wrong-password' || 'invalid-credential' => 'Špatné heslo účtu.',
-        'network-request-failed' => 'Nejsi připojený k internetu.',
-        _ => 'Ověření se nepovedlo (${e.code}).',
+        'wrong-password' || 'invalid-credential' => tr('Špatné heslo účtu.'),
+        'network-request-failed' => tr('Nejsi připojený k internetu.'),
+        _ => tr('Ověření se nepovedlo ({code}).', {'code': e.code}),
       };
     }
     try {
@@ -557,7 +558,7 @@ extension DeleteAccount on SyncService {
       await FirebaseAuth.instance.signOut();
       return null;
     } catch (e) {
-      return 'Smazání se nepovedlo: $e';
+      return tr('Smazání se nepovedlo: {e}', {'e': e});
     }
   }
 }

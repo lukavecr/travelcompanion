@@ -13,6 +13,7 @@ import '../places/locate_place_screen.dart';
 import '../places/place_types.dart';
 import '../trips/trip_repository.dart';
 import 'share_parser.dart';
+import '../../l10n/tr.dart';
 
 class SharePlaceScreen extends ConsumerStatefulWidget {
   const SharePlaceScreen({super.key, required this.text});
@@ -73,8 +74,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
             _nameC.text = r.name!;
           }
           if (r.origin != null && r.destination != null) {
-            _routeNote = 'Sdílená trasa. Časy spojů se z Map přenést nedají, '
-                'odkaz se uloží a po klepnutí se otevře v Mapách.';
+            _routeNote = tr('Sdílená trasa. Časy spojů se z Map přenést nedají, ' 'odkaz se uloží a po klepnutí se otevře v Mapách.');
             _type = 'transport';
             if (_nameC.text.trim().isEmpty) {
               _nameC.text = '${r.origin} → ${r.destination}';
@@ -166,7 +166,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Místo uloženo')));
+        .showSnackBar(SnackBar(content: Text(tr('Místo uloženo'))));
     context.go('/trips/trip/$_tripId');
   }
 
@@ -176,7 +176,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2040),
       initialDateRange: DateTimeRange(start: _date!, end: _hotelEnd),
-      helpText: 'Od kdy do kdy',
+      helpText: tr('Od kdy do kdy'),
     );
     if (r != null) {
       setState(() {
@@ -193,17 +193,17 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Uložit místo'),
+        title: Text(tr('Uložit místo')),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.go('/trips'),
         ),
       ),
       body: trips.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: Text('Nejdřív vytvoř cestu v záložce Cesty.',
+                child: Text(tr('Nejdřív vytvoř cestu v záložce Cesty.'),
                     textAlign: TextAlign.center),
               ),
             )
@@ -212,19 +212,19 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
               children: [
                 TextField(
                   controller: _nameC,
-                  decoration: const InputDecoration(labelText: 'Název místa'),
+                  decoration: InputDecoration(labelText: tr('Název místa')),
                 ),
                 const SizedBox(height: 8),
                 if (_resolving) ...[
                   const LinearProgressIndicator(),
                   const SizedBox(height: 8),
-                  const Text('Zjišťuji název a polohu…'),
+                  Text(tr('Zjišťuji název a polohu…')),
                 ] else ...[
                   Text(_coords == null
-                      ? 'Polohu se nepodařilo zjistit. Najdi ji ručně, nebo uložím jen odkaz.'
+                      ? tr('Polohu se nepodařilo zjistit. Najdi ji ručně, nebo uložím jen odkaz.')
                       : _approx
-                          ? 'Poloha dohledána podle názvu / adresy – zkontroluj ji na mapě.'
-                          : 'Poloha nalezena.'),
+                          ? tr('Poloha dohledána podle názvu / adresy – zkontroluj ji na mapě.')
+                          : tr('Poloha nalezena.')),
                   if (_coords != null) ...[
                     const SizedBox(height: 8),
                     ClipRRect(
@@ -262,7 +262,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                     child: TextButton.icon(
                       onPressed: _findManually,
                       icon: const Icon(Icons.search),
-                      label: Text(_coords == null ? 'Najít polohu' : 'Není to ono? Najít jinak'),
+                      label: Text(_coords == null ? tr('Najít polohu') : tr('Není to ono? Najít jinak')),
                     ),
                   ),
                 ],
@@ -273,11 +273,11 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _countryC,
-                  decoration: const InputDecoration(
-                      labelText: 'Země (doplní se z polohy)'),
+                  decoration: InputDecoration(
+                      labelText: tr('Země (doplní se z polohy)')),
                 ),
                 const SizedBox(height: 20),
-                Text('Typ', style: Theme.of(context).textTheme.titleSmall),
+                Text(tr('Typ'), style: Theme.of(context).textTheme.titleSmall),
                 Wrap(
                   spacing: 8,
                   children: [
@@ -290,7 +290,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Text('Do které cesty',
+                Text(tr('Do které cesty'),
                     style: Theme.of(context).textTheme.titleSmall),
                 Wrap(
                   spacing: 8,
@@ -310,7 +310,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Přidat také do plánu'),
+                  title: Text(tr('Přidat také do plánu')),
                   value: _addToPlan,
                   onChanged: (v) => setState(() {
                     _addToPlan = v;
@@ -350,7 +350,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                           child: OutlinedButton.icon(
                             icon: const Icon(Icons.schedule),
                             label: Text(
-                                _minutes == null ? 'Čas' : fmtTime(_minutes!)),
+                                _minutes == null ? tr('Čas') : fmtTime(_minutes!)),
                             onPressed: () async {
                               final start = _minutes ?? 540;
                               final t = await showTimePicker(
@@ -370,11 +370,11 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: _saving ? null : _save,
-                  child: const Text('Uložit místo'),
+                  child: Text(tr('Uložit místo')),
                 ),
                 const SizedBox(height: 16),
                 ExpansionTile(
-                  title: const Text('Přijatý text (pro kontrolu)'),
+                  title: Text(tr('Přijatý text (pro kontrolu)')),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(12),

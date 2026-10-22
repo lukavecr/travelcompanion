@@ -9,6 +9,7 @@ import 'vault_crypto.dart';
 import 'vault_item_screen.dart';
 import 'vault_repository.dart';
 import 'vault_types.dart';
+import '../../l10n/tr.dart';
 
 /// Záložka Vault: založení / obnova heslem, odemčení otiskem, seznam položek.
 class VaultScreen extends ConsumerStatefulWidget {
@@ -71,11 +72,11 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     final open = _stage == _Stage.open;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vault'),
+        title: Text(tr('Vault')),
         actions: [
           if (open) ...[
             IconButton(
-              tooltip: 'Zamknout Vault',
+              tooltip: tr('Zamknout Vault'),
               icon: const Icon(Icons.lock_outline),
               onPressed: _keys.lock,
             ),
@@ -99,24 +100,23 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           ? FloatingActionButton.extended(
               onPressed: _addItem,
               icon: const Icon(Icons.add),
-              label: const Text('Přidat'),
+              label: Text(tr('Přidat')),
             )
           : null,
       body: switch (_stage) {
         _Stage.checking => const Center(child: CircularProgressIndicator()),
         _Stage.offline => _Message(
             icon: Icons.cloud_off,
-            text: 'Pro první nastavení Vaultu se připoj k internetu '
-                '(zjišťuji, jestli už nemáš Vault v záloze).',
-            button: 'Zkusit znovu',
+            text: tr('Pro první nastavení Vaultu se připoj k internetu ' '(zjišťuji, jestli už nemáš Vault v záloze).'),
+            button: tr('Zkusit znovu'),
             onPressed: _check,
           ),
         _Stage.setup => const _PasswordForm(restore: false),
         _Stage.restore => const _PasswordForm(restore: true),
         _Stage.locked => _Message(
             icon: Icons.lock_outline,
-            text: 'Vault je zamčený.',
-            button: 'Odemknout',
+            text: tr('Vault je zamčený.'),
+            button: tr('Odemknout'),
             onPressed: _unlock,
           ),
         _Stage.open => const _VaultList(),
@@ -138,7 +138,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 leading: Icon(t.icon),
                 title: Text(t.label),
                 subtitle: t.singleton && rows.any((r) => r.type == t.key)
-                    ? const Text('Už máš – otevře se k úpravě')
+                    ? Text(tr('Už máš – otevře se k úpravě'))
                     : null,
                 onTap: () => Navigator.pop(ctx, t),
               ),
@@ -204,8 +204,8 @@ class _PasswordFormState extends State<_PasswordForm> {
   Future<void> _submit() async {
     final pw = _a.text;
     if (!widget.restore) {
-      if (pw.length < 8) return setState(() => _error = 'Heslo musí mít aspoň 8 znaků.');
-      if (pw != _b.text) return setState(() => _error = 'Hesla se neshodují.');
+      if (pw.length < 8) return setState(() => _error = tr('Heslo musí mít aspoň 8 znaků.'));
+      if (pw != _b.text) return setState(() => _error = tr('Hesla se neshodují.'));
     }
     setState(() {
       _busy = true;
@@ -214,12 +214,12 @@ class _PasswordFormState extends State<_PasswordForm> {
     try {
       if (widget.restore) {
         final ok = await VaultKeys.instance.restore(pw);
-        if (!ok && mounted) setState(() => _error = 'Špatné heslo Vaultu.');
+        if (!ok && mounted) setState(() => _error = tr('Špatné heslo Vaultu.'));
       } else {
         await VaultKeys.instance.setup(pw);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Nepovedlo se (jsi online?)\n$e');
+      if (mounted) setState(() => _error = tr('Nepovedlo se (jsi online?)\n{e}', {'e': e}));
     }
     if (mounted) setState(() => _busy = false);
   }
@@ -232,26 +232,23 @@ class _PasswordFormState extends State<_PasswordForm> {
         Icon(widget.restore ? Icons.restore : Icons.shield_outlined,
             size: 64, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 16),
-        Text(widget.restore ? 'Obnovit Vault ze zálohy' : 'Založit Vault',
+        Text(widget.restore ? tr('Obnovit Vault ze zálohy') : tr('Založit Vault'),
             style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
         const SizedBox(height: 12),
         Text(
           widget.restore
-              ? 'Vault už máš v záloze. Zadej heslo Vaultu, které sis zvolil při založení.'
-              : 'Pas, víza, pojištění, očkování a nouzové kontakty se ukládají zašifrovaně. '
-                  'Zvol si heslo Vaultu – je potřeba jen pro obnovu na novém telefonu. '
-                  'Normálně Vault otevřeš otiskem prstu.',
+              ? tr('Vault už máš v záloze. Zadej heslo Vaultu, které sis zvolil při založení.')
+              : tr('Pas, víza, pojištění, očkování a nouzové kontakty se ukládají zašifrovaně. ' 'Zvol si heslo Vaultu – je potřeba jen pro obnovu na novém telefonu. ' 'Normálně Vault otevřeš otiskem prstu.'),
           textAlign: TextAlign.center,
         ),
         if (!widget.restore) ...[
           const SizedBox(height: 12),
           Card(
             color: Theme.of(context).colorScheme.errorContainer,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(12),
               child: Text(
-                'Heslo si poznamenej na bezpečné místo. Když ho zapomeneš a ztratíš telefon, '
-                'Vault ze zálohy obnovit nepůjde – nikdo (ani Google) ho nepřečte.',
+                tr('Heslo si poznamenej na bezpečné místo. Když ho zapomeneš a ztratíš telefon, ' 'Vault ze zálohy obnovit nepůjde – nikdo (ani Google) ho nepřečte.'),
               ),
             ),
           ),
@@ -262,7 +259,7 @@ class _PasswordFormState extends State<_PasswordForm> {
           obscureText: !_show,
           autofocus: true,
           decoration: InputDecoration(
-            labelText: 'Heslo Vaultu',
+            labelText: tr('Heslo Vaultu'),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(_show ? Icons.visibility_off : Icons.visibility),
@@ -275,8 +272,8 @@ class _PasswordFormState extends State<_PasswordForm> {
           TextField(
             controller: _b,
             obscureText: !_show,
-            decoration: const InputDecoration(
-                labelText: 'Heslo znovu', border: OutlineInputBorder()),
+            decoration: InputDecoration(
+                labelText: tr('Heslo znovu'), border: OutlineInputBorder()),
           ),
         ],
         if (_error != null) ...[
@@ -289,7 +286,7 @@ class _PasswordFormState extends State<_PasswordForm> {
           child: _busy
               ? const SizedBox(
                   height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(widget.restore ? 'Obnovit' : 'Založit Vault'),
+              : Text(widget.restore ? tr('Obnovit') : tr('Založit Vault')),
         ),
       ],
     );
@@ -310,17 +307,16 @@ class _VaultList extends ConsumerWidget {
       builder: (context, snap) {
         if (!snap.hasData) {
           return snap.hasError
-              ? Center(child: Text('Nepodařilo se odšifrovat: ${snap.error}'))
+              ? Center(child: Text(tr('Nepodařilo se odšifrovat: {error}', {'error': snap.error})))
               : const Center(child: CircularProgressIndicator());
         }
         final items = snap.data!;
         if (items.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
               padding: EdgeInsets.all(32),
               child: Text(
-                'Vault je prázdný.\nPřidej pas, pojištění, nouzové kontakty a zdravotní údaje – '
-                'z nich se skládá i SOS.',
+                tr('Vault je prázdný.\nPřidej pas, pojištění, nouzové kontakty a zdravotní údaje – ' 'z nich se skládá i SOS.'),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -356,10 +352,10 @@ class _VaultTile extends StatelessWidget {
     Color? warnColor;
     if (exp != null) {
       if (exp.isBefore(today)) {
-        warn = 'Platnost skončila ${fmtDate(exp)}';
+        warn = tr('Platnost skončila {exp}', {'exp': fmtDate(exp)});
         warnColor = Theme.of(context).colorScheme.error;
       } else if (exp.isBefore(today.add(entry.def.warnBefore))) {
-        warn = 'Platnost končí ${fmtDate(exp)}';
+        warn = tr('Platnost končí {exp}', {'exp': fmtDate(exp)});
         warnColor = Colors.orange;
       }
     }
@@ -367,7 +363,7 @@ class _VaultTile extends StatelessWidget {
       if (entry.fields['number']?.isNotEmpty == true) entry.fields['number']!,
       if (entry.fields['relation']?.isNotEmpty == true) entry.fields['relation']!,
       if (entry.fields['phone']?.isNotEmpty == true) entry.fields['phone']!,
-      if (warn == null && exp != null) 'platí do ${fmtDate(exp)}',
+      if (warn == null && exp != null) tr('platí do {exp}', {'exp': fmtDate(exp)}),
       if (entry.photoIds.isNotEmpty) '📷 ${entry.photoIds.length}',
     ].join(' · ');
     return Card(

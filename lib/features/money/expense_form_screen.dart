@@ -17,6 +17,7 @@ import 'categories.dart';
 import 'expense_repository.dart';
 import 'fx_service.dart';
 import 'receipt_reader.dart';
+import '../../l10n/tr.dart';
 
 class ExpenseFormArgs {
   const ExpenseFormArgs(this.tripId, [this.existing, this.defaultCountry]);
@@ -97,17 +98,16 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       });
       return;
     }
-    setState(() => _rateMsg = 'Načítám kurz…');
+    setState(() => _rateMsg = tr('Načítám kurz…'));
     final r = await fetchRate(from: cur, to: main, date: _date);
     if (!mounted || _cur.text.trim().toUpperCase() != cur) return;
     setState(() {
       if (r != null) {
         _rate.text = r.toString();
-        _rateMsg = 'Kurz ECB: 1 $cur = ${r.toStringAsFixed(4)} $main';
+        _rateMsg = tr('Kurz ECB: 1 {cur} = {rate} {main}', {'cur': cur, 'rate': r.toStringAsFixed(4), 'main': main});
       } else {
         _rate.text = '';
-        _rateMsg = 'Kurz se nepodařilo načíst (offline nebo měna není v ECB). '
-            'Zadej ho ručně, nebo nech prázdné a doplní se později.';
+        _rateMsg = tr('Kurz se nepodařilo načíst (offline nebo měna není v ECB). ' 'Zadej ho ručně, nebo nech prázdné a doplní se později.');
       }
     });
   }
@@ -121,12 +121,12 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Vyfotit účtenku'),
+              title: Text(tr('Vyfotit účtenku')),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Vybrat fotku nebo screenshot'),
+              title: Text(tr('Vybrat fotku nebo screenshot')),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
           ],
@@ -158,17 +158,17 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     });
     if (!mounted) return;
     final found = [
-      if (g.amount != null) 'částka ${_num(g.amount!)}',
-      if (currency != null) 'měna $currency',
+      if (g.amount != null) tr('částka {amount}', {'amount': _num(g.amount!)}),
+      if (currency != null) tr('měna {currency}', {'currency': currency}),
       if (g.date != null) 'datum ${fmtDate(g.date!)}',
       if (g.category != null) 'kategorie',
-      if (g.merchant != null) 'název',
-      if (country != null) 'země $country',
+      if (g.merchant != null) tr('název'),
+      if (country != null) tr('země {country}', {'country': country}),
     ];
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(found.isEmpty
-          ? 'Z účtenky se nepodařilo nic přečíst, vyplň údaje ručně.'
-          : 'Z účtenky přečteno: ${found.join(', ')}. Zkontroluj to.'),
+          ? tr('Z účtenky se nepodařilo nic přečíst, vyplň údaje ručně.')
+          : tr('Z účtenky přečteno: {join}. Zkontroluj to.', {'join': found.join(', ')})),
     ));
     _updateRate();
   }
@@ -178,11 +178,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     final cur = _cur.text.trim().toUpperCase();
     final main = _mainCurrency();
     if (amount == null || amount <= 0) {
-      _snack('Zadej částku.');
+      _snack(tr('Zadej částku.'));
       return;
     }
     if (cur.length != 3 || main == null) {
-      _snack('Zadej měnu jako třípísmenný kód, např. EUR.');
+      _snack(tr('Zadej měnu jako třípísmenný kód, např. EUR.'));
       return;
     }
     setState(() => _saving = true);
@@ -295,7 +295,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_existing == null ? 'Nový výdaj' : 'Upravit výdaj'),
+        title: Text(_existing == null ? tr('Nový výdaj') : tr('Upravit výdaj')),
         bottom: _busy
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -305,10 +305,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         actions: [
           if (_existing != null)
             IconButton(
-              tooltip: 'Smazat',
+              tooltip: tr('Smazat'),
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
-                if (await confirm(context, 'Smazat výdaj?')) {
+                if (await confirm(context, tr('Smazat výdaj?'))) {
                   await ref
                       .read(expenseRepositoryProvider)
                       .deleteExpense(_existing!.id);
@@ -324,8 +324,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           OutlinedButton.icon(
             icon: const Icon(Icons.receipt_long),
             label: Text(_receipt == null
-                ? 'Naskenovat účtenku (vyplní částku a měnu)'
-                : 'Nahradit účtenku'),
+                ? tr('Naskenovat účtenku (vyplní částku a měnu)')
+                : tr('Nahradit účtenku')),
             onPressed: _busy ? null : _scanReceipt,
           ),
           if (_receipt != null) ...[
@@ -333,7 +333,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => openFullImage(context, 'Účtenka', _receipt!),
+                  onTap: () => openFullImage(context, tr('Účtenka'), _receipt!),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.file(File(_receipt!),
@@ -341,13 +341,13 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(child: Text('Klepnutím zobrazíš celou účtenku')),
+                Expanded(child: Text(tr('Klepnutím zobrazíš celou účtenku'))),
                 TextButton(
                   onPressed: () => setState(() {
                     _receipt = null;
                     _receiptIsNew = false;
                   }),
-                  child: const Text('Odebrat účtenku'),
+                  child: Text(tr('Odebrat účtenku')),
                 ),
               ],
             ),
@@ -361,7 +361,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   controller: _amount,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Částka'),
+                  decoration: InputDecoration(labelText: tr('Částka')),
                 ),
               ),
               const SizedBox(width: 8),
@@ -372,7 +372,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   textCapitalization: TextCapitalization.characters,
                   maxLength: 3,
                   decoration:
-                      const InputDecoration(labelText: 'Měna', counterText: ''),
+                      InputDecoration(labelText: tr('Měna'), counterText: ''),
                   onChanged: (_) {
                     setState(() {});
                     if (_cur.text.trim().length == 3) _updateRate();
@@ -403,14 +403,14 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               controller: _rate,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Kurz (1 $cur = ? $main)',
+                labelText: tr('Kurz (1 {cur} = ? {main})', {'cur': cur, 'main': main}),
                 helperText: _rateMsg,
                 helperMaxLines: 3,
               ),
             ),
           ],
           const SizedBox(height: 16),
-          Text('Kategorie', style: Theme.of(context).textTheme.titleSmall),
+          Text(tr('Kategorie'), style: Theme.of(context).textTheme.titleSmall),
           Wrap(
             spacing: 8,
             children: [
@@ -443,7 +443,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _country,
-            decoration: const InputDecoration(labelText: 'Země (nepovinné)'),
+            decoration: InputDecoration(labelText: tr('Země (nepovinné)')),
           ),
           if (countries.isNotEmpty)
             Wrap(
@@ -459,12 +459,12 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _note,
-            decoration: const InputDecoration(labelText: 'Poznámka (nepovinné)'),
+            decoration: InputDecoration(labelText: tr('Poznámka (nepovinné)')),
           ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _saving ? null : _save,
-            child: const Text('Uložit výdaj'),
+            child: Text(tr('Uložit výdaj')),
           ),
         ],
       ),

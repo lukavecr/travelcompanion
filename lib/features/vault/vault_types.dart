@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_settings.dart';
+import '../../core/format.dart';
+import '../../l10n/tr.dart';
+
 enum FieldKind { text, multiline, date, phone, email }
 
 class VaultField {
-  const VaultField(this.key, this.label, [this.kind = FieldKind.text]);
+  const VaultField(this.key, this._label, [this.kind = FieldKind.text]);
   final String key;
-  final String label;
+  final String _label; // český text = klíč překladu
+  String get label => tr(_label);
   final FieldKind kind;
 }
 
 class VaultType {
   const VaultType({
     required this.key,
-    required this.label,
+    required String label,
     required this.icon,
     required this.fields,
     this.titleField,
@@ -20,9 +25,10 @@ class VaultType {
     this.warnBefore = const Duration(days: 30),
     this.remindDays = const [30, 7, 0],
     this.singleton = false,
-  });
+  }) : _label = label; // ignore: prefer_initializing_formals
   final String key;
-  final String label;
+  final String _label; // český text = klíč překladu
+  String get label => tr(_label);
   final IconData icon;
   final List<VaultField> fields;
   final String? titleField; // pole, které se ukáže jako název v seznamu
@@ -149,24 +155,31 @@ const vaultTypes = <VaultType>[
   ),
 ];
 
-/// „za 6 měsíců“, „za 14 dní“, „zítra“, „dnes“.
-String fmtDaysAhead(int days) {
-  if (days <= 0) return 'dnes';
-  if (days == 1) return 'zítra';
+/// Délka „6 měsíců“, „14 dní“, „3 dny“, „1 den“ (česká množná čísla; v jiných jazycích stačí 2 tvary).
+String fmtDuration(int days) {
   if (days >= 60) {
     final m = (days / 30.4).round();
-    return 'za $m ${m < 5 ? 'měsíce' : 'měsíců'}';
+    return m < 5 ? tr('{n} měsíce', {'n': m}) : tr('{n} měsíců', {'n': m});
   }
-  return 'za $days ${days < 5 ? 'dny' : 'dní'}';
+  if (days == 1) return tr('1 den');
+  return days < 5 ? tr('{n} dny', {'n': days}) : tr('{n} dní', {'n': days});
+}
+
+/// „za 6 měsíců“, „za 14 dní“, „zítra“, „dnes“.
+String fmtDaysAhead(int days) {
+  if (days <= 0) return tr('dnes');
+  if (days == 1) return tr('zítra');
+  return tr('za {duration}', {'duration': fmtDuration(days)});
 }
 
 /// Text pro formulář: kdy přijde upozornění.
 String remindPlanText(VaultType t) {
-  final before = t.remindDays
-      .where((d) => d > 0)
-      .map((d) => d == 1 ? '1 den' : fmtDaysAhead(d).replaceFirst('za ', ''));
-  final onDay = t.remindDays.contains(0);
-  return 'Upozorním ${before.join(', ')} předem${onDay ? ' a v den konce platnosti' : ''} (v 9:00).';
+  final before = t.remindDays.where((d) => d > 0).map(fmtDuration).join(', ');
+  final time = fmtTime(AppSettings.instance.expiryReminderMinutes);
+  return t.remindDays.contains(0)
+      ? tr('Upozorním {before} předem a v den konce platnosti ({time}).',
+          {'before': before, 'time': time})
+      : tr('Upozorním {before} předem ({time}).', {'before': before, 'time': time});
 }
 
 VaultType vaultType(String key) =>

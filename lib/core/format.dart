@@ -1,6 +1,11 @@
 import 'app_settings.dart';
 
-const _weekdays = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+const _weekdays = {
+  'cs': ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'],
+  'en': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  'de': ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+  'es': ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'],
+};
 
 String _pad2(int n) => n.toString().padLeft(2, '0');
 
@@ -20,7 +25,8 @@ String fmtDay(DateTime d) {
     'iso' => '${_pad2(d.month)}-${_pad2(d.day)}',
     _ => '${d.day}. ${d.month}.',
   };
-  return '${_weekdays[d.weekday - 1]} $date';
+  final names = _weekdays[AppSettings.instance.effectiveLanguage] ?? _weekdays['cs']!;
+  return '${names[d.weekday - 1]} $date';
 }
 
 DateTime dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);

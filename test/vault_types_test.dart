@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:travelcompanion/core/app_settings.dart';
 import 'package:travelcompanion/core/plus_code.dart';
 import 'package:travelcompanion/features/vault/vault_types.dart';
 
 void main() {
+  setUp(() => AppSettings.instance.language = 'cs');
+
   test('texty upozornění na konec platnosti', () {
     expect(fmtDaysAhead(0), 'dnes');
     expect(fmtDaysAhead(1), 'zítra');
@@ -11,9 +14,9 @@ void main() {
     expect(fmtDaysAhead(90), 'za 3 měsíce');
     expect(fmtDaysAhead(183), 'za 6 měsíců');
     expect(remindPlanText(vaultType('passport')),
-        'Upozorním 6 měsíců, 3 měsíce, 30 dní předem a v den konce platnosti (v 9:00).');
+        'Upozorním 6 měsíců, 3 měsíce, 30 dní předem a v den konce platnosti (09:00).');
     expect(remindPlanText(vaultType('visa')),
-        'Upozorním 14 dní, 3 dny, 1 den předem a v den konce platnosti (v 9:00).');
+        'Upozorním 14 dní, 3 dny, 1 den předem a v den konce platnosti (09:00).');
   });
 
   test('Plus Code (testovací hodnoty Open Location Code)', () {

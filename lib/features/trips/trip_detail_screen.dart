@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../places/place_types.dart';
 import '../reminders/reminder_service.dart';
 import 'trip_repository.dart';
+import '../../l10n/tr.dart';
 import 'trips_list_screen.dart' show askTrip;
 
 class TripDetailScreen extends ConsumerWidget {
@@ -25,7 +26,7 @@ class TripDetailScreen extends ConsumerWidget {
       error: (e, _) => Scaffold(body: Center(child: Text('Chyba: $e'))),
       data: (t) {
         if (t == null) {
-          return const Scaffold(body: Center(child: Text('Cesta nenalezena')));
+          return Scaffold(body: Center(child: Text(tr('Cesta nenalezena'))));
         }
         final evs = events.value ?? const <CalendarEvent>[];
 
@@ -55,7 +56,7 @@ class TripDetailScreen extends ConsumerWidget {
             title: Text(t.name),
             actions: [
               IconButton(
-                tooltip: 'Uložená místa',
+                tooltip: tr('Uložená místa'),
                 icon: const Icon(Icons.place_outlined),
                 onPressed: () => context.go('/trips/trip/$tripId/places'),
               ),
@@ -64,7 +65,7 @@ class TripDetailScreen extends ConsumerWidget {
                   if (v == 'edit') {
                     final r = await askTrip(
                       context,
-                      heading: 'Upravit cestu',
+                      heading: tr('Upravit cestu'),
                       initialName: t.name,
                       initialCountries: tripCountries(t).join(', '),
                       initialRange: (t.startDate != null && t.endDate != null)
@@ -80,20 +81,19 @@ class TripDetailScreen extends ConsumerWidget {
                     }
                   }
                 },
-                itemBuilder: (_) => const [
+                itemBuilder: (_) => [
                   PopupMenuItem(
-                      value: 'edit', child: Text('Upravit cestu (název, termín)')),
+                      value: 'edit', child: Text(tr('Upravit cestu (název, termín)'))),
                 ],
               ),
             ],
           ),
           body: sorted.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(24),
                     child: Text(
-                      'Cesta nemá termín, takže nejsou žádné dny.\n'
-                      'Smaž ji a vytvoř znovu s termínem.',
+                      tr('Cesta nemá termín, takže nejsou žádné dny.\n' 'Smaž ji a vytvoř znovu s termínem.'),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -145,7 +145,7 @@ class _DayCard extends ConsumerWidget {
   final List<CalendarEvent> events;
 
   String get _label => dayNumber != null && dayNumber! > 0
-      ? 'Den $dayNumber · ${fmtDay(day)}'
+      ? tr('Den {n} · {day}', {'n': dayNumber, 'day': fmtDay(day)})
       : fmtDay(day);
 
   Future<void> _addStay(BuildContext context, TripRepository repo,
@@ -158,7 +158,7 @@ class _DayCard extends ConsumerWidget {
         start: day,
         end: DateTime(day.year, day.month, day.day + 1),
       ),
-      helpText: 'Od kdy do kdy',
+      helpText: tr('Od kdy do kdy'),
     );
     if (range == null) return;
     await repo.addEvent(
@@ -181,12 +181,12 @@ class _DayCard extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_note),
-              title: const Text('Vlastní položka'),
+              title: Text(tr('Vlastní položka')),
               onTap: () => Navigator.pop(ctx, 'custom'),
             ),
             ListTile(
               leading: const Icon(Icons.hotel),
-              title: const Text('Ubytování (od–do)'),
+              title: Text(tr('Ubytování (od–do)')),
               onTap: () => Navigator.pop(ctx, 'stay'),
             ),
             if (places.isNotEmpty) const Divider(),
@@ -202,7 +202,7 @@ class _DayCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
     if (choice == 'custom') {
-      final r = await askEvent(context, heading: 'Nová položka · $_label');
+      final r = await askEvent(context, heading: tr('Nová položka · {_label}', {'_label': _label}));
       if (r != null) {
         await repo.addEvent(
           tripId: tripId,
@@ -214,7 +214,7 @@ class _DayCard extends ConsumerWidget {
         if (r.remindMinutes != null) await ReminderService.ensurePermissions();
       }
     } else if (choice == 'stay') {
-      final name = await askText(context, title: 'Název ubytování');
+      final name = await askText(context, title: tr('Název ubytování'));
       if (name == null || !context.mounted) return;
       await _addStay(context, repo, name, null);
     } else if (choice is Place) {
@@ -222,7 +222,7 @@ class _DayCard extends ConsumerWidget {
         await _addStay(context, repo, choice.name, choice.id);
       } else {
         final r = await askEvent(context,
-            heading: 'Přidat do dne', title: choice.name);
+            heading: tr('Přidat do dne'), title: choice.name);
         if (r != null) {
           await repo.addEvent(
             tripId: tripId,
@@ -244,7 +244,7 @@ class _DayCard extends ConsumerWidget {
       onSelected: (v) async {
         if (v == 'edit') {
           final r = await askEvent(context,
-              heading: 'Upravit',
+              heading: tr('Upravit'),
               title: e.title,
               minutes: e.startMinutes,
               remind: e.remindMinutes);
@@ -267,10 +267,10 @@ class _DayCard extends ConsumerWidget {
           await repo.deleteEvent(e.id);
         }
       },
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: 'edit', child: Text('Upravit (název, čas)')),
-        PopupMenuItem(value: 'move', child: Text('Přesunout na jiný den')),
-        PopupMenuItem(value: 'delete', child: Text('Smazat')),
+      itemBuilder: (_) => [
+        PopupMenuItem(value: 'edit', child: Text(tr('Upravit (název, čas)'))),
+        PopupMenuItem(value: 'move', child: Text(tr('Přesunout na jiný den'))),
+        PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
       ],
     );
   }
@@ -283,7 +283,7 @@ class _DayCard extends ConsumerWidget {
         ? 'Check-in'
         : day == end
             ? 'Check-out'
-            : 'Ubytování';
+            : tr('Ubytování');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -303,16 +303,16 @@ class _DayCard extends ConsumerWidget {
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2040),
                 initialDateRange: DateTimeRange(start: start, end: end),
-                helpText: 'Od kdy do kdy',
+                helpText: tr('Od kdy do kdy'),
               );
               if (r != null) await repo.updateStay(e.id, r.start, r.end);
             } else if (v == 'delete') {
               await repo.deleteEvent(e.id);
             }
           },
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'range', child: Text('Změnit termín')),
-            PopupMenuItem(value: 'delete', child: Text('Smazat')),
+          itemBuilder: (_) => [
+            PopupMenuItem(value: 'range', child: Text(tr('Změnit termín'))),
+            PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
           ],
         ),
       ),
@@ -346,7 +346,7 @@ class _DayCard extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleMedium),
                   ),
                   IconButton(
-                    tooltip: 'Přidat do dne',
+                    tooltip: tr('Přidat do dne'),
                     icon: const Icon(Icons.add_circle_outline),
                     onPressed: () => _add(context, ref),
                   ),
@@ -355,9 +355,9 @@ class _DayCard extends ConsumerWidget {
             ),
             for (final s in stays) _stayTile(context, ref, s),
             if (empty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text('Zatím nic naplánováno'),
+                child: Text(tr('Zatím nic naplánováno')),
               ),
             for (final e in timed)
               ListTile(
@@ -378,9 +378,9 @@ class _DayCard extends ConsumerWidget {
                         e.remindMinutes != null)
                     ? Text([
                         if (e.documentId != null) 'doklad',
-                        if (e.placeId != null) 'uložené místo',
+                        if (e.placeId != null) tr('uložené místo'),
                         if (e.remindMinutes != null)
-                          '🔔 ${fmtLead(e.remindMinutes!)} předem',
+                          tr('🔔 {remindMinutes} předem', {'remindMinutes': fmtLead(e.remindMinutes!)}),
                       ].join(' · '))
                     : null,
                 trailing: _eventMenu(context, ref, e),

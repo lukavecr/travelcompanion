@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../pro/paywall.dart';
 import '../pro/pro_service.dart';
 import 'sync_service.dart';
+import '../../l10n/tr.dart';
 
 class SyncScreen extends ConsumerWidget {
   const SyncScreen({super.key});
@@ -17,7 +18,7 @@ class SyncScreen extends ConsumerWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Záloha a účet')),
+      appBar: AppBar(title: Text(tr('Záloha a účet'))),
       body: ValueListenableBuilder<SyncStatus>(
         valueListenable: sync.status,
         builder: (context, s, _) {
@@ -30,17 +31,17 @@ class SyncScreen extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.secondaryContainer,
                   child: ListTile(
                     leading: const Icon(Icons.workspace_premium),
-                    title: const Text('Záloha je součást Pro'),
-                    subtitle: const Text(
-                        'Ve verzi zdarma jsou data jen v tomto telefonu. Klepni pro víc informací.'),
+                    title: Text(tr('Záloha je součást Pro')),
+                    subtitle: Text(
+                        tr('Ve verzi zdarma jsou data jen v tomto telefonu. Klepni pro víc informací.')),
                     onTap: () => openPaywall(context, ProLimit.backup),
                   ),
                 ),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.account_circle),
-                  title: Text(user?.email ?? 'Nepřihlášen'),
-                  subtitle: const Text('Přihlášený účet'),
+                  title: Text(user?.email ?? tr('Nepřihlášen')),
+                  subtitle: Text(tr('Přihlášený účet')),
                 ),
               ),
               Card(
@@ -62,10 +63,10 @@ class SyncScreen extends ConsumerWidget {
                               s.running
                                   ? 'Synchronizuji…'
                                   : s.error != null
-                                      ? 'Synchronizace se nepovedla'
+                                      ? tr('Synchronizace se nepovedla')
                                       : s.pending > 0
-                                          ? 'Čeká na odeslání: ${s.pending}'
-                                          : 'Vše je zazálohované',
+                                          ? tr('Čeká na odeslání: {pending}', {'pending': s.pending})
+                                          : tr('Vše je zazálohované'),
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                           ),
@@ -73,9 +74,8 @@ class SyncScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(last == null
-                          ? 'Zatím neproběhla žádná synchronizace.'
-                          : 'Poslední synchronizace: ${fmtDate(last)} '
-                              '${fmtTime(last.hour * 60 + last.minute)}'),
+                          ? tr('Zatím neproběhla žádná synchronizace.')
+                          : tr('Poslední synchronizace: {last} ' '{minute}', {'last': fmtDate(last), 'minute': fmtTime(last.hour * 60 + last.minute)})),
                       if (s.error != null) ...[
                         const SizedBox(height: 8),
                         SelectableText(
@@ -95,35 +95,32 @@ class SyncScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               FilledButton.icon(
                 icon: const Icon(Icons.sync),
-                label: const Text('Synchronizovat teď'),
+                label: Text(tr('Synchronizovat teď')),
                 onPressed: s.running ? null : sync.syncNow,
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 icon: const Icon(Icons.alternate_email),
-                label: const Text('Změnit e-mail účtu'),
+                label: Text(tr('Změnit e-mail účtu')),
                 onPressed: s.running ? null : () => _changeEmail(context),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 icon: const Icon(Icons.logout),
-                label: const Text('Odhlásit se'),
+                label: Text(tr('Odhlásit se')),
                 onPressed: s.running
                     ? null
                     : () async {
                         final ok = await confirm(context,
-                            'Odhlásit se? Data se před tím odešlou do zálohy.');
+                            tr('Odhlásit se? Data se před tím odešlou do zálohy.'));
                         if (!ok) return;
                         await sync.syncNow();
                         await FirebaseAuth.instance.signOut();
                       },
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Zálohují se cesty, plán, místa, doklady, výdaje i obrázky. '
-                'Obrázky se do zálohy ukládají zmenšené (do zhruba 0,6 MB), '
-                'originály zůstávají v telefonu. Na novém telefonu se po '
-                'přihlášení vše samo stáhne.',
+              Text(
+                tr('Zálohují se cesty, plán, místa, doklady, výdaje i obrázky. ' 'Obrázky se do zálohy ukládají zmenšené (do zhruba 0,6 MB), ' 'originály zůstávají v telefonu. Na novém telefonu se po ' 'přihlášení vše samo stáhne.'),
               ),
             ],
           );
@@ -143,31 +140,31 @@ Future<void> _changeEmail(BuildContext context) async {
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Změnit e-mail účtu'),
+      title: Text(tr('Změnit e-mail účtu')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Teď: ${user.email}'),
+          Text(tr('Teď: {email}', {'email': user.email})),
           const SizedBox(height: 12),
           TextField(
             controller: emailC,
             keyboardType: TextInputType.emailAddress,
             autofocus: true,
-            decoration: const InputDecoration(
-                labelText: 'Nový e-mail', border: OutlineInputBorder()),
+            decoration: InputDecoration(
+                labelText: tr('Nový e-mail'), border: OutlineInputBorder()),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: passC,
             obscureText: true,
-            decoration: const InputDecoration(
-                labelText: 'Současné heslo', border: OutlineInputBorder()),
+            decoration: InputDecoration(
+                labelText: tr('Současné heslo'), border: OutlineInputBorder()),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Zrušit')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Změnit')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Zrušit'))),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Změnit'))),
       ],
     ),
   );
@@ -178,15 +175,14 @@ Future<void> _changeEmail(BuildContext context) async {
     await user.reauthenticateWithCredential(
         EmailAuthProvider.credential(email: user.email!, password: passC.text));
     await user.verifyBeforeUpdateEmail(newEmail);
-    msg = 'Na $newEmail přišel e-mail s odkazem. Po jeho otevření se změna dokončí '
-        'a přihlásíš se novou adresou (heslo zůstává).';
+    msg = tr('Na {newEmail} přišel e-mail s odkazem. Po jeho otevření se změna dokončí ' 'a přihlásíš se novou adresou (heslo zůstává).', {'newEmail': newEmail});
   } on FirebaseAuthException catch (e) {
     msg = switch (e.code) {
-      'wrong-password' || 'invalid-credential' => 'Špatné heslo.',
-      'invalid-email' => 'Neplatný e-mail.',
-      'email-already-in-use' => 'Na tuhle adresu už je jiný účet.',
-      'network-request-failed' => 'Nejsi připojený k internetu.',
-      _ => 'Nepovedlo se (${e.code}).',
+      'wrong-password' || 'invalid-credential' => tr('Špatné heslo.'),
+      'invalid-email' => tr('Neplatný e-mail.'),
+      'email-already-in-use' => tr('Na tuhle adresu už je jiný účet.'),
+      'network-request-failed' => tr('Nejsi připojený k internetu.'),
+      _ => tr('Nepovedlo se ({code}).', {'code': e.code}),
     };
   }
   if (context.mounted) {

@@ -5,6 +5,7 @@ import '../trips/trip_repository.dart';
 import 'locate_place_screen.dart';
 import 'open_in_maps.dart';
 import 'place_types.dart';
+import '../../l10n/tr.dart';
 
 class PlacesScreen extends ConsumerWidget {
   const PlacesScreen({super.key, required this.tripId});
@@ -19,7 +20,7 @@ class PlacesScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          title: const Text('Nové místo'),
+          title: Text(tr('Nové místo')),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -28,13 +29,13 @@ class PlacesScreen extends ConsumerWidget {
                 TextField(
                   controller: nameC,
                   autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Název'),
+                  decoration: InputDecoration(labelText: tr('Název')),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: urlC,
-                  decoration: const InputDecoration(
-                      labelText: 'Odkaz na mapu (nepovinné)'),
+                  decoration: InputDecoration(
+                      labelText: tr('Odkaz na mapu (nepovinné)')),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -54,11 +55,11 @@ class PlacesScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Zrušit'),
+              child: Text(tr('Zrušit')),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Uložit'),
+              child: Text(tr('Uložit')),
             ),
           ],
         ),
@@ -82,23 +83,22 @@ class PlacesScreen extends ConsumerWidget {
     final places = ref.watch(placesProvider(tripId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Uložená místa')),
+      appBar: AppBar(title: Text(tr('Uložená místa'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addPlace(context, ref),
         icon: const Icon(Icons.add_location_alt),
-        label: const Text('Přidat místo'),
+        label: Text(tr('Přidat místo')),
       ),
       body: places.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Chyba: $e')),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Zatím tu nejsou žádná místa.\n'
-                  'V Google Maps klepni na „Sdílet“ a vyber Travel Companion AI.',
+                  tr('Zatím tu nejsou žádná místa.\n' 'V Google Maps klepni na „Sdílet“ a vyber Travel Companion AI.'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -132,8 +132,8 @@ class PlacesScreen extends ConsumerWidget {
                     itemBuilder: (_) => [
                       PopupMenuItem(
                           value: 'locate',
-                          child: Text(hasCoords ? 'Změnit polohu' : 'Najít polohu')),
-                      const PopupMenuItem(value: 'delete', child: Text('Smazat')),
+                          child: Text(hasCoords ? tr('Změnit polohu') : tr('Najít polohu'))),
+                      PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
                     ],
                   ),
                 ),

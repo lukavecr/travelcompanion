@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../l10n/tr.dart';
 
-const placeTypes = <String, String>{
-  'hotel': 'Hotel',
-  'attraction': 'Atrakce',
-  'restaurant': 'Restaurace',
-  'transport': 'Doprava',
-  'custom': 'Vlastní bod',
+/// Názvy typů míst v jazyce aplikace (getter – mění se s jazykem).
+Map<String, String> get placeTypes => <String, String>{
+  'hotel': tr('Hotel'),
+  'attraction': tr('Atrakce'),
+  'restaurant': tr('Restaurace'),
+  'transport': tr('Doprava'),
+  'custom': tr('Vlastní bod'),
 };
 
 IconData placeIcon(String type) {

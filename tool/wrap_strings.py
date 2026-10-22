@@ -82,12 +82,19 @@ def scan_strings(src):
     return out
 
 
-def is_ui(raw):
+UI_CTX = re.compile(r"(Text\(|label:|labelText:|title:|tooltip:|hintText:|helpText:|subtitle:|content:|confirmLabel:|heading:|\?|:|=>|return)\s*$")
+
+
+def is_ui(raw, before=''):
     body = raw[1:-1]
     plain = re.sub(r'\$\{.*?\}|\$\w+', '', body)
     if CZ.search(plain):
         return True
-    return bool(re.match(r"^[A-ZÁ-Ž][a-zá-ž]{2,}( [^\s]+)*[ .!?…:]?$", plain.strip())) and ' ' in plain.strip()
+    p = plain.strip()
+    if re.match(r"^[A-ZÁ-Ž][a-zá-ž]{2,}( [^\s]+)*[ .!?…:]?$", p) and ' ' in p:
+        return True
+    # jednoslovné popisky („Typ“, „Mapa“) jen v kontextu UI
+    return bool(re.fullmatch(r"[A-ZÁ-Ž][a-zá-ž]{1,}", p)) and bool(UI_CTX.search(before))
 
 
 def convert(raw, used):
@@ -154,13 +161,14 @@ def process(path):
     for g in groups:
         start, end = g[0][0], g[-1][1]
         raw_all = "'" + ''.join(x[2][1:-1] for x in g) + "'"
-        if not is_ui(raw_all):
-            continue
         before = src[:start].rstrip()
         after = src[end:].lstrip()
+        if not is_ui(raw_all, before):
+            continue
         line_start = src.rfind('\n', 0, start) + 1
         line = src[line_start:start]
-        if before.endswith('tr(') or after.startswith(':') or line.lstrip().startswith(('import', 'export', 'part')):
+        is_key = after.startswith(':') and not before.endswith('?')
+        if before.endswith('tr(') or is_key or line.lstrip().startswith(('import', 'export', 'part')):
             continue
         if before.endswith(('case', '==', '!=')) or before.endswith('['):
             continue

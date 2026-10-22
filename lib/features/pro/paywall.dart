@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import 'pro_service.dart';
+import '../../l10n/tr.dart';
 
 enum ProLimit { trip, document, expense, backup }
 
@@ -51,10 +52,10 @@ class PaywallScreen extends StatelessWidget {
 
   String? get _reasonText => switch (reason) {
         ProLimit.trip =>
-          'Ve verzi zdarma můžeš mít ${ProService.freeActiveTrips} aktivní cestu. Proběhlé cesty zůstávají.',
-        ProLimit.document => 'Ve verzi zdarma můžeš mít ${ProService.freeDocuments} dokladů.',
-        ProLimit.expense => 'Ve verzi zdarma můžeš mít ${ProService.freeExpenses} výdajů.',
-        ProLimit.backup => 'Záloha do cloudu a synchronizace mezi telefony jsou součástí Pro.',
+          tr('Ve verzi zdarma můžeš mít {freeActiveTrips} aktivní cestu. Proběhlé cesty zůstávají.', {'freeActiveTrips': ProService.freeActiveTrips}),
+        ProLimit.document => tr('Ve verzi zdarma můžeš mít {freeDocuments} dokladů.', {'freeDocuments': ProService.freeDocuments}),
+        ProLimit.expense => tr('Ve verzi zdarma můžeš mít {freeExpenses} výdajů.', {'freeExpenses': ProService.freeExpenses}),
+        ProLimit.backup => tr('Záloha do cloudu a synchronizace mezi telefony jsou součástí Pro.'),
         null => null,
       };
 
@@ -72,7 +73,7 @@ class PaywallScreen extends StatelessWidget {
           });
         }
         return Scaffold(
-          appBar: AppBar(title: const Text('Travel Companion Pro')),
+          appBar: AppBar(title: Text(tr('Travel Companion Pro'))),
           body: ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -86,19 +87,19 @@ class PaywallScreen extends StatelessWidget {
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.check_circle, color: Colors.green),
-                    title: const Text('Máš Pro'),
+                    title: Text(tr('Máš Pro')),
                     subtitle: Text(pro.isOwner
-                        ? 'Účet majitele aplikace – Pro bez předplatného.'
-                        : 'Předplatné je aktivní. Děkuji!'),
+                        ? tr('Účet majitele aplikace – Pro bez předplatného.')
+                        : tr('Předplatné je aktivní. Děkuji!')),
                   ),
                 ),
-              const _Benefit(Icons.all_inclusive, 'Neomezeně cest, dokladů a výdajů'),
-              const _Benefit(Icons.cloud_done_outlined,
-                  'Šifrovaná záloha do cloudu a synchronizace mezi telefony (i Vault)'),
-              const _Benefit(Icons.phonelink_setup, 'Nový telefon? Po přihlášení se vše samo stáhne'),
-              const Padding(
+              _Benefit(Icons.all_inclusive, tr('Neomezeně cest, dokladů a výdajů')),
+              _Benefit(Icons.cloud_done_outlined,
+                  tr('Šifrovaná záloha do cloudu a synchronizace mezi telefony (i Vault)')),
+              _Benefit(Icons.phonelink_setup, tr('Nový telefon? Po přihlášení se vše samo stáhne')),
+              Padding(
                 padding: EdgeInsets.fromLTRB(4, 12, 4, 0),
-                child: Text('Zdarma zůstává: plán cest, mapa, Vault, SOS – bez reklam.'),
+                child: Text(tr('Zdarma zůstává: plán cest, mapa, Vault, SOS – bez reklam.')),
               ),
               const SizedBox(height: 24),
               if (!pro.isPro) ...[
@@ -110,14 +111,14 @@ class PaywallScreen extends StatelessWidget {
                           width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))
                       : Text(pro.product == null
                           ? (pro.storeAvailable
-                              ? 'Předplatné se načítá…'
-                              : 'Google Play teď není dostupný')
-                          : 'Předplatit za ${pro.product!.price} / rok'),
+                              ? tr('Předplatné se načítá…')
+                              : tr('Google Play teď není dostupný'))
+                          : tr('Předplatit za {price} / rok', {'price': pro.product!.price})),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: pro.busy ? null : pro.restore,
-                  child: const Text('Obnovit nákup (už předplácím)'),
+                  child: Text(tr('Obnovit nákup (už předplácím)')),
                 ),
               ],
               if (pro.lastError != null)
@@ -128,15 +129,14 @@ class PaywallScreen extends StatelessWidget {
                 ),
               const SizedBox(height: 16),
               Text(
-                'Předplatné se každý rok automaticky obnoví, dokud ho nezrušíš. Zrušit ho můžeš '
-                'kdykoli v Google Play (Platby a předplatná). Placení i fakturaci zajišťuje Google.',
+                tr('Předplatné se každý rok automaticky obnoví, dokud ho nezrušíš. Zrušit ho můžeš ' 'kdykoli v Google Play (Platby a předplatná). Placení i fakturaci zajišťuje Google.'),
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
               TextButton(
                 onPressed: () =>
                     launchUrl(ProService.manageUrl, mode: LaunchMode.externalApplication),
-                child: const Text('Spravovat předplatné v Google Play'),
+                child: Text(tr('Spravovat předplatné v Google Play')),
               ),
             ],
           ),

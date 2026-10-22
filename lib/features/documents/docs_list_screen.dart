@@ -9,6 +9,7 @@ import '../pro/paywall.dart';
 import 'doc_types.dart';
 import 'document_repository.dart';
 import 'scan_service.dart';
+import '../../l10n/tr.dart';
 
 String docDateLabel(DateTime? d) {
   if (d == null) return 'bez data';
@@ -39,12 +40,12 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Vyfotit doklad'),
+              title: Text(tr('Vyfotit doklad')),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Vybrat fotku nebo screenshot'),
+              title: Text(tr('Vybrat fotku nebo screenshot')),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
           ],
@@ -69,7 +70,7 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Moje doklady'),
+        title: Text(tr('Moje doklady')),
         bottom: _busy
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -80,19 +81,18 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _busy ? null : _add,
         icon: const Icon(Icons.add_a_photo),
-        label: const Text('Přidat doklad'),
+        label: Text(tr('Přidat doklad')),
       ),
       body: docs.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Chyba: $e')),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'Zatím tu nejsou žádné doklady.\n'
-                  'Přidej fotku letenky, jízdenky nebo rezervace.',
+                  tr('Zatím tu nejsou žádné doklady.\n' 'Přidej fotku letenky, jízdenky nebo rezervace.'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -107,7 +107,7 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
               return Card(
                 child: ListTile(
                   leading: Icon(docIcon(v.doc.type)),
-                  title: Text(v.doc.title ?? docTypes[v.doc.type] ?? 'Doklad'),
+                  title: Text(v.doc.title ?? docTypes[v.doc.type] ?? tr('Doklad')),
                   subtitle: Text('${v.trip.name} · ${docDateLabel(v.when)}'),
                   trailing: hasCode ? const Icon(Icons.qr_code_2) : null,
                   onTap: () => context.go('/docs/doc/${v.doc.id}'),

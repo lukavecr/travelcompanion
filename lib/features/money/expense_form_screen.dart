@@ -286,11 +286,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       for (final c in ['EUR', 'USD', 'THB', 'JPY', 'NZD', 'MXN', 'IDR'])
         if (c != main) c,
     ];
-    final countries = <String>[
+    final countries = <String>{
       ...tripCountries(trip),
       for (final e in expenses)
         if (e.country != null && e.country!.isNotEmpty) e.country!,
-    ].toSet().toList();
+    }.toList();
 
     return Scaffold(
       appBar: AppBar(

@@ -389,8 +389,7 @@ class _DayCard extends ConsumerWidget {
               ReorderableListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                onReorder: (oldIndex, newIndex) {
-                  if (newIndex > oldIndex) newIndex -= 1;
+                onReorderItem: (oldIndex, newIndex) {
                   final ids = untimed.map((e) => e.id).toList();
                   final moved = ids.removeAt(oldIndex);
                   ids.insert(newIndex, moved);

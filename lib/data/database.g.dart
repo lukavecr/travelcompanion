@@ -761,6 +761,17 @@ class $PlacesTable extends Places with TableInfo<$PlacesTable, Place> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _countryMeta = const VerificationMeta(
+    'country',
+  );
+  @override
+  late final GeneratedColumn<String> country = GeneratedColumn<String>(
+    'country',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -782,6 +793,7 @@ class $PlacesTable extends Places with TableInfo<$PlacesTable, Place> {
     lng,
     type,
     mapUrl,
+    country,
     note,
   ];
   @override
@@ -863,6 +875,12 @@ class $PlacesTable extends Places with TableInfo<$PlacesTable, Place> {
         mapUrl.isAcceptableOrUnknown(data['map_url']!, _mapUrlMeta),
       );
     }
+    if (data.containsKey('country')) {
+      context.handle(
+        _countryMeta,
+        country.isAcceptableOrUnknown(data['country']!, _countryMeta),
+      );
+    }
     if (data.containsKey('note')) {
       context.handle(
         _noteMeta,
@@ -918,6 +936,10 @@ class $PlacesTable extends Places with TableInfo<$PlacesTable, Place> {
         DriftSqlType.string,
         data['${effectivePrefix}map_url'],
       ),
+      country: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}country'],
+      ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -942,6 +964,7 @@ class Place extends DataClass implements Insertable<Place> {
   final double lng;
   final String type;
   final String? mapUrl;
+  final String? country;
   final String? note;
   const Place({
     required this.id,
@@ -954,6 +977,7 @@ class Place extends DataClass implements Insertable<Place> {
     required this.lng,
     required this.type,
     this.mapUrl,
+    this.country,
     this.note,
   });
   @override
@@ -972,6 +996,9 @@ class Place extends DataClass implements Insertable<Place> {
     map['type'] = Variable<String>(type);
     if (!nullToAbsent || mapUrl != null) {
       map['map_url'] = Variable<String>(mapUrl);
+    }
+    if (!nullToAbsent || country != null) {
+      map['country'] = Variable<String>(country);
     }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
@@ -995,6 +1022,9 @@ class Place extends DataClass implements Insertable<Place> {
       mapUrl: mapUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(mapUrl),
+      country: country == null && nullToAbsent
+          ? const Value.absent()
+          : Value(country),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
     );
   }
@@ -1015,6 +1045,7 @@ class Place extends DataClass implements Insertable<Place> {
       lng: serializer.fromJson<double>(json['lng']),
       type: serializer.fromJson<String>(json['type']),
       mapUrl: serializer.fromJson<String?>(json['mapUrl']),
+      country: serializer.fromJson<String?>(json['country']),
       note: serializer.fromJson<String?>(json['note']),
     );
   }
@@ -1032,6 +1063,7 @@ class Place extends DataClass implements Insertable<Place> {
       'lng': serializer.toJson<double>(lng),
       'type': serializer.toJson<String>(type),
       'mapUrl': serializer.toJson<String?>(mapUrl),
+      'country': serializer.toJson<String?>(country),
       'note': serializer.toJson<String?>(note),
     };
   }
@@ -1047,6 +1079,7 @@ class Place extends DataClass implements Insertable<Place> {
     double? lng,
     String? type,
     Value<String?> mapUrl = const Value.absent(),
+    Value<String?> country = const Value.absent(),
     Value<String?> note = const Value.absent(),
   }) => Place(
     id: id ?? this.id,
@@ -1059,6 +1092,7 @@ class Place extends DataClass implements Insertable<Place> {
     lng: lng ?? this.lng,
     type: type ?? this.type,
     mapUrl: mapUrl.present ? mapUrl.value : this.mapUrl,
+    country: country.present ? country.value : this.country,
     note: note.present ? note.value : this.note,
   );
   Place copyWithCompanion(PlacesCompanion data) {
@@ -1073,6 +1107,7 @@ class Place extends DataClass implements Insertable<Place> {
       lng: data.lng.present ? data.lng.value : this.lng,
       type: data.type.present ? data.type.value : this.type,
       mapUrl: data.mapUrl.present ? data.mapUrl.value : this.mapUrl,
+      country: data.country.present ? data.country.value : this.country,
       note: data.note.present ? data.note.value : this.note,
     );
   }
@@ -1090,6 +1125,7 @@ class Place extends DataClass implements Insertable<Place> {
           ..write('lng: $lng, ')
           ..write('type: $type, ')
           ..write('mapUrl: $mapUrl, ')
+          ..write('country: $country, ')
           ..write('note: $note')
           ..write(')'))
         .toString();
@@ -1107,6 +1143,7 @@ class Place extends DataClass implements Insertable<Place> {
     lng,
     type,
     mapUrl,
+    country,
     note,
   );
   @override
@@ -1123,6 +1160,7 @@ class Place extends DataClass implements Insertable<Place> {
           other.lng == this.lng &&
           other.type == this.type &&
           other.mapUrl == this.mapUrl &&
+          other.country == this.country &&
           other.note == this.note);
 }
 
@@ -1137,6 +1175,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
   final Value<double> lng;
   final Value<String> type;
   final Value<String?> mapUrl;
+  final Value<String?> country;
   final Value<String?> note;
   final Value<int> rowid;
   const PlacesCompanion({
@@ -1150,6 +1189,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
     this.lng = const Value.absent(),
     this.type = const Value.absent(),
     this.mapUrl = const Value.absent(),
+    this.country = const Value.absent(),
     this.note = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1164,6 +1204,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
     required double lng,
     this.type = const Value.absent(),
     this.mapUrl = const Value.absent(),
+    this.country = const Value.absent(),
     this.note = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1182,6 +1223,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
     Expression<double>? lng,
     Expression<String>? type,
     Expression<String>? mapUrl,
+    Expression<String>? country,
     Expression<String>? note,
     Expression<int>? rowid,
   }) {
@@ -1196,6 +1238,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
       if (lng != null) 'lng': lng,
       if (type != null) 'type': type,
       if (mapUrl != null) 'map_url': mapUrl,
+      if (country != null) 'country': country,
       if (note != null) 'note': note,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1212,6 +1255,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
     Value<double>? lng,
     Value<String>? type,
     Value<String?>? mapUrl,
+    Value<String?>? country,
     Value<String?>? note,
     Value<int>? rowid,
   }) {
@@ -1226,6 +1270,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
       lng: lng ?? this.lng,
       type: type ?? this.type,
       mapUrl: mapUrl ?? this.mapUrl,
+      country: country ?? this.country,
       note: note ?? this.note,
       rowid: rowid ?? this.rowid,
     );
@@ -1264,6 +1309,9 @@ class PlacesCompanion extends UpdateCompanion<Place> {
     if (mapUrl.present) {
       map['map_url'] = Variable<String>(mapUrl.value);
     }
+    if (country.present) {
+      map['country'] = Variable<String>(country.value);
+    }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
@@ -1286,6 +1334,7 @@ class PlacesCompanion extends UpdateCompanion<Place> {
           ..write('lng: $lng, ')
           ..write('type: $type, ')
           ..write('mapUrl: $mapUrl, ')
+          ..write('country: $country, ')
           ..write('note: $note, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1429,6 +1478,17 @@ class $DocumentsTable extends Documents
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _countryMeta = const VerificationMeta(
+    'country',
+  );
+  @override
+  late final GeneratedColumn<String> country = GeneratedColumn<String>(
+    'country',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1443,6 +1503,7 @@ class $DocumentsTable extends Documents
     extractedJson,
     rawText,
     title,
+    country,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1536,6 +1597,12 @@ class $DocumentsTable extends Documents
         title.isAcceptableOrUnknown(data['title']!, _titleMeta),
       );
     }
+    if (data.containsKey('country')) {
+      context.handle(
+        _countryMeta,
+        country.isAcceptableOrUnknown(data['country']!, _countryMeta),
+      );
+    }
     return context;
   }
 
@@ -1593,6 +1660,10 @@ class $DocumentsTable extends Documents
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       ),
+      country: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}country'],
+      ),
     );
   }
 
@@ -1615,6 +1686,7 @@ class Document extends DataClass implements Insertable<Document> {
   final String? extractedJson;
   final String? rawText;
   final String? title;
+  final String? country;
   const Document({
     required this.id,
     required this.updatedAt,
@@ -1628,6 +1700,7 @@ class Document extends DataClass implements Insertable<Document> {
     this.extractedJson,
     this.rawText,
     this.title,
+    this.country,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1653,6 +1726,9 @@ class Document extends DataClass implements Insertable<Document> {
     }
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || country != null) {
+      map['country'] = Variable<String>(country);
     }
     return map;
   }
@@ -1681,6 +1757,9 @@ class Document extends DataClass implements Insertable<Document> {
       title: title == null && nullToAbsent
           ? const Value.absent()
           : Value(title),
+      country: country == null && nullToAbsent
+          ? const Value.absent()
+          : Value(country),
     );
   }
 
@@ -1702,6 +1781,7 @@ class Document extends DataClass implements Insertable<Document> {
       extractedJson: serializer.fromJson<String?>(json['extractedJson']),
       rawText: serializer.fromJson<String?>(json['rawText']),
       title: serializer.fromJson<String?>(json['title']),
+      country: serializer.fromJson<String?>(json['country']),
     );
   }
   @override
@@ -1720,6 +1800,7 @@ class Document extends DataClass implements Insertable<Document> {
       'extractedJson': serializer.toJson<String?>(extractedJson),
       'rawText': serializer.toJson<String?>(rawText),
       'title': serializer.toJson<String?>(title),
+      'country': serializer.toJson<String?>(country),
     };
   }
 
@@ -1736,6 +1817,7 @@ class Document extends DataClass implements Insertable<Document> {
     Value<String?> extractedJson = const Value.absent(),
     Value<String?> rawText = const Value.absent(),
     Value<String?> title = const Value.absent(),
+    Value<String?> country = const Value.absent(),
   }) => Document(
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1751,6 +1833,7 @@ class Document extends DataClass implements Insertable<Document> {
         : this.extractedJson,
     rawText: rawText.present ? rawText.value : this.rawText,
     title: title.present ? title.value : this.title,
+    country: country.present ? country.value : this.country,
   );
   Document copyWithCompanion(DocumentsCompanion data) {
     return Document(
@@ -1768,6 +1851,7 @@ class Document extends DataClass implements Insertable<Document> {
           : this.extractedJson,
       rawText: data.rawText.present ? data.rawText.value : this.rawText,
       title: data.title.present ? data.title.value : this.title,
+      country: data.country.present ? data.country.value : this.country,
     );
   }
 
@@ -1785,7 +1869,8 @@ class Document extends DataClass implements Insertable<Document> {
           ..write('ocrStatus: $ocrStatus, ')
           ..write('extractedJson: $extractedJson, ')
           ..write('rawText: $rawText, ')
-          ..write('title: $title')
+          ..write('title: $title, ')
+          ..write('country: $country')
           ..write(')'))
         .toString();
   }
@@ -1804,6 +1889,7 @@ class Document extends DataClass implements Insertable<Document> {
     extractedJson,
     rawText,
     title,
+    country,
   );
   @override
   bool operator ==(Object other) =>
@@ -1820,7 +1906,8 @@ class Document extends DataClass implements Insertable<Document> {
           other.ocrStatus == this.ocrStatus &&
           other.extractedJson == this.extractedJson &&
           other.rawText == this.rawText &&
-          other.title == this.title);
+          other.title == this.title &&
+          other.country == this.country);
 }
 
 class DocumentsCompanion extends UpdateCompanion<Document> {
@@ -1836,6 +1923,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
   final Value<String?> extractedJson;
   final Value<String?> rawText;
   final Value<String?> title;
+  final Value<String?> country;
   final Value<int> rowid;
   const DocumentsCompanion({
     this.id = const Value.absent(),
@@ -1850,6 +1938,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
     this.extractedJson = const Value.absent(),
     this.rawText = const Value.absent(),
     this.title = const Value.absent(),
+    this.country = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DocumentsCompanion.insert({
@@ -1865,6 +1954,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
     this.extractedJson = const Value.absent(),
     this.rawText = const Value.absent(),
     this.title = const Value.absent(),
+    this.country = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        tripId = Value(tripId),
@@ -1883,6 +1973,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
     Expression<String>? extractedJson,
     Expression<String>? rawText,
     Expression<String>? title,
+    Expression<String>? country,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1898,6 +1989,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
       if (extractedJson != null) 'extracted_json': extractedJson,
       if (rawText != null) 'raw_text': rawText,
       if (title != null) 'title': title,
+      if (country != null) 'country': country,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1915,6 +2007,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
     Value<String?>? extractedJson,
     Value<String?>? rawText,
     Value<String?>? title,
+    Value<String?>? country,
     Value<int>? rowid,
   }) {
     return DocumentsCompanion(
@@ -1930,6 +2023,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
       extractedJson: extractedJson ?? this.extractedJson,
       rawText: rawText ?? this.rawText,
       title: title ?? this.title,
+      country: country ?? this.country,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1973,6 +2067,9 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
+    if (country.present) {
+      map['country'] = Variable<String>(country.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1994,6 +2091,7 @@ class DocumentsCompanion extends UpdateCompanion<Document> {
           ..write('extractedJson: $extractedJson, ')
           ..write('rawText: $rawText, ')
           ..write('title: $title, ')
+          ..write('country: $country, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3895,6 +3993,35 @@ class $TicketsTable extends Tickets with TableInfo<$TicketsTable, Ticket> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _passengerMeta = const VerificationMeta(
+    'passenger',
+  );
+  @override
+  late final GeneratedColumn<String> passenger = GeneratedColumn<String>(
+    'passenger',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _seatMeta = const VerificationMeta('seat');
+  @override
+  late final GeneratedColumn<String> seat = GeneratedColumn<String>(
+    'seat',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gateMeta = const VerificationMeta('gate');
+  @override
+  late final GeneratedColumn<String> gate = GeneratedColumn<String>(
+    'gate',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _priceMeta = const VerificationMeta('price');
   @override
   late final GeneratedColumn<double> price = GeneratedColumn<double>(
@@ -3932,6 +4059,9 @@ class $TicketsTable extends Tickets with TableInfo<$TicketsTable, Ticket> {
     qrData,
     barcodeData,
     barcodeFormat,
+    passenger,
+    seat,
+    gate,
     price,
     currency,
   ];
@@ -4044,6 +4174,24 @@ class $TicketsTable extends Tickets with TableInfo<$TicketsTable, Ticket> {
         ),
       );
     }
+    if (data.containsKey('passenger')) {
+      context.handle(
+        _passengerMeta,
+        passenger.isAcceptableOrUnknown(data['passenger']!, _passengerMeta),
+      );
+    }
+    if (data.containsKey('seat')) {
+      context.handle(
+        _seatMeta,
+        seat.isAcceptableOrUnknown(data['seat']!, _seatMeta),
+      );
+    }
+    if (data.containsKey('gate')) {
+      context.handle(
+        _gateMeta,
+        gate.isAcceptableOrUnknown(data['gate']!, _gateMeta),
+      );
+    }
     if (data.containsKey('price')) {
       context.handle(
         _priceMeta,
@@ -4125,6 +4273,18 @@ class $TicketsTable extends Tickets with TableInfo<$TicketsTable, Ticket> {
         DriftSqlType.string,
         data['${effectivePrefix}barcode_format'],
       ),
+      passenger: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passenger'],
+      ),
+      seat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}seat'],
+      ),
+      gate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gate'],
+      ),
       price: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}price'],
@@ -4158,6 +4318,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
   final String? qrData;
   final String? barcodeData;
   final String? barcodeFormat;
+  final String? passenger;
+  final String? seat;
+  final String? gate;
   final double? price;
   final String? currency;
   const Ticket({
@@ -4176,6 +4339,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
     this.qrData,
     this.barcodeData,
     this.barcodeFormat,
+    this.passenger,
+    this.seat,
+    this.gate,
     this.price,
     this.currency,
   });
@@ -4218,6 +4384,15 @@ class Ticket extends DataClass implements Insertable<Ticket> {
     }
     if (!nullToAbsent || barcodeFormat != null) {
       map['barcode_format'] = Variable<String>(barcodeFormat);
+    }
+    if (!nullToAbsent || passenger != null) {
+      map['passenger'] = Variable<String>(passenger);
+    }
+    if (!nullToAbsent || seat != null) {
+      map['seat'] = Variable<String>(seat);
+    }
+    if (!nullToAbsent || gate != null) {
+      map['gate'] = Variable<String>(gate);
     }
     if (!nullToAbsent || price != null) {
       map['price'] = Variable<double>(price);
@@ -4267,6 +4442,11 @@ class Ticket extends DataClass implements Insertable<Ticket> {
       barcodeFormat: barcodeFormat == null && nullToAbsent
           ? const Value.absent()
           : Value(barcodeFormat),
+      passenger: passenger == null && nullToAbsent
+          ? const Value.absent()
+          : Value(passenger),
+      seat: seat == null && nullToAbsent ? const Value.absent() : Value(seat),
+      gate: gate == null && nullToAbsent ? const Value.absent() : Value(gate),
       price: price == null && nullToAbsent
           ? const Value.absent()
           : Value(price),
@@ -4297,6 +4477,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
       qrData: serializer.fromJson<String?>(json['qrData']),
       barcodeData: serializer.fromJson<String?>(json['barcodeData']),
       barcodeFormat: serializer.fromJson<String?>(json['barcodeFormat']),
+      passenger: serializer.fromJson<String?>(json['passenger']),
+      seat: serializer.fromJson<String?>(json['seat']),
+      gate: serializer.fromJson<String?>(json['gate']),
       price: serializer.fromJson<double?>(json['price']),
       currency: serializer.fromJson<String?>(json['currency']),
     );
@@ -4320,6 +4503,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
       'qrData': serializer.toJson<String?>(qrData),
       'barcodeData': serializer.toJson<String?>(barcodeData),
       'barcodeFormat': serializer.toJson<String?>(barcodeFormat),
+      'passenger': serializer.toJson<String?>(passenger),
+      'seat': serializer.toJson<String?>(seat),
+      'gate': serializer.toJson<String?>(gate),
       'price': serializer.toJson<double?>(price),
       'currency': serializer.toJson<String?>(currency),
     };
@@ -4341,6 +4527,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
     Value<String?> qrData = const Value.absent(),
     Value<String?> barcodeData = const Value.absent(),
     Value<String?> barcodeFormat = const Value.absent(),
+    Value<String?> passenger = const Value.absent(),
+    Value<String?> seat = const Value.absent(),
+    Value<String?> gate = const Value.absent(),
     Value<double?> price = const Value.absent(),
     Value<String?> currency = const Value.absent(),
   }) => Ticket(
@@ -4361,6 +4550,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
     barcodeFormat: barcodeFormat.present
         ? barcodeFormat.value
         : this.barcodeFormat,
+    passenger: passenger.present ? passenger.value : this.passenger,
+    seat: seat.present ? seat.value : this.seat,
+    gate: gate.present ? gate.value : this.gate,
     price: price.present ? price.value : this.price,
     currency: currency.present ? currency.value : this.currency,
   );
@@ -4389,6 +4581,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
       barcodeFormat: data.barcodeFormat.present
           ? data.barcodeFormat.value
           : this.barcodeFormat,
+      passenger: data.passenger.present ? data.passenger.value : this.passenger,
+      seat: data.seat.present ? data.seat.value : this.seat,
+      gate: data.gate.present ? data.gate.value : this.gate,
       price: data.price.present ? data.price.value : this.price,
       currency: data.currency.present ? data.currency.value : this.currency,
     );
@@ -4412,6 +4607,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
           ..write('qrData: $qrData, ')
           ..write('barcodeData: $barcodeData, ')
           ..write('barcodeFormat: $barcodeFormat, ')
+          ..write('passenger: $passenger, ')
+          ..write('seat: $seat, ')
+          ..write('gate: $gate, ')
           ..write('price: $price, ')
           ..write('currency: $currency')
           ..write(')'))
@@ -4435,6 +4633,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
     qrData,
     barcodeData,
     barcodeFormat,
+    passenger,
+    seat,
+    gate,
     price,
     currency,
   );
@@ -4457,6 +4658,9 @@ class Ticket extends DataClass implements Insertable<Ticket> {
           other.qrData == this.qrData &&
           other.barcodeData == this.barcodeData &&
           other.barcodeFormat == this.barcodeFormat &&
+          other.passenger == this.passenger &&
+          other.seat == this.seat &&
+          other.gate == this.gate &&
           other.price == this.price &&
           other.currency == this.currency);
 }
@@ -4477,6 +4681,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
   final Value<String?> qrData;
   final Value<String?> barcodeData;
   final Value<String?> barcodeFormat;
+  final Value<String?> passenger;
+  final Value<String?> seat;
+  final Value<String?> gate;
   final Value<double?> price;
   final Value<String?> currency;
   final Value<int> rowid;
@@ -4496,6 +4703,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
     this.qrData = const Value.absent(),
     this.barcodeData = const Value.absent(),
     this.barcodeFormat = const Value.absent(),
+    this.passenger = const Value.absent(),
+    this.seat = const Value.absent(),
+    this.gate = const Value.absent(),
     this.price = const Value.absent(),
     this.currency = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -4516,6 +4726,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
     this.qrData = const Value.absent(),
     this.barcodeData = const Value.absent(),
     this.barcodeFormat = const Value.absent(),
+    this.passenger = const Value.absent(),
+    this.seat = const Value.absent(),
+    this.gate = const Value.absent(),
     this.price = const Value.absent(),
     this.currency = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -4537,6 +4750,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
     Expression<String>? qrData,
     Expression<String>? barcodeData,
     Expression<String>? barcodeFormat,
+    Expression<String>? passenger,
+    Expression<String>? seat,
+    Expression<String>? gate,
     Expression<double>? price,
     Expression<String>? currency,
     Expression<int>? rowid,
@@ -4557,6 +4773,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
       if (qrData != null) 'qr_data': qrData,
       if (barcodeData != null) 'barcode_data': barcodeData,
       if (barcodeFormat != null) 'barcode_format': barcodeFormat,
+      if (passenger != null) 'passenger': passenger,
+      if (seat != null) 'seat': seat,
+      if (gate != null) 'gate': gate,
       if (price != null) 'price': price,
       if (currency != null) 'currency': currency,
       if (rowid != null) 'rowid': rowid,
@@ -4579,6 +4798,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
     Value<String?>? qrData,
     Value<String?>? barcodeData,
     Value<String?>? barcodeFormat,
+    Value<String?>? passenger,
+    Value<String?>? seat,
+    Value<String?>? gate,
     Value<double?>? price,
     Value<String?>? currency,
     Value<int>? rowid,
@@ -4599,6 +4821,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
       qrData: qrData ?? this.qrData,
       barcodeData: barcodeData ?? this.barcodeData,
       barcodeFormat: barcodeFormat ?? this.barcodeFormat,
+      passenger: passenger ?? this.passenger,
+      seat: seat ?? this.seat,
+      gate: gate ?? this.gate,
       price: price ?? this.price,
       currency: currency ?? this.currency,
       rowid: rowid ?? this.rowid,
@@ -4653,6 +4878,15 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
     if (barcodeFormat.present) {
       map['barcode_format'] = Variable<String>(barcodeFormat.value);
     }
+    if (passenger.present) {
+      map['passenger'] = Variable<String>(passenger.value);
+    }
+    if (seat.present) {
+      map['seat'] = Variable<String>(seat.value);
+    }
+    if (gate.present) {
+      map['gate'] = Variable<String>(gate.value);
+    }
     if (price.present) {
       map['price'] = Variable<double>(price.value);
     }
@@ -4683,6 +4917,9 @@ class TicketsCompanion extends UpdateCompanion<Ticket> {
           ..write('qrData: $qrData, ')
           ..write('barcodeData: $barcodeData, ')
           ..write('barcodeFormat: $barcodeFormat, ')
+          ..write('passenger: $passenger, ')
+          ..write('seat: $seat, ')
+          ..write('gate: $gate, ')
           ..write('price: $price, ')
           ..write('currency: $currency, ')
           ..write('rowid: $rowid')
@@ -6533,6 +6770,7 @@ typedef $$PlacesTableCreateCompanionBuilder = PlacesCompanion Function({
   required double lng,
   Value<String> type,
   Value<String?> mapUrl,
+  Value<String?> country,
   Value<String?> note,
   Value<int> rowid,
 });
@@ -6547,6 +6785,7 @@ typedef $$PlacesTableUpdateCompanionBuilder = PlacesCompanion Function({
   Value<double> lng,
   Value<String> type,
   Value<String?> mapUrl,
+  Value<String?> country,
   Value<String?> note,
   Value<int> rowid,
 });
@@ -6661,6 +6900,11 @@ class $$PlacesTableFilterComposer
 
   ColumnFilters<String> get mapUrl => $composableBuilder(
     column: $table.mapUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get country => $composableBuilder(
+    column: $table.country,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6797,6 +7041,11 @@ class $$PlacesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get country => $composableBuilder(
+    column: $table.country,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
@@ -6861,6 +7110,9 @@ class $$PlacesTableAnnotationComposer
 
   GeneratedColumn<String> get mapUrl =>
       $composableBuilder(column: $table.mapUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get country =>
+      $composableBuilder(column: $table.country, builder: (column) => column);
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
@@ -6981,6 +7233,7 @@ class $$PlacesTableTableManager
                 Value<double> lng = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<String?> mapUrl = const Value.absent(),
+                Value<String?> country = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlacesCompanion(
@@ -6994,6 +7247,7 @@ class $$PlacesTableTableManager
                 lng: lng,
                 type: type,
                 mapUrl: mapUrl,
+                country: country,
                 note: note,
                 rowid: rowid,
               ),
@@ -7009,6 +7263,7 @@ class $$PlacesTableTableManager
                 required double lng,
                 Value<String> type = const Value.absent(),
                 Value<String?> mapUrl = const Value.absent(),
+                Value<String?> country = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlacesCompanion.insert(
@@ -7022,6 +7277,7 @@ class $$PlacesTableTableManager
                 lng: lng,
                 type: type,
                 mapUrl: mapUrl,
+                country: country,
                 note: note,
                 rowid: rowid,
               ),
@@ -7150,6 +7406,7 @@ typedef $$DocumentsTableCreateCompanionBuilder = DocumentsCompanion Function({
   Value<String?> extractedJson,
   Value<String?> rawText,
   Value<String?> title,
+  Value<String?> country,
   Value<int> rowid,
 });
 typedef $$DocumentsTableUpdateCompanionBuilder = DocumentsCompanion Function({
@@ -7165,6 +7422,7 @@ typedef $$DocumentsTableUpdateCompanionBuilder = DocumentsCompanion Function({
   Value<String?> extractedJson,
   Value<String?> rawText,
   Value<String?> title,
+  Value<String?> country,
   Value<int> rowid,
 });
 
@@ -7306,6 +7564,11 @@ class $$DocumentsTableFilterComposer
 
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get country => $composableBuilder(
+    column: $table.country,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7472,6 +7735,11 @@ class $$DocumentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get country => $composableBuilder(
+    column: $table.country,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TripsTableOrderingComposer get tripId {
     final $$TripsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7539,6 +7807,9 @@ class $$DocumentsTableAnnotationComposer
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get country =>
+      $composableBuilder(column: $table.country, builder: (column) => column);
 
   $$TripsTableAnnotationComposer get tripId {
     final $$TripsTableAnnotationComposer composer = $composerBuilder(
@@ -7684,6 +7955,7 @@ class $$DocumentsTableTableManager
                 Value<String?> extractedJson = const Value.absent(),
                 Value<String?> rawText = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                Value<String?> country = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion(
                 id: id,
@@ -7698,6 +7970,7 @@ class $$DocumentsTableTableManager
                 extractedJson: extractedJson,
                 rawText: rawText,
                 title: title,
+                country: country,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7714,6 +7987,7 @@ class $$DocumentsTableTableManager
                 Value<String?> extractedJson = const Value.absent(),
                 Value<String?> rawText = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                Value<String?> country = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion.insert(
                 id: id,
@@ -7728,6 +8002,7 @@ class $$DocumentsTableTableManager
                 extractedJson: extractedJson,
                 rawText: rawText,
                 title: title,
+                country: country,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9369,6 +9644,9 @@ typedef $$TicketsTableCreateCompanionBuilder = TicketsCompanion Function({
   Value<String?> qrData,
   Value<String?> barcodeData,
   Value<String?> barcodeFormat,
+  Value<String?> passenger,
+  Value<String?> seat,
+  Value<String?> gate,
   Value<double?> price,
   Value<String?> currency,
   Value<int> rowid,
@@ -9389,6 +9667,9 @@ typedef $$TicketsTableUpdateCompanionBuilder = TicketsCompanion Function({
   Value<String?> qrData,
   Value<String?> barcodeData,
   Value<String?> barcodeFormat,
+  Value<String?> passenger,
+  Value<String?> seat,
+  Value<String?> gate,
   Value<double?> price,
   Value<String?> currency,
   Value<int> rowid,
@@ -9492,6 +9773,21 @@ class $$TicketsTableFilterComposer
 
   ColumnFilters<String> get barcodeFormat => $composableBuilder(
     column: $table.barcodeFormat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get passenger => $composableBuilder(
+    column: $table.passenger,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seat => $composableBuilder(
+    column: $table.seat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gate => $composableBuilder(
+    column: $table.gate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9608,6 +9904,21 @@ class $$TicketsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get passenger => $composableBuilder(
+    column: $table.passenger,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seat => $composableBuilder(
+    column: $table.seat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gate => $composableBuilder(
+    column: $table.gate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get price => $composableBuilder(
     column: $table.price,
     builder: (column) => ColumnOrderings(column),
@@ -9699,6 +10010,15 @@ class $$TicketsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get passenger =>
+      $composableBuilder(column: $table.passenger, builder: (column) => column);
+
+  GeneratedColumn<String> get seat =>
+      $composableBuilder(column: $table.seat, builder: (column) => column);
+
+  GeneratedColumn<String> get gate =>
+      $composableBuilder(column: $table.gate, builder: (column) => column);
+
   GeneratedColumn<double> get price =>
       $composableBuilder(column: $table.price, builder: (column) => column);
 
@@ -9772,6 +10092,9 @@ class $$TicketsTableTableManager
                 Value<String?> qrData = const Value.absent(),
                 Value<String?> barcodeData = const Value.absent(),
                 Value<String?> barcodeFormat = const Value.absent(),
+                Value<String?> passenger = const Value.absent(),
+                Value<String?> seat = const Value.absent(),
+                Value<String?> gate = const Value.absent(),
                 Value<double?> price = const Value.absent(),
                 Value<String?> currency = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9791,6 +10114,9 @@ class $$TicketsTableTableManager
                 qrData: qrData,
                 barcodeData: barcodeData,
                 barcodeFormat: barcodeFormat,
+                passenger: passenger,
+                seat: seat,
+                gate: gate,
                 price: price,
                 currency: currency,
                 rowid: rowid,
@@ -9812,6 +10138,9 @@ class $$TicketsTableTableManager
                 Value<String?> qrData = const Value.absent(),
                 Value<String?> barcodeData = const Value.absent(),
                 Value<String?> barcodeFormat = const Value.absent(),
+                Value<String?> passenger = const Value.absent(),
+                Value<String?> seat = const Value.absent(),
+                Value<String?> gate = const Value.absent(),
                 Value<double?> price = const Value.absent(),
                 Value<String?> currency = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9831,6 +10160,9 @@ class $$TicketsTableTableManager
                 qrData: qrData,
                 barcodeData: barcodeData,
                 barcodeFormat: barcodeFormat,
+                passenger: passenger,
+                seat: seat,
+                gate: gate,
                 price: price,
                 currency: currency,
                 rowid: rowid,

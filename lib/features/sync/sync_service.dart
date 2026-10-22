@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database.dart';
+import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
 
 class SyncStatus {
@@ -451,7 +452,7 @@ extension WipeAll on SyncService {
   /// Vault (VaultItems) a účet zůstávají. Výjimka z pravidla „jen soft delete“ –
   /// řádky se mažou natvrdo, aby se znovu neodeslaly ani nestáhly.
   /// Když selže cloud, telefon se nemaže (vyhodí výjimku).
-  Future<void> wipeAllData() async {
+  Future<void> wipeAllData({bool includeVault = false}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('Nejsi přihlášený.');
     if (_running) throw Exception('Právě probíhá synchronizace, zkus to za chvíli.');
@@ -459,7 +460,11 @@ extension WipeAll on SyncService {
     _debounce?.cancel();
     try {
       // 1) cloud
-      for (final name in [..._tables.map((t) => t.name), 'files']) {
+      for (final name in [
+        ..._tables.map((t) => t.name),
+        'files',
+        if (includeVault) ...['vault', 'vault_files', 'vault_meta'],
+      ]) {
         final col = _col(user.uid, name);
         while (true) {
           final snap = await col
@@ -497,6 +502,7 @@ extension WipeAll on SyncService {
           db.places,
           db.photos,
           db.trips,
+          if (includeVault) db.vaultItems,
         ]) {
           await db.delete(t).go();
         }
@@ -504,13 +510,51 @@ extension WipeAll on SyncService {
 
       // 4) stav synchronizace
       final prefs = await _p;
-      for (final k in prefs.getKeys().where((k) => k.startsWith('sync_')).toList()) {
+      if (includeVault) {
+        try {
+          await Directory(p.join((await getApplicationDocumentsDirectory()).path, 'vault'))
+              .delete(recursive: true);
+        } catch (_) {}
+        await VaultKeys.instance.forget();
+      }
+      for (final k in prefs
+          .getKeys()
+          .where((k) => k.startsWith('sync_') || (includeVault && k.startsWith('vault_')))
+          .toList()) {
         await prefs.remove(k);
       }
       _uploaded.clear();
       status.value = const SyncStatus();
     } finally {
       _running = false;
+    }
+  }
+}
+
+extension DeleteAccount on SyncService {
+  /// Smaže úplně vše (i Vault) v telefonu i v záloze a nakonec účet ve Firebase.
+  /// Firebase chce k smazání účtu čerstvé přihlášení → heslo účtu.
+  /// Vrací chybovou hlášku pro uživatele, nebo null když se povedlo.
+  Future<String?> deleteAccount(String password) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) return 'Nejsi přihlášený.';
+    try {
+      await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(email: user.email!, password: password));
+    } on FirebaseAuthException catch (e) {
+      return switch (e.code) {
+        'wrong-password' || 'invalid-credential' => 'Špatné heslo účtu.',
+        'network-request-failed' => 'Nejsi připojený k internetu.',
+        _ => 'Ověření se nepovedlo (${e.code}).',
+      };
+    }
+    try {
+      await wipeAllData(includeVault: true);
+      await user.delete();
+      await FirebaseAuth.instance.signOut();
+      return null;
+    } catch (e) {
+      return 'Smazání se nepovedlo: $e';
     }
   }
 }

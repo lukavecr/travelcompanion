@@ -28,6 +28,11 @@ proto je důležitá spolehlivost offline a záloha dat.
 - Flutter 3.47.x stable, Riverpod **3.x** (`WidgetRef.listen` nemá `fireImmediately` → použij `ref.listenManual` v `initState`),
   go_router 18, Drift 2.35 (`drift_flutter`), cloud_firestore 7, flutter_local_notifications 22 (pojmenované parametry),
   `build_runner`: spouštěj `dart run build_runner build` (přepínač `--delete-conflicting-outputs` už neexistuje).
+- **Google Play**: `flutter build appbundle --release -Pplay=true` → AAB podepsaný upload klíčem
+  `android/app/upload-keystore.jks` + `android/key.properties` (heslo jen tam; obojí v gitignore – uživatel musí zálohovat).
+  Bez `-Pplay` se release APK podepisuje dál debug klíčem (kvůli instalaci přes stávající verzi na Xiaomi).
+  Rozhodnutí uživatele: zatím jen Google Play (Apple později), Pro = **roční předplatné**, bez reklam (navrženo).
+  V Nastavení je „Smazat účet“ (`deleteAccount`: heslo → reauth, smaže vše vč. Vaultu v cloudu i telefonu, pak účet).
 - Release build: R8 je **vypnutý** (`isMinifyEnabled=false`), jinak padá na chybějících třídách ML Kit.
   Do telefonu patří `app-arm64-v8a-release.apk` (`flutter build apk --release --split-per-abi`), podepisuje se debug klíčem
   (`%USERPROFILE%\.android\debug.keystore`; kdo ho ztratí, musí aplikaci odinstalovat).

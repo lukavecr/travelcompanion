@@ -36,6 +36,12 @@ class VaultKeys extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Zapomene klíč v telefonu (jen při smazání účtu).
+  Future<void> forget() async {
+    await _storage.delete(key: _localKeyName);
+    lock();
+  }
+
   Future<bool> hasLocalKey() async =>
       (await _storage.read(key: _localKeyName))?.isNotEmpty == true;
 

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Política de privacidad – Travel Companion</title>
+  <meta name="description" content="Qué datos guarda Travel Companion, dónde y cómo se protegen.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/privacy.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/privacy.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/privacy.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/privacy.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/privacy.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="../favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Principal"><a href="./">Inicio</a><a href="delete-account.html">Eliminar cuenta</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/privacy.html" hreflang="en" lang="en">EN</a><a href="/cs/privacy.html" hreflang="cs" lang="cs">CS</a><a href="/de/privacy.html" hreflang="de" lang="de">DE</a><a href="/es/privacy.html" hreflang="es" lang="es" aria-current="true">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Última actualización: 23 de octubre de 2026</span>
+    <h1>Política de privacidad</h1>
+    <p>Travel Companion («la app», «nosotros») es una app de planificación de viajes para Android del desarrollador independiente <strong>LR Tech CZ</strong>, República Checa. Esta política explica qué datos maneja la app, dónde se guardan y qué derechos tienes. En resumen: tus datos son tuyos, viven primero en tu teléfono y no los vendemos, no mostramos anuncios ni te rastreamos.</p>
+    <p>Contacto para cualquier tema de privacidad: <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a></p>
+
+    <h2>1. Datos guardados en tu teléfono</h2>
+    <p>Todo lo que introduces se guarda en una base de datos en tu teléfono. La base de datos está <strong>cifrada</strong>; su clave se guarda en el Android Keystore. Incluye:</p>
+    <ul>
+      <li>viajes, planes diarios, lugares y notas,</li>
+      <li>documentos y billetes (fotos, texto reconocido, contenido de códigos QR y de barras, datos del vuelo, nombre del pasajero, asiento),</li>
+      <li>gastos y fotos de recibos,</li>
+      <li>elementos del Travel Vault (pasaporte, visados, seguro, vacunas, contactos de emergencia, datos médicos), que además se cifran con AES-256-GCM.</li>
+    </ul>
+    <p>Las fotos de documentos se guardan en el almacenamiento privado de la app en tu teléfono.</p>
+
+    <h2>2. Cuenta</h2>
+    <p>Para usar la copia en la nube creas una cuenta con tu <strong>correo electrónico y una contraseña</strong>. Las cuentas las gestiona Google Firebase Authentication. Usamos el correo solo para iniciar sesión y, si nos escribes, para responderte.</p>
+
+    <h2>3. Copia en la nube (Pro)</h2>
+    <p>Si tienes Travel Companion Pro y has iniciado sesión, la app guarda tus datos en <strong>Google Cloud Firestore</strong> para que puedas restaurarlos en otro teléfono. La copia contiene viajes, lugares, documentos, billetes, gastos e imágenes reducidas. Se guarda en tu propia zona de la base de datos, a la que solo accede tu cuenta.</p>
+    <ul>
+      <li>Google cifra los datos en tránsito y en reposo. La copia principal aún no la cifra la propia app.</li>
+      <li><strong>El Travel Vault está cifrado de extremo a extremo.</strong> Los elementos y fotos del Vault solo salen de tu teléfono cifrados. La clave está protegida por tu contraseña del Vault (PBKDF2-SHA256), que nunca recibimos. Sin ella, nadie, ni siquiera nosotros, puede leer el Vault.</li>
+    </ul>
+    <p>Los datos de los usuarios gratuitos se quedan solo en su teléfono.</p>
+
+    <h2>4. Procesamiento en tu dispositivo</h2>
+    <p>La lectura de texto, códigos QR y de barras de las fotos se hace <strong>en tu teléfono</strong> con Google ML Kit. Las fotos no se suben para reconocerlas. ML Kit puede contactar con Google para descargar actualizaciones de modelos y enviar métricas anónimas de rendimiento y uso.</p>
+
+    <h2>5. Ubicación</h2>
+    <p>La app solo pide la ubicación cuando la usas: para mostrar tu posición en el mapa, guardar tu sitio actual como lugar o incluirla en un mensaje SOS. Tu ubicación no se rastrea en segundo plano ni se nos envía. El mensaje SOS lo envía la app de mensajes de tu teléfono a los contactos que elegiste.</p>
+
+    <h2>6. Servicios de terceros</h2>
+    <p>Algunas funciones envían una petición a un servicio externo. Solo contiene lo necesario para la función, además de tu dirección IP, que revela cualquier conexión a internet.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Servicio</th><th>Para qué</th><th>Qué recibe</th></tr></thead>
+      <tbody>
+        <tr><td>Google Firebase (Auth, Firestore)</td><td>Cuenta y copia en la nube</td><td>Correo, contraseña (Google la guarda cifrada con hash), datos de la copia</td></tr>
+        <tr><td>Google Play Billing</td><td>Suscripción Pro</td><td>La compra la gestiona Google Play; nunca vemos los datos de pago</td></tr>
+        <tr><td>Nominatim (OpenStreetMap Foundation)</td><td>Buscar la posición o dirección de un lugar</td><td>El texto buscado o las coordenadas</td></tr>
+        <tr><td>OpenFreeMap / OpenStreetMap</td><td>Teselas del mapa</td><td>La zona del mapa que estás viendo</td></tr>
+        <tr><td>Frankfurter (tipos del BCE)</td><td>Conversión de moneda</td><td>Par de monedas y fecha</td></tr>
+        <tr><td>Google Maps</td><td>Abrir el enlace de un lugar que compartiste con la app</td><td>El enlace compartido</td></tr>
+      </tbody>
+    </table></div>
+    <p>No usamos SDK de publicidad, analítica ni rastreo, y no vendemos ni compartimos tus datos con fines publicitarios.</p>
+
+    <h2>7. Notificaciones</h2>
+    <p>Los avisos (eventos, check-ins, documentos que caducan) se programan localmente en tu teléfono. Los textos de los avisos de documentos no contienen sus datos.</p>
+
+    <h2>8. Cuánto tiempo guardamos los datos</h2>
+    <p>Los datos del teléfono se quedan hasta que los borres o desinstales la app. La copia en la nube se queda hasta que la borres en la app o elimines tu cuenta. Los elementos borrados desaparecen de la copia al sincronizar.</p>
+
+    <h2>9. Eliminar tus datos</h2>
+    <ul>
+      <li><strong>Todos los datos:</strong> Ajustes → Datos → Eliminar todos los datos. Primero se borra la copia en la nube y después los datos del teléfono.</li>
+      <li><strong>Cuenta:</strong> Ajustes → Cuenta → Eliminar cuenta. Elimina tu cuenta, la copia en la nube y la copia del Vault. Consulta la <a href="delete-account.html">página de eliminación de cuenta</a>.</li>
+      <li>Si no puedes usar la app, escríbenos y eliminaremos tu cuenta y tus datos en un plazo de 30 días.</li>
+    </ul>
+
+    <h2>10. Tus derechos</h2>
+    <p>Según el RGPD tienes derecho a acceder, rectificar, suprimir y exportar tus datos, a limitar u oponerte al tratamiento y a reclamar ante una autoridad de control. En la República Checa es la Oficina de Protección de Datos Personales (ÚOOÚ, uoou.gov.cz). La base legal del tratamiento es la ejecución de nuestro acuerdo contigo (ofrecerte la app y la copia que solicitaste).</p>
+
+    <h2>11. Menores</h2>
+    <p>La app está pensada para adultos y no se dirige a menores de 16 años.</p>
+
+    <h2>12. Cambios</h2>
+    <p>Si esta política cambia, la actualizaremos en esta página y cambiaremos la fecha de arriba. Los cambios importantes también se anunciarán en la app.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Pie"><a href="./">Inicio</a><a href="delete-account.html">Eliminar cuenta</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zásady ochrany soukromí – Travel Companion</title>
+  <meta name="description" content="Jaká data Travel Companion ukládá, kde a jak je chrání.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/privacy.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/privacy.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/privacy.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/privacy.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/privacy.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="../favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Hlavní"><a href="./">Úvod</a><a href="delete-account.html">Smazání účtu</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/privacy.html" hreflang="en" lang="en">EN</a><a href="/cs/privacy.html" hreflang="cs" lang="cs" aria-current="true">CS</a><a href="/de/privacy.html" hreflang="de" lang="de">DE</a><a href="/es/privacy.html" hreflang="es" lang="es">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Poslední úprava: 23. října 2026</span>
+    <h1>Zásady ochrany soukromí</h1>
+    <p>Travel Companion („aplikace“, „my“) je aplikace pro plánování cest pro Android od nezávislého vývojáře <strong>LR Tech CZ</strong>, Česká republika. Tyto zásady vysvětlují, s jakými daty aplikace pracuje, kde jsou uložena a jaká máš práva. Zkrátka: data jsou tvoje, jsou především v tvém telefonu a my je neprodáváme, nezobrazujeme reklamy a nesledujeme tě.</p>
+    <p>Kontakt pro vše, co se týká soukromí: <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a></p>
+
+    <h2>1. Data uložená v telefonu</h2>
+    <p>Vše, co zadáš, se ukládá do databáze v telefonu. Databáze je <strong>šifrovaná</strong>, klíč je uložený v Android Keystore. Patří sem:</p>
+    <ul>
+      <li>cesty, plány dnů, místa a poznámky,</li>
+      <li>doklady a lístky (fotky, rozpoznaný text, obsah QR a čárových kódů, údaje o letu, jméno cestujícího, sedadlo),</li>
+      <li>výdaje a fotky účtenek,</li>
+      <li>položky Travel Vaultu (pas, víza, pojištění, očkování, nouzové kontakty, zdravotní údaje), které jsou navíc šifrované AES-256-GCM.</li>
+    </ul>
+    <p>Fotky dokladů jsou uložené v soukromém úložišti aplikace v telefonu.</p>
+
+    <h2>2. Účet</h2>
+    <p>Pro zálohu do cloudu si vytvoříš účet s <strong>e-mailovou adresou a heslem</strong>. Účty spravuje Google Firebase Authentication. E-mail používáme jen k přihlášení a k odpovědi, pokud nám napíšeš.</p>
+
+    <h2>3. Záloha do cloudu (Pro)</h2>
+    <p>Pokud máš Travel Companion Pro a jsi přihlášený, aplikace zálohuje data do <strong>Google Cloud Firestore</strong>, abys je mohl obnovit na jiném telefonu. Záloha obsahuje cesty, místa, doklady, lístky, výdaje a zmenšené obrázky. Je uložená ve tvé vlastní části databáze, ke které má přístup jen tvůj přihlášený účet.</p>
+    <ul>
+      <li>Data šifruje Google při přenosu i při uložení. Hlavní záloha zatím není šifrovaná samotnou aplikací.</li>
+      <li><strong>Travel Vault je šifrovaný end-to-end.</strong> Položky a fotky trezoru opouštějí telefon jen zašifrované. Klíč chrání tvé heslo trezoru (PBKDF2-SHA256), které nikdy nedostaneme. Bez něj trezor nepřečte nikdo, ani my.</li>
+    </ul>
+    <p>Data uživatelů verze zdarma zůstávají jen v jejich telefonu.</p>
+
+    <h2>4. Zpracování v zařízení</h2>
+    <p>Čtení textu, QR a čárových kódů z fotek probíhá <strong>v telefonu</strong> pomocí Google ML Kit. Fotky se kvůli rozpoznání nikam nenahrávají. ML Kit se může spojit s Googlem kvůli stažení aktualizací modelů a může Googlu posílat anonymní údaje o výkonu a používání.</p>
+
+    <h2>5. Poloha</h2>
+    <p>Aplikace žádá o polohu jen ve chvíli, kdy ji používáš: k zobrazení tvé pozice na mapě, k uložení aktuálního místa nebo k přidání polohy do SOS zprávy. Poloha se nesleduje na pozadí a neposílá se nám. SOS zprávu odešle aplikace Zprávy v tvém telefonu kontaktům, které sis vybral.</p>
+
+    <h2>6. Služby třetích stran</h2>
+    <p>Některé funkce posílají dotaz na externí službu. Dotaz obsahuje jen to, co funkce potřebuje, a tvou IP adresu, kterou prozradí každé spojení s internetem.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Služba</th><th>K čemu</th><th>Co dostane</th></tr></thead>
+      <tbody>
+        <tr><td>Google Firebase (Auth, Firestore)</td><td>Účet a záloha v cloudu</td><td>E-mail, heslo (Google ho ukládá jako hash), data zálohy</td></tr>
+        <tr><td>Google Play Billing</td><td>Předplatné Pro</td><td>Nákup vyřizuje Google Play; platební údaje nikdy nevidíme</td></tr>
+        <tr><td>Nominatim (OpenStreetMap Foundation)</td><td>Hledání polohy nebo adresy místa</td><td>Hledaný text nebo souřadnice</td></tr>
+        <tr><td>OpenFreeMap / OpenStreetMap</td><td>Podklady mapy</td><td>Oblast mapy, kterou si prohlížíš</td></tr>
+        <tr><td>Frankfurter (kurzy ECB)</td><td>Přepočet měn</td><td>Dvojice měn a datum</td></tr>
+        <tr><td>Google Maps</td><td>Otevření odkazu na místo, který jsi do aplikace sdílel</td><td>Sdílený odkaz</td></tr>
+      </tbody>
+    </table></div>
+    <p>Nepoužíváme reklamní, analytické ani sledovací nástroje a tvá data neprodáváme ani nesdílíme kvůli reklamě.</p>
+
+    <h2>7. Upozornění</h2>
+    <p>Upozornění (akce, check-iny, končící doklady) se plánují přímo v telefonu. Texty upozornění na doklady neobsahují údaje z dokladu.</p>
+
+    <h2>8. Jak dlouho data uchováváme</h2>
+    <p>Data v telefonu zůstávají, dokud je nesmažeš nebo aplikaci neodinstaluješ. Záloha v cloudu zůstává, dokud ji v aplikaci nesmažeš nebo nesmažeš účet. Smazané položky zmizí ze zálohy při další synchronizaci.</p>
+
+    <h2>9. Smazání dat</h2>
+    <ul>
+      <li><strong>Všechna data:</strong> Nastavení → Data → Smazat všechna data. Nejdřív se smaže záloha v cloudu, pak data v telefonu.</li>
+      <li><strong>Účet:</strong> Nastavení → Účet → Smazat účet. Smaže účet, zálohu v cloudu i zálohu trezoru. Viz <a href="delete-account.html">stránka o smazání účtu</a>.</li>
+      <li>Pokud aplikaci nemůžeš použít, napiš nám a účet i data do 30 dnů smažeme.</li>
+    </ul>
+
+    <h2>10. Tvá práva</h2>
+    <p>Podle GDPR máš právo na přístup ke svým datům, jejich opravu, výmaz a export, na omezení zpracování a vznesení námitky a na stížnost u dozorového úřadu. V Česku je to Úřad pro ochranu osobních údajů (ÚOOÚ, uoou.gov.cz). Právním základem zpracování je plnění naší dohody s tebou (poskytování aplikace a zálohy, o kterou jsi požádal).</p>
+
+    <h2>11. Děti</h2>
+    <p>Aplikace je určená dospělým, není určená dětem do 16 let.</p>
+
+    <h2>12. Změny</h2>
+    <p>Pokud se zásady změní, upravíme je na této stránce a změníme datum nahoře. Důležité změny oznámíme i v aplikaci.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Patička"><a href="./">Úvod</a><a href="delete-account.html">Smazání účtu</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

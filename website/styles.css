@@ -166,3 +166,17 @@ p { margin: 0; }
 /* značka vývojáře (LR Tech CZ) v zápatí */
 .dev { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; font-weight: 600; }
 .dev img { border-radius: 50%; box-shadow: 0 0 0 1px var(--line); }
+
+/* přepínač jazyků v hlavičce */
+.langs { display: flex; gap: 4px; margin-left: 12px; }
+.langs a { font-size: .8rem; font-weight: 700; letter-spacing: .04em; color: var(--muted); text-decoration: none;
+  padding: 4px 7px; border-radius: 8px; border: 1px solid transparent; }
+.langs a:hover { color: var(--fg); }
+.langs a[aria-current="true"] { color: var(--fg); border-color: var(--line); }
+@media (max-width: 560px) { .langs { margin-left: 6px; } .langs a { padding: 3px 5px; } }
+/* úzký displej: logo + jazyky nahoře, menu na druhém řádku */
+@media (max-width: 640px) {
+  .site-header .container { flex-wrap: wrap; row-gap: 6px; }
+  .site-header .brand { flex: 1; }
+  .site-header .nav { order: 3; width: 100%; gap: 18px; }
+}

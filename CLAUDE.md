@@ -105,7 +105,15 @@ proto je důležitá spolehlivost offline a záloha dat.
   takže funguje i se zamčeným Vaultem), dny předem v `VaultType.remindDays`, v 9:00, text bez citlivých údajů.
   Vault se zamkne se zámkem aplikace. „Smazat všechna data“ Vault nemaže (klíče prefs `vault_*`), mazání jen po položkách.
   **Na emulátoru Vault nezakládat** – zapsal by se klíč s heslem do skutečného účtu uživatele.
-- `features/settings` (Nastavení: ozubené kolo na záložce Cesty – Záloha a účet, Smazat všechna data).
+- `features/settings` (Nastavení: ozubené kolo na záložce Cesty → sekce **Účet** (Pro, záloha, zámek, smazat účet),
+  **Personalizace** (jazyk, motiv, výchozí měna, začátek týdne, formát data/času, úvodní záložka, názvy na mapě),
+  **Data** (upozornění na doklady + čas, export CSV/JSON přes `export_service.dart` + share_plus, smazat data),
+  **O aplikaci** (verze, LR Tech CZ, kontakt, zásady, Google Play, licence)).
+- `core/app_settings.dart` – `AppSettings.instance` (SharedPreferences `set_*`, načte se v `main()`), čtou ho i `format.dart`
+  (fmtDate/fmtDay/fmtTime), router (úvodní záložka), zámek, upozornění, mapa. Změna → `_onSettings` v `app.dart` překreslí celý strom.
+  Začátek týdne: `core/week_start_localizations.dart` – **generovaný** obal MaterialLocalizations (`python tool/gen_week_start.py`).
+  Výchozí měna: `ExpenseRepository.changeMainCurrency` přepočte všechny cesty (rozpočet dnešním kurzem, výdaje kurzem ze dne výdaje).
+  Jazyk: zatím jen kalendáře (flutter_localizations) a názvy na mapě; **překlad textů aplikace (cs, en, de, es) je další krok**.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);
   rozpad podle zemí je jen informační graf v Přehledu.
 - `features/trips` (cesty + plán dne + ubytování od–do + čas + upozornění), `places`, `share_intake` (Android Share Intent z Google Map),

@@ -93,6 +93,43 @@ class ExpenseRepository {
         ),
       );
 
+  /// Změna výchozí měny (Nastavení → Personalizace): všechny cesty přejdou na [newCur],
+  /// rozpočet se přepočte dnešním kurzem a výdaje kurzem ze dne výdaje.
+  /// Vrací počet výdajů, které se nepodařilo přepočítat (bez internetu → dopočítají se později).
+  Future<int> changeMainCurrency(String newCur) async {
+    final trips = await (db.select(db.trips)..where((t) => t.deletedAt.isNull())).get();
+    var missing = 0;
+    for (final t in trips) {
+      if (t.mainCurrency == newCur) continue;
+      double? budget = t.budget;
+      if (budget != null) {
+        final r = await fetchRate(from: t.mainCurrency, to: newCur, date: DateTime.now());
+        budget = r == null ? null : (budget * r).roundToDouble();
+      }
+      await (db.update(db.trips)..where((x) => x.id.equals(t.id))).write(TripsCompanion(
+        mainCurrency: Value(newCur),
+        budget: Value(budget),
+        updatedAt: Value(DateTime.now()),
+        syncState: const Value('pending'),
+      ));
+      await (db.update(db.expenses)..where((e) => e.tripId.equals(t.id))).write(
+        ExpensesCompanion(
+          amountMain: const Value(null),
+          fxRate: const Value(null),
+          updatedAt: Value(DateTime.now()),
+          syncState: const Value('pending'),
+        ),
+      );
+      await backfillRates(t.id, newCur);
+      missing += (await (db.select(db.expenses)
+                ..where((e) =>
+                    e.tripId.equals(t.id) & e.deletedAt.isNull() & e.amountMain.isNull()))
+              .get())
+          .length;
+    }
+    return missing;
+  }
+
   /// Doplní kurz a přepočet u výdajů, které vznikly offline.
   Future<int> backfillRates(String tripId, String mainCurrency) async {
     final rows = await (db.select(db.expenses)

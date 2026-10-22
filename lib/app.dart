@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'core/app_settings.dart';
+import 'core/week_start_localizations.dart';
 import 'features/lock/app_lock.dart';
 import 'features/pro/pro_service.dart';
 import 'features/vault/vault_repository.dart';
@@ -34,6 +38,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
     // záloha: po přihlášení a při každém návratu do aplikace (jen Pro)
     ref.read(syncServiceProvider).start();
     ProService.instance.init();
+    AppSettings.instance.addListener(_onSettings);
     var wasPro = false;
     ProService.instance.addListener(() {
       final isPro = ProService.instance.isPro;
@@ -93,8 +98,20 @@ class _TravelAppState extends ConsumerState<TravelApp>
     }
   }
 
+  /// Změna nastavení: překreslit celou aplikaci (formáty data, měna…), stav obrazovek zůstává.
+  void _onSettings() {
+    if (!mounted) return;
+    setState(() {});
+    void mark(Element e) {
+      e.markNeedsBuild();
+      e.visitChildren(mark);
+    }
+    (context as Element).visitChildren(mark);
+  }
+
   @override
   void dispose() {
+    AppSettings.instance.removeListener(_onSettings);
     WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
     super.dispose();
@@ -107,9 +124,21 @@ class _TravelAppState extends ConsumerState<TravelApp>
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: AppSettings.instance.themeMode,
+      locale: Locale(AppSettings.instance.effectiveLanguage),
+      supportedLocales: [for (final l in AppSettings.supportedLanguages) Locale(l)],
+      localizationsDelegates: const [
+        WeekStartMaterialDelegate(), // místo GlobalMaterialLocalizations – kvůli začátku týdne
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => AppLockGate(child: child ?? const SizedBox()),
+      // 12/24 h i ve výběru času (showTimePicker) podle nastavení
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(alwaysUse24HourFormat: AppSettings.instance.use24h),
+        child: AppLockGate(child: child ?? const SizedBox()),
+      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/app_settings.dart';
 import '../../core/country_info.dart';
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
@@ -278,7 +279,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         });
       }
     }
-    final main = trip?.mainCurrency ?? 'CZK';
+    final main = trip?.mainCurrency ?? AppSettings.instance.homeCurrency;
     final cur = _cur.text.trim().toUpperCase();
 
     final currencies = <String>[

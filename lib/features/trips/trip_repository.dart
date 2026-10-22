@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/app_settings.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 
@@ -33,6 +34,7 @@ class TripRepository {
             startDate: Value(start),
             endDate: Value(end),
             countries: Value(jsonEncode(countries)),
+            mainCurrency: Value(AppSettings.instance.homeCurrency),
           ));
 
   Future<void> setCountries(String tripId, List<String> countries) =>

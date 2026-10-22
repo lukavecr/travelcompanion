@@ -1,14 +1,37 @@
+import 'app_settings.dart';
+
 const _weekdays = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
 
-String fmtDate(DateTime d) => '${d.day}. ${d.month}. ${d.year}';
+String _pad2(int n) => n.toString().padLeft(2, '0');
 
-String fmtDay(DateTime d) => '${_weekdays[d.weekday - 1]} ${d.day}. ${d.month}.';
+/// Datum podle nastavení (Personalizace → Formát data).
+String fmtDate(DateTime d) => switch (AppSettings.instance.dateFormat) {
+      'dmy_slash' => '${_pad2(d.day)}/${_pad2(d.month)}/${d.year}',
+      'mdy' => '${_pad2(d.month)}/${_pad2(d.day)}/${d.year}',
+      'iso' => '${d.year}-${_pad2(d.month)}-${_pad2(d.day)}',
+      _ => '${d.day}. ${d.month}. ${d.year}',
+    };
+
+/// Den bez roku: „Po 23. 10.“
+String fmtDay(DateTime d) {
+  final date = switch (AppSettings.instance.dateFormat) {
+    'dmy_slash' => '${_pad2(d.day)}/${_pad2(d.month)}',
+    'mdy' => '${_pad2(d.month)}/${_pad2(d.day)}',
+    'iso' => '${_pad2(d.month)}-${_pad2(d.day)}',
+    _ => '${d.day}. ${d.month}.',
+  };
+  return '${_weekdays[d.weekday - 1]} $date';
+}
 
 DateTime dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-/// 570 -> "09:30"
-String fmtTime(int minutes) =>
-    '${(minutes ~/ 60).toString().padLeft(2, '0')}:${(minutes % 60).toString().padLeft(2, '0')}';
+/// 570 -> "09:30" (nebo "9:30 AM" při 12h formátu)
+String fmtTime(int minutes) {
+  final h = (minutes ~/ 60) % 24, m = minutes % 60;
+  if (AppSettings.instance.use24h) return '${_pad2(h)}:${_pad2(m)}';
+  final h12 = h % 12 == 0 ? 12 : h % 12;
+  return '$h12:${_pad2(m)} ${h < 12 ? 'AM' : 'PM'}';
+}
 
 /// 20 -> "20 min", 60 -> "1 h", 90 -> "1 h 30 min"
 String fmtLead(int minutes) {

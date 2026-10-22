@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'app_settings.dart';
 import '../features/auth/auth_providers.dart';
 import '../features/auth/login_screen.dart';
 import '../features/documents/docs_list_screen.dart';
@@ -25,13 +26,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 
   return GoRouter(
-    initialLocation: '/trips',
+    initialLocation: '/${AppSettings.instance.startTab}',
     redirect: (context, state) {
       if (auth.isLoading) return null;
       final loggedIn = auth.value != null;
       final atLogin = state.matchedLocation == '/login';
       if (!loggedIn) return atLogin ? null : '/login';
-      if (atLogin) return '/trips';
+      if (atLogin) return '/${AppSettings.instance.startTab}';
       return null;
     },
     routes: [

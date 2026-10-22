@@ -7,14 +7,16 @@ import 'package:http/http.dart' as http;
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vtr;
 
-/// Jazyk popisků na mapě (OSM má názvy v mnoha jazycích: en, cs, de…).
-/// Později se napojí na nastavení jazyka aplikace.
-const mapLabelLanguage = 'en';
+import 'app_settings.dart';
+
 
 const _ofm = 'https://tiles.openfreemap.org';
 
 /// Popisky: zvolený jazyk → latinka → místní název.
-List<Object> _labelExpr(String lang) => [
+/// [lang] null = místní názvy (jak je píše daná země).
+List<Object> _labelExpr(String? lang) => lang == null
+    ? ['coalesce', ['get', 'name'], ['get', 'name:latin']]
+    : [
       'coalesce',
       ['get', 'name:$lang'],
       if (lang == 'en') ['get', 'name_en'],
@@ -23,7 +25,7 @@ List<Object> _labelExpr(String lang) => [
     ];
 
 /// Načte styl OpenFreeMap (zdarma, bez klíče) a přepne popisky do [lang].
-Future<Style> loadMapStyle({required bool dark, String lang = mapLabelLanguage}) async {
+Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
   Future<dynamic> getJson(String url) async {
     final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
     if (res.statusCode != 200) throw Exception('Mapa: $url → ${res.statusCode}');
@@ -85,9 +87,9 @@ Future<Style> loadMapStyle({required bool dark, String lang = mapLabelLanguage})
   );
 }
 
-/// Styl se načte jednou za běh aplikace (true = tmavý).
-final mapStyleProvider =
-    FutureProvider.family<Style, bool>((ref, dark) => loadMapStyle(dark: dark));
+/// Styl se načte jednou za běh aplikace pro každou kombinaci (tmavý, jazyk popisků).
+final mapStyleProvider = FutureProvider.family<Style, (bool, String?)>(
+    (ref, k) => loadMapStyle(dark: k.$1, lang: k.$2));
 
 /// Podklad mapy: vektorové dlaždice OpenFreeMap s anglickými popisky.
 /// Když se styl nepodaří načíst, použije se obyčejná mapa OSM.
@@ -97,7 +99,7 @@ class MapTiles extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final style = ref.watch(mapStyleProvider(dark));
+    final style = ref.watch(mapStyleProvider((dark, AppSettings.instance.mapLabelLanguage)));
     return style.when(
       data: (s) => VectorTileLayer(
         key: ValueKey(dark),

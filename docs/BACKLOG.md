@@ -33,7 +33,8 @@
    Mazání ve Vaultu **po jednotlivých položkách** (uživatel nechce hromadně smazat např. pas nebo řidičák; pojištění smazat může).
    „Smazat všechna data“ v Nastavení Vault nemaže.
 5. Hlavní měna cesty volitelná (teď pevně CZK), přepočet při změně.
-6. Nastavení ✔ základ (Záloha a účet, Smazat všechna data). Zbývá: výchozí země/měna, jazyk aplikace i popisků mapy,
+6. Nastavení ✔ (sekce Účet / Personalizace / Data / O aplikaci, motiv, měna, týden, formáty, export…). Zbývá: překlad aplikace do EN/DE/ES.
+   Původně: Nastavení ✔ základ (Záloha a účet, Smazat všechna data). Zbývá: výchozí země/měna, jazyk aplikace i popisků mapy,
    odhlášení bez míchání dat mezi účty (lokální DB není per-uživatel).
 7. Řazení položek dne přetažením i mezi dny.
 8. Podpora iOS (ML Kit, Firebase `GoogleService-Info.plist`, oznámení) – až bude Mac.

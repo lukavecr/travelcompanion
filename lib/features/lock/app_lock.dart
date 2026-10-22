@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 
+import '../../core/app_settings.dart';
 import '../vault/vault_crypto.dart';
 
 /// Ověření otiskem / obličejem, případně PINem či gestem telefonu.
@@ -53,19 +54,17 @@ class DeviceAuth {
   }
 }
 
-/// Zámek celé aplikace: po spuštění a po návratu z pozadí (déle než [graceAfterPause]).
+/// Zámek celé aplikace: po spuštění a po návratu z pozadí (doba podle Nastavení → Účet → Zámek).
 class AppLockGate extends StatefulWidget {
   const AppLockGate({super.key, required this.child});
   final Widget child;
-
-  static const graceAfterPause = Duration(seconds: 60);
 
   @override
   State<AppLockGate> createState() => _AppLockGateState();
 }
 
 class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
-  bool _locked = true;
+  bool _locked = AppSettings.instance.lockAfterSeconds >= 0;
   bool _noDeviceLock = false;
   DateTime? _pausedAt;
 
@@ -73,7 +72,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
+    if (_locked) WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
   }
 
   @override
@@ -90,7 +89,8 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.resumed) {
       final away = _pausedAt == null ? Duration.zero : DateTime.now().difference(_pausedAt!);
       _pausedAt = null;
-      if (!_locked && away >= AppLockGate.graceAfterPause) {
+      final after = AppSettings.instance.lockAfterSeconds;
+      if (!_locked && after >= 0 && away >= Duration(seconds: after)) {
         VaultKeys.instance.lock();
         setState(() => _locked = true);
         _unlock();

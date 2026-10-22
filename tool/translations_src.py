@@ -616,6 +616,17 @@ T = {
 'Další doklady': ('Other documents', 'Weitere Dokumente', 'Otros documentos'),
 'Nouzové kontakty': ('Emergency contacts', 'Notfallkontakte', 'Contactos de emergencia'),
 'Zdravotní údaje': ('Medical details', 'Gesundheitsdaten', 'Datos médicos'),
+# --- doplněno po kontrole ---
+'bez data': ('no date', 'ohne Datum', 'sin fecha'),
+'(nic nenalezeno)': ('(nothing found)', '(nichts gefunden)', '(no se encontró nada)'),
+'Místo': ('Place', 'Ort', 'Lugar'),
+'poloha uložena': ('location saved', 'Position gespeichert', 'ubicación guardada'),
+'bez polohy – klepni a najdi': ('no location – tap to find', 'ohne Position – tippen zum Suchen', 'sin ubicación: toca para buscar'),
+'24 hodin (14:30)': ('24-hour (14:30)', '24 Stunden (14:30)', '24 horas (14:30)'),
+'12 hodin (2:30 PM)': ('12-hour (2:30 PM)', '12 Stunden (2:30 PM)', '12 horas (2:30 PM)'),
+'V jazyce aplikace': ('In the app language', 'In der App-Sprache', 'En el idioma de la app'),
+'V jazyce aplikace (Tokyo, Hanoi…)': ('In the app language (Tokyo, Hanoi…)', 'In der App-Sprache (Tokio, Hanoi…)', 'En el idioma de la app (Tokio, Hanói…)'),
+'Odkaz vede na:': ('The link leads to:', 'Der Link führt zu:', 'El enlace lleva a:'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

@@ -12,7 +12,7 @@ import 'scan_service.dart';
 import '../../l10n/tr.dart';
 
 String docDateLabel(DateTime? d) {
-  if (d == null) return 'bez data';
+  if (d == null) return tr('bez data');
   final hasTime = d.hour != 0 || d.minute != 0;
   return hasTime
       ? '${fmtDate(d)} ${fmtTime(d.hour * 60 + d.minute)}'

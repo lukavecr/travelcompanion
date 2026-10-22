@@ -34,7 +34,8 @@ for i, lang in enumerate(LANGS):
     lines = [f'// VYGENEROVÁNO z tool/translations_src.py (python tool/gen_translations.py) – needitovat ručně.',
              '// ignore_for_file: lines_longer_than_80_chars',
              f'const {lang} = <String, String>{{']
-    for k in keys:
+    # extrahované klíče + ty, co extraktor nevidí (tr uvnitř ${…}, tr(proměnná))
+    for k in keys + [k for k in T if k not in keys]:
         if k in T:
             lines.append(f'  {dart(k)}: {dart(T[k][i])},')
     lines.append('};')

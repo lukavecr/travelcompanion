@@ -380,7 +380,7 @@ class _SharePlaceScreenState extends ConsumerState<SharePlaceScreen> {
                       padding: const EdgeInsets.all(12),
                       child: SelectableText([
                         widget.text,
-                        if (_finalUrl != null) '\nOdkaz vede na:\n$_finalUrl',
+                        if (_finalUrl != null) '\n${tr('Odkaz vede na:')}\n$_finalUrl',
                       ].join('\n')),
                     ),
                   ],

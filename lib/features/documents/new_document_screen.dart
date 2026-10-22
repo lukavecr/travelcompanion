@@ -505,7 +505,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                     Padding(
                       padding: const EdgeInsets.all(12),
                       child: SelectableText(
-                          scan.text.isEmpty ? '(nic nenalezeno)' : scan.text),
+                          scan.text.isEmpty ? tr('(nic nenalezeno)') : scan.text),
                     ),
                   ],
                 ),

@@ -115,9 +115,11 @@ class PlacesScreen extends ConsumerWidget {
                   leading: Icon(placeIcon(p.type)),
                   title: Text(p.name),
                   subtitle: Text(
-                    '${placeTypes[p.type] ?? 'Místo'} · '
-                    '${hasCoords ? 'poloha uložena' : 'bez polohy – klepni a najdi'}'
-                    '${(p.country ?? '').isEmpty ? '' : ' · ${p.country}'}',
+                    [
+                      placeTypes[p.type] ?? tr('Místo'),
+                      hasCoords ? tr('poloha uložena') : tr('bez polohy – klepni a najdi'),
+                      if ((p.country ?? '').isNotEmpty) p.country!,
+                    ].join(' · '),
                   ),
                   onTap: hasCoords
                       ? () => openPlaceInMaps(p)

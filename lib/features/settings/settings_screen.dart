@@ -187,7 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (_) => ListenableBuilder(
         listenable: Listenable.merge([AppSettings.instance, ProService.instance]),
         builder: (c, _) => Scaffold(
-          appBar: AppBar(title: Text(title)),
+          appBar: AppBar(title: Text(tr(title))),
           body: ListView(padding: const EdgeInsets.all(12), children: children(c)),
         ),
       ),
@@ -277,10 +277,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         final v = await _choose(c, tr('Formát data'), AppSettings.dateFormats, st.dateFormat);
         if (v != null) await st.setDateFormat(v);
       }),
-      _tile(Icons.schedule, tr('Formát času'), st.use24h ? '24 hodin (14:30)' : '12 hodin (2:30 PM)',
+      _tile(Icons.schedule, tr('Formát času'), st.use24h ? tr('24 hodin (14:30)') : tr('12 hodin (2:30 PM)'),
           () async {
         final v = await _choose(c, tr('Formát času'),
-            const {true: '24 hodin (14:30)', false: '12 hodin (2:30 PM)'}, st.use24h);
+            {true: tr('24 hodin (14:30)'), false: tr('12 hodin (2:30 PM)')}, st.use24h);
         if (v != null) await st.setUse24h(v);
       }),
       _tile(Icons.home_outlined, tr('Úvodní záložka'), AppSettings.startTabs[st.startTab], () async {
@@ -289,11 +289,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (v != null) await st.setStartTab(v);
       }),
       _tile(Icons.translate, tr('Názvy na mapě'),
-          st.mapLocalNames ? tr('Místní (東京, Hà Nội…)') : 'V jazyce aplikace', () async {
+          st.mapLocalNames ? tr('Místní (東京, Hà Nội…)') : tr('V jazyce aplikace'), () async {
         final v = await _choose(
             c,
             tr('Názvy měst a míst na mapě'),
-            {false: 'V jazyce aplikace (Tokyo, Hanoi…)', true: tr('Místní (東京, Hà Nội…)')},
+            {false: tr('V jazyce aplikace (Tokyo, Hanoi…)'), true: tr('Místní (東京, Hà Nội…)')},
             st.mapLocalNames);
         if (v != null) await st.setMapLocalNames(v);
       }),
@@ -430,12 +430,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               _tile(Icons.person_outline, tr('Účet'),
                   tr('{n} · záloha · zámek aplikace', {'n': ProService.instance.isPro ? tr('Pro') : tr('Zdarma')}),
-                  () => _open(tr('Účet'), _account)),
+                  () => _open('Účet', _account)),
               _tile(Icons.tune, tr('Personalizace'),
                   tr('{n} · {homeCurrency} · motiv · formáty', {'n': AppSettings.languages[st.language], 'homeCurrency': st.homeCurrency}),
-                  () => _open(tr('Personalizace'), _personal)),
+                  () => _open('Personalizace', _personal)),
               _tile(Icons.storage_outlined, tr('Data'), tr('Upozornění · export · smazání dat'),
-                  () => _open(tr('Data'), _data)),
+                  () => _open('Data', _data)),
               _tile(Icons.info_outline, 'O aplikaci', tr('Verze · kontakt · zásady · licence'),
                   () => _open('O aplikaci', _about)),
             ],

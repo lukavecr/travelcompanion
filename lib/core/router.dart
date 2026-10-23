@@ -6,6 +6,7 @@ import '../features/auth/auth_providers.dart';
 import '../features/auth/login_screen.dart';
 import '../features/documents/docs_list_screen.dart';
 import '../features/documents/email_import_screen.dart';
+import '../features/share/share_screen.dart';
 import '../features/tracks/tracks_screen.dart';
 import '../features/documents/document_detail_screen.dart';
 import '../features/documents/new_document_screen.dart';
@@ -70,6 +71,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                       path: 'places',
                       builder: (context, state) =>
                           PlacesScreen(tripId: state.pathParameters['id']!),
+                    ),
+                    GoRoute(
+                      path: 'share',
+                      builder: (context, state) =>
+                          ShareTripScreen(tripId: state.pathParameters['id']!),
                     ),
                   ],
                 ),

@@ -20,6 +20,7 @@ import 'features/auth/auth_providers.dart';
 import 'features/reminders/reminder_service.dart';
 import 'features/sync/sync_service.dart';
 import 'features/trips/trip_repository.dart';
+import 'features/share/shared_trips.dart';
 import 'features/tracks/tracker_service.dart';
 import 'features/widget/home_widget_service.dart';
 import 'l10n/tr.dart';
@@ -46,6 +47,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
     ProService.instance.init();
     _widget.start(); // widget na plochu: plán na 3 dny + dnešní útrata
     TrackerService.instance.init(ref.read(databaseProvider));
+    SharedTrips.instance.start(ref.read(databaseProvider)); // společné cesty (i ve verzi zdarma)
     AppSettings.instance.addListener(_onSettings);
     var wasPro = false;
     ProService.instance.addListener(() {

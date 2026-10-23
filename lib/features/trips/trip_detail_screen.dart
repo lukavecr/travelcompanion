@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../data/database.dart';
 import '../places/place_types.dart';
 import '../reminders/reminder_service.dart';
+import '../share/share_screen.dart';
 import 'trip_export.dart';
 import 'trip_repository.dart';
 import '../../l10n/tr.dart';
@@ -24,7 +25,8 @@ class TripDetailScreen extends ConsumerWidget {
     return trip.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text(tr('Chyba: {e}', {'e': e})))),
+      error: (e, _) =>
+          Scaffold(body: Center(child: Text(tr('Chyba: {e}', {'e': e})))),
       data: (t) {
         if (t == null) {
           return Scaffold(body: Center(child: Text(tr('Cesta nenalezena'))));
@@ -51,11 +53,19 @@ class TripDetailScreen extends ConsumerWidget {
           addRange(e.date, e.endDate ?? e.date);
         }
         final sorted = days.toList()..sort();
+        final editable = canEditPlan(t); // účastník zdarma plán jen sleduje
 
         return Scaffold(
           appBar: AppBar(
             title: Text(t.name),
             actions: [
+              IconButton(
+                tooltip: tr('Společná cesta'),
+                icon: Icon(
+                  t.shareRole != null ? Icons.group : Icons.group_add_outlined,
+                ),
+                onPressed: () => context.go('/trips/trip/$tripId/share'),
+              ),
               IconButton(
                 tooltip: tr('Uložená místa'),
                 icon: const Icon(Icons.place_outlined),
@@ -63,8 +73,10 @@ class TripDetailScreen extends ConsumerWidget {
               ),
               PopupMenuButton<String>(
                 onSelected: (v) async {
-                  if (v == 'ics') return exportTripIcs(ref.read(databaseProvider), t.id);
-                  if (v == 'pdf') return exportTripPdf(ref.read(databaseProvider), t.id);
+                  if (v == 'ics')
+                    return exportTripIcs(ref.read(databaseProvider), t.id);
+                  if (v == 'pdf')
+                    return exportTripPdf(ref.read(databaseProvider), t.id);
                   if (v == 'edit') {
                     final r = await askTrip(
                       context,
@@ -76,17 +88,24 @@ class TripDetailScreen extends ConsumerWidget {
                           : null,
                     );
                     if (r != null) {
-                      await ref.read(tripRepositoryProvider).updateTrip(t.id,
-                          name: r.name,
-                          start: r.range?.start,
-                          end: r.range?.end,
-                          countries: r.countries);
+                      await ref
+                          .read(tripRepositoryProvider)
+                          .updateTrip(
+                            t.id,
+                            name: r.name,
+                            start: r.range?.start,
+                            end: r.range?.end,
+                            countries: r.countries,
+                          );
                     }
                   }
                 },
                 itemBuilder: (_) => [
-                  PopupMenuItem(
-                      value: 'edit', child: Text(tr('Upravit cestu (název, termín)'))),
+                  if (editable)
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(tr('Upravit cestu (název, termín)')),
+                    ),
                   PopupMenuItem(
                     value: 'ics',
                     child: ListTile(
@@ -107,41 +126,67 @@ class TripDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          body: sorted.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      tr('Cesta nemá termín, takže nejsou žádné dny.\n' 'Smaž ji a vytvoř znovu s termínem.'),
-                      textAlign: TextAlign.center,
+          body: Column(
+            children: [
+              if (!editable)
+                MaterialBanner(
+                  content: Text(
+                    tr(
+                      'Společná cesta: plán upravuje zakladatel. Ty můžeš přidávat výdaje a místa.',
                     ),
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
-                  itemCount: sorted.length,
-                  itemBuilder: (context, i) {
-                    final day = sorted[i];
-                    final stays = evs
-                        .where((e) =>
-                            e.endDate != null &&
-                            !day.isBefore(dayOnly(e.date)) &&
-                            !day.isAfter(dayOnly(e.endDate!)))
-                        .toList();
-                    final dayEvents = evs
-                        .where((e) => e.endDate == null && dayOnly(e.date) == day)
-                        .toList();
-                    return _DayCard(
-                      tripId: tripId,
-                      day: day,
-                      dayNumber: t.startDate == null
-                          ? null
-                          : day.difference(dayOnly(t.startDate!)).inDays + 1,
-                      stays: stays,
-                      events: dayEvents,
-                    );
-                  },
+                  leading: const Icon(Icons.visibility_outlined),
+                  actions: const [SizedBox.shrink()],
                 ),
+              Expanded(
+                child: sorted.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            tr(
+                              'Cesta nemá termín, takže nejsou žádné dny.\n'
+                              'Smaž ji a vytvoř znovu s termínem.',
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
+                        itemCount: sorted.length,
+                        itemBuilder: (context, i) {
+                          final day = sorted[i];
+                          final stays = evs
+                              .where(
+                                (e) =>
+                                    e.endDate != null &&
+                                    !day.isBefore(dayOnly(e.date)) &&
+                                    !day.isAfter(dayOnly(e.endDate!)),
+                              )
+                              .toList();
+                          final dayEvents = evs
+                              .where(
+                                (e) =>
+                                    e.endDate == null && dayOnly(e.date) == day,
+                              )
+                              .toList();
+                          return _DayCard(
+                            tripId: tripId,
+                            day: day,
+                            dayNumber: t.startDate == null
+                                ? null
+                                : day.difference(dayOnly(t.startDate!)).inDays +
+                                      1,
+                            stays: stays,
+                            events: dayEvents,
+                            editable: editable,
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -155,6 +200,7 @@ class _DayCard extends ConsumerWidget {
     required this.dayNumber,
     required this.stays,
     required this.events,
+    this.editable = true,
   });
 
   final String tripId;
@@ -162,13 +208,18 @@ class _DayCard extends ConsumerWidget {
   final int? dayNumber;
   final List<CalendarEvent> stays;
   final List<CalendarEvent> events;
+  final bool editable;
 
   String get _label => dayNumber != null && dayNumber! > 0
       ? tr('Den {n} · {day}', {'n': dayNumber, 'day': fmtDay(day)})
       : fmtDay(day);
 
-  Future<void> _addStay(BuildContext context, TripRepository repo,
-      String name, String? placeId) async {
+  Future<void> _addStay(
+    BuildContext context,
+    TripRepository repo,
+    String name,
+    String? placeId,
+  ) async {
     final range = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
@@ -221,7 +272,10 @@ class _DayCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
     if (choice == 'custom') {
-      final r = await askEvent(context, heading: tr('Nová položka · {_label}', {'_label': _label}));
+      final r = await askEvent(
+        context,
+        heading: tr('Nová položka · {_label}', {'_label': _label}),
+      );
       if (r != null) {
         await repo.addEvent(
           tripId: tripId,
@@ -240,8 +294,11 @@ class _DayCard extends ConsumerWidget {
       if (choice.type == 'hotel') {
         await _addStay(context, repo, choice.name, choice.id);
       } else {
-        final r = await askEvent(context,
-            heading: tr('Přidat do dne'), title: choice.name);
+        final r = await askEvent(
+          context,
+          heading: tr('Přidat do dne'),
+          title: choice.name,
+        );
         if (r != null) {
           await repo.addEvent(
             tripId: tripId,
@@ -251,7 +308,8 @@ class _DayCard extends ConsumerWidget {
             startMinutes: r.minutes,
             remindMinutes: r.remindMinutes,
           );
-          if (r.remindMinutes != null) await ReminderService.ensurePermissions();
+          if (r.remindMinutes != null)
+            await ReminderService.ensurePermissions();
         }
       }
     }
@@ -262,17 +320,22 @@ class _DayCard extends ConsumerWidget {
     return PopupMenuButton<String>(
       onSelected: (v) async {
         if (v == 'edit') {
-          final r = await askEvent(context,
-              heading: tr('Upravit'),
-              title: e.title,
-              minutes: e.startMinutes,
-              remind: e.remindMinutes);
+          final r = await askEvent(
+            context,
+            heading: tr('Upravit'),
+            title: e.title,
+            minutes: e.startMinutes,
+            remind: e.remindMinutes,
+          );
           if (r != null) {
-            await repo.updateEventDetails(e.id,
-                title: r.title,
-                startMinutes: r.minutes,
-                remindMinutes: r.remindMinutes);
-            if (r.remindMinutes != null) await ReminderService.ensurePermissions();
+            await repo.updateEventDetails(
+              e.id,
+              title: r.title,
+              startMinutes: r.minutes,
+              remindMinutes: r.remindMinutes,
+            );
+            if (r.remindMinutes != null)
+              await ReminderService.ensurePermissions();
           }
         } else if (v == 'move') {
           final d = await showDatePicker(
@@ -301,8 +364,8 @@ class _DayCard extends ConsumerWidget {
     final what = day == start
         ? 'Check-in'
         : day == end
-            ? 'Check-out'
-            : tr('Ubytování');
+        ? 'Check-out'
+        : tr('Ubytování');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -314,26 +377,31 @@ class _DayCard extends ConsumerWidget {
         leading: const Icon(Icons.hotel),
         title: Text(e.title),
         subtitle: Text('$what · ${fmtDate(start)} – ${fmtDate(end)}'),
-        trailing: PopupMenuButton<String>(
-          onSelected: (v) async {
-            if (v == 'range') {
-              final r = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2040),
-                initialDateRange: DateTimeRange(start: start, end: end),
-                helpText: tr('Od kdy do kdy'),
-              );
-              if (r != null) await repo.updateStay(e.id, r.start, r.end);
-            } else if (v == 'delete') {
-              await repo.deleteEvent(e.id);
-            }
-          },
-          itemBuilder: (_) => [
-            PopupMenuItem(value: 'range', child: Text(tr('Změnit termín'))),
-            PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
-          ],
-        ),
+        trailing: !editable
+            ? null
+            : PopupMenuButton<String>(
+                onSelected: (v) async {
+                  if (v == 'range') {
+                    final r = await showDateRangePicker(
+                      context: context,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2040),
+                      initialDateRange: DateTimeRange(start: start, end: end),
+                      helpText: tr('Od kdy do kdy'),
+                    );
+                    if (r != null) await repo.updateStay(e.id, r.start, r.end);
+                  } else if (v == 'delete') {
+                    await repo.deleteEvent(e.id);
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'range',
+                    child: Text(tr('Změnit termín')),
+                  ),
+                  PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
+                ],
+              ),
       ),
     );
   }
@@ -361,14 +429,17 @@ class _DayCard extends ConsumerWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(_label,
-                        style: Theme.of(context).textTheme.titleMedium),
+                    child: Text(
+                      _label,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                  IconButton(
-                    tooltip: tr('Přidat do dne'),
-                    icon: const Icon(Icons.add_circle_outline),
-                    onPressed: () => _add(context, ref),
-                  ),
+                  if (editable)
+                    IconButton(
+                      tooltip: tr('Přidat do dne'),
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () => _add(context, ref),
+                    ),
                 ],
               ),
             ),
@@ -383,28 +454,38 @@ class _DayCard extends ConsumerWidget {
                 key: ValueKey(e.id),
                 leading: Text(
                   fmtTime(e.startMinutes!),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
+                  style: Theme.of(context).textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 title: Text(e.title),
                 onTap: e.documentId == null
                     ? null
                     : () => context.go('/docs/doc/${e.documentId}'),
-                subtitle: (e.placeId != null ||
+                subtitle:
+                    (e.placeId != null ||
                         e.documentId != null ||
                         e.remindMinutes != null)
-                    ? Text([
-                        if (e.documentId != null) 'doklad',
-                        if (e.placeId != null) tr('uložené místo'),
-                        if (e.remindMinutes != null)
-                          tr('🔔 {remindMinutes} předem', {'remindMinutes': fmtLead(e.remindMinutes!)}),
-                      ].join(' · '))
+                    ? Text(
+                        [
+                          if (e.documentId != null) 'doklad',
+                          if (e.placeId != null) tr('uložené místo'),
+                          if (e.remindMinutes != null)
+                            tr('🔔 {remindMinutes} předem', {
+                              'remindMinutes': fmtLead(e.remindMinutes!),
+                            }),
+                        ].join(' · '),
+                      )
                     : null,
-                trailing: _eventMenu(context, ref, e),
+                trailing: editable ? _eventMenu(context, ref, e) : null,
               ),
-            if (untimed.isNotEmpty)
+            if (untimed.isNotEmpty && !editable)
+              for (final e in untimed)
+                ListTile(
+                  key: ValueKey(e.id),
+                  leading: e.placeId != null ? const Icon(Icons.place) : null,
+                  title: Text(e.title),
+                ),
+            if (untimed.isNotEmpty && editable)
               ReorderableListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -420,7 +501,9 @@ class _DayCard extends ConsumerWidget {
                       key: ValueKey(e.id),
                       leading: e.documentId != null
                           ? const Icon(Icons.confirmation_number)
-                          : (e.placeId != null ? const Icon(Icons.place) : null),
+                          : (e.placeId != null
+                                ? const Icon(Icons.place)
+                                : null),
                       title: Text(e.title),
                       onTap: e.documentId == null
                           ? null

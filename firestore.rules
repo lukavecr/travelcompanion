@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // osobní data a záloha: jen přihlášený vlastník
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // společné cesty – obsah je šifrovaný klíčem cesty, číst a psát smí jen účastníci
+    match /shared/{tripId} {
+      function signedIn() { return request.auth != null; }
+      function isMember() {
+        return signedIn() && exists(/databases/$(database)/documents/shared/$(tripId)/members/$(request.auth.uid));
+      }
+      function isOwner() {
+        return signedIn() && get(/databases/$(database)/documents/shared/$(tripId)).data.ownerUid == request.auth.uid;
+      }
+      function validInvite(id) {
+        let inv = get(/databases/$(database)/documents/invites/$(id)).data;
+        return inv.tripId == tripId && inv.expiresAt > request.time.toMillis();
+      }
+
+      allow read: if isMember();
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isMember() && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if isOwner();
+
+      match /members/{uid} {
+        allow read: if isMember();
+        allow create: if signedIn() && request.auth.uid == uid &&
+          (isOwner() || (request.resource.data.invite is string && validInvite(request.resource.data.invite)));
+        allow update: if signedIn() && request.auth.uid == uid;
+        allow delete: if signedIn() && (request.auth.uid == uid || isOwner());
+      }
+
+      match /{col}/{id} {
+        allow read, write: if col != 'members' && isMember();
+      }
+    }
+
+    // pozvánky: id = hash kódu, nejdou vypsat, jen přečíst se znalostí kódu
+    match /invites/{id} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.inviterUid == request.auth.uid &&
+        exists(/databases/$(database)/documents/shared/$(request.resource.data.tripId)/members/$(request.auth.uid));
+      allow delete: if request.auth != null && resource.data.inviterUid == request.auth.uid;
+    }
+  }
+}

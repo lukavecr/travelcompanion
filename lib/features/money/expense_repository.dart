@@ -32,6 +32,8 @@ class ExpenseRepository {
     String? country,
     String? note,
     String? receiptPath,
+    String? paidBy,
+    String? splitWith,
   }) =>
       db.into(db.expenses).insert(ExpensesCompanion.insert(
             id: _uuid.v4(),
@@ -44,6 +46,8 @@ class ExpenseRepository {
             category: Value(category),
             country: Value(country),
             note: Value(note),
+            paidBy: Value(paidBy),
+            splitWith: Value(splitWith),
             receiptPath: Value(receiptPath),
           ));
 
@@ -58,9 +62,13 @@ class ExpenseRepository {
     String? country,
     String? note,
     String? receiptPath,
+    String? paidBy,
+    String? splitWith,
   }) =>
       (db.update(db.expenses)..where((e) => e.id.equals(id))).write(
         ExpensesCompanion(
+          paidBy: Value(paidBy),
+          splitWith: Value(splitWith),
           amount: Value(amount),
           currency: Value(currency),
           fxRate: Value(fxRate),

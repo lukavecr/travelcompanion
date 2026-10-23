@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../onboarding/demo_trip.dart';
 import '../pro/paywall.dart';
 import 'trip_repository.dart';
+import '../share/share_screen.dart';
 import '../../l10n/tr.dart';
 
 class TripFormResult {
@@ -105,6 +106,11 @@ class TripsListScreen extends ConsumerWidget {
         title: Text(tr('Moje cesty')),
         actions: [
           IconButton(
+            tooltip: tr('Připojit se kódem'),
+            icon: const Icon(Icons.group_add_outlined),
+            onPressed: () => joinWithCode(context),
+          ),
+          IconButton(
             tooltip: tr('Záloha a účet'),
             icon: const Icon(Icons.cloud_outlined),
             onPressed: () => context.push('/sync'),
@@ -172,9 +178,9 @@ class TripsListScreen extends ConsumerWidget {
                   : tr('Bez termínu');
               return Card(
                 child: ListTile(
-                  leading: const Icon(Icons.flight_takeoff),
+                  leading: Icon(t.shareRole != null ? Icons.group : Icons.flight_takeoff),
                   title: Text(t.name),
-                  subtitle: Text(dates),
+                  subtitle: Text(t.shareRole == null ? dates : '$dates · ${tr('společná')}'),
                   trailing: PopupMenuButton<String>(
                     onSelected: (v) async {
                       if (v == 'edit') {
@@ -194,14 +200,20 @@ class TripsListScreen extends ConsumerWidget {
                               end: r.range?.end,
                               countries: r.countries);
                         }
+                      } else if (v == 'share') {
+                        context.go('/trips/trip/${t.id}/share');
                       } else if (v == 'delete' &&
                           await confirm(context, tr('Smazat cestu „{name}“?', {'name': t.name}))) {
                         await repo.deleteTrip(t.id);
                       }
                     },
                     itemBuilder: (_) => [
-                      PopupMenuItem(value: 'edit', child: Text(tr('Upravit (název, termín)'))),
-                      PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
+                      if (canEditPlan(t))
+                        PopupMenuItem(value: 'edit', child: Text(tr('Upravit (název, termín)'))),
+                      PopupMenuItem(value: 'share', child: Text(tr('Sdílet s ostatními'))),
+                      // ze společné cesty se odchází (nebo se ruší sdílení), nemaže se ostatním
+                      if (t.shareRole == null)
+                        PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
                     ],
                   ),
                   onTap: () => context.go('/trips/trip/${t.id}'),

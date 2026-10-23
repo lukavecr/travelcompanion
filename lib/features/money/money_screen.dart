@@ -12,6 +12,7 @@ import '../pro/paywall.dart';
 import 'categories.dart';
 import 'expense_form_screen.dart';
 import 'expense_repository.dart';
+import '../share/settle_card.dart';
 import '../../l10n/tr.dart';
 
 const _none = '__none'; // výdaje bez země
@@ -276,6 +277,7 @@ class _MoneyScreenState extends ConsumerState<MoneyScreen> {
               ),
             ),
           ),
+          if (trip?.shareRole != null) SettleCard(trip: trip!, expenses: expenses),
           const SizedBox(height: 8),
           Center(
             child: SegmentedButton<int>(

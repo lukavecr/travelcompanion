@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'categories.dart';
 import 'expense_repository.dart';
 import 'fx_service.dart';
 import 'receipt_reader.dart';
+import '../share/shared_trips.dart';
 import '../../l10n/tr.dart';
 
 class ExpenseFormArgs {
@@ -49,6 +51,9 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   bool _curInit = false;
   bool _busy = false;
   bool _saving = false;
+  // společná cesta: kdo platil a za koho (null = všichni)
+  String? _paidBy;
+  Set<String>? _splitWith;
 
   Expense? get _existing => widget.args.existing;
 
@@ -71,6 +76,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           ? null
           : e.receiptPath;
       _curInit = true;
+      _paidBy = e.paidBy;
+      if (e.splitWith != null) {
+        _splitWith = {for (final x in jsonDecode(e.splitWith!) as List) x as String};
+      }
     } else if (widget.args.defaultCountry != null) {
       _country.text = widget.args.defaultCountry!;
     }
@@ -216,6 +225,9 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       }
     }
 
+    final shared = ref.read(tripProvider(widget.args.tripId)).value?.shareRole != null;
+    final paidBy = shared ? (_paidBy ?? SharedTrips.myUid) : null;
+    final splitWith = shared && _splitWith != null ? jsonEncode(_splitWith!.toList()) : null;
     final repo = ref.read(expenseRepositoryProvider);
     final e = _existing;
     if (e == null) {
@@ -230,6 +242,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         country: country,
         note: clean(_note),
         receiptPath: receipt,
+        paidBy: paidBy,
+        splitWith: splitWith,
       );
     } else {
       await repo.updateExpense(
@@ -243,10 +257,55 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
         country: country,
         note: clean(_note),
         receiptPath: receipt,
+        paidBy: paidBy,
+        splitWith: splitWith,
       );
     }
     if (!mounted) return;
     context.go('/money');
+  }
+
+  /// Společná cesta: kdo platil a za koho.
+  List<Widget> _splitSection(Trip trip) {
+    final members = SharedTrips.instance.membersOf(trip.id);
+    if (members.length < 2) return const [];
+    final me = SharedTrips.myUid;
+    final payer = _paidBy ?? me;
+    final all = members.map((m) => m.uid).toSet();
+    final who = _splitWith ?? all;
+    return [
+      const SizedBox(height: 16),
+      Text(tr('Platil'), style: Theme.of(context).textTheme.titleSmall),
+      Wrap(
+        spacing: 8,
+        children: [
+          for (final m in members)
+            ChoiceChip(
+              label: Text(m.uid == me ? tr('já') : m.name),
+              selected: payer == m.uid,
+              onSelected: (_) => setState(() => _paidBy = m.uid),
+            ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Text(tr('Za koho (rozdělí se rovným dílem)'), style: Theme.of(context).textTheme.titleSmall),
+      Wrap(
+        spacing: 8,
+        children: [
+          for (final m in members)
+            FilterChip(
+              label: Text(m.uid == me ? tr('já') : m.name),
+              selected: who.contains(m.uid),
+              onSelected: (v) => setState(() {
+                final next = {...who};
+                v ? next.add(m.uid) : next.remove(m.uid);
+                if (next.isEmpty) return;
+                _splitWith = next.length == all.length ? null : next;
+              }),
+            ),
+        ],
+      ),
+    ];
   }
 
   void _snack(String m) =>
@@ -456,6 +515,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   ),
               ],
             ),
+          if (trip?.shareRole != null) ..._splitSection(trip!),
           const SizedBox(height: 12),
           TextField(
             controller: _note,

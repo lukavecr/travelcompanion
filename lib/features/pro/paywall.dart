@@ -34,9 +34,9 @@ Future<(int, int)> usageOf(AppDatabase db, ProLimit kind) async => switch (kind)
     };
 
 Future<int> _count(AppDatabase db, TableInfo<Table, dynamic> t) async {
-  // ukázková cesta (notes = 'demo') se do limitů nepočítá
+  // ukázková cesta (notes = 'demo') a cesty, kam mě někdo pozval, se do limitů nepočítají
   final notDemo = t.actualTableName == 'documents' || t.actualTableName == 'expenses'
-      ? " AND trip_id NOT IN (SELECT id FROM trips WHERE notes = '$demoTripNote')"
+      ? " AND trip_id NOT IN (SELECT id FROM trips WHERE notes = '$demoTripNote' OR share_role = 'member')"
       : '';
   final rows = await db
       .customSelect('SELECT COUNT(*) AS c FROM ${t.actualTableName} WHERE deleted_at IS NULL$notDemo')
@@ -49,7 +49,7 @@ Future<int> _activeTrips(AppDatabase db) async {
   final today = dayOnly(DateTime.now());
   final trips = await (db.select(db.trips)..where((t) => t.deletedAt.isNull())).get();
   return trips
-      .where((t) => t.notes != demoTripNote)
+      .where((t) => t.notes != demoTripNote && t.shareRole != 'member')
       .where((t) => t.endDate == null || !t.endDate!.isBefore(today))
       .length;
 }

@@ -54,3 +54,8 @@ ios/Runner/GoogleService-Info.plist
 *.jks
 key.properties
 node_modules/
+
+# propagační materiály (vygenerují se znovu: tool/promo)
+branding/promo/*
+!branding/promo/README.md
+branding/screenshots/

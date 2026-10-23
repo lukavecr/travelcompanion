@@ -938,6 +938,28 @@ T = {
 'Poslat do aplikace AI (ChatGPT, Claude…)': ('Send to an AI app (ChatGPT, Claude…)', 'An eine KI-App senden (ChatGPT, Claude…)', 'Enviar a una app de IA (ChatGPT, Claude…)'),
 'Uložit do telefonu': ('Save to phone', 'Auf dem Telefon speichern', 'Guardar en el teléfono'),
 'Vzor je uložený. V AI ho přilož přes 📎.': ('Template saved. Attach it in the AI with 📎.', 'Vorlage gespeichert. Hänge sie in der KI mit 📎 an.', 'Plantilla guardada. Adjúntala en la IA con 📎.'),
+# --- názvy zemí v SOS (tísňová čísla) ---
+'Česko': ('Czechia', 'Tschechien', 'Chequia'),
+'Velká Británie': ('United Kingdom', 'Großbritannien', 'Reino Unido'),
+'USA': ('USA', 'USA', 'EE. UU.'),
+'Havaj': ('Hawaii', 'Hawaii', 'Hawái'),
+'Kanada': ('Canada', 'Kanada', 'Canadá'),
+'Mexiko': ('Mexico', 'Mexiko', 'México'),
+'Japonsko': ('Japan', 'Japan', 'Japón'),
+'Thajsko': ('Thailand', 'Thailand', 'Tailandia'),
+'Kambodža': ('Cambodia', 'Kambodscha', 'Camboya'),
+'Laos': ('Laos', 'Laos', 'Laos'),
+'Malajsie': ('Malaysia', 'Malaysia', 'Malasia'),
+'Singapur': ('Singapore', 'Singapur', 'Singapur'),
+'Indonésie': ('Indonesia', 'Indonesien', 'Indonesia'),
+'Filipíny': ('Philippines', 'Philippinen', 'Filipinas'),
+'Čína': ('China', 'China', 'China'),
+'Hongkong': ('Hong Kong', 'Hongkong', 'Hong Kong'),
+'Tchaj-wan': ('Taiwan', 'Taiwan', 'Taiwán'),
+'Jižní Korea': ('South Korea', 'Südkorea', 'Corea del Sur'),
+'Indie': ('India', 'Indien', 'India'),
+'Austrálie': ('Australia', 'Australien', 'Australia'),
+'Nový Zéland': ('New Zealand', 'Neuseeland', 'Nueva Zelanda'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

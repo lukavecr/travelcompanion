@@ -11,6 +11,7 @@ import '../../core/geocode.dart';
 import 'emergency_numbers.dart';
 import 'vault_repository.dart';
 import '../../l10n/tr.dart';
+import '../../demo/demo_mode.dart';
 
 /// SOS: SMS s polohou nouzovým kontaktům + karta pro záchranáře (anglicky).
 /// Data bere z Vaultu (nouzové kontakty, zdravotní údaje, pojištění).
@@ -55,7 +56,8 @@ class _SosScreenState extends ConsumerState<SosScreen> {
       );
       if (mounted) setState(() => _pos = p);
       if (_country == null) {
-        final c = await reverseCountry(p.latitude, p.longitude);
+        // prezentační režim: cesta po Japonsku (bez dotazu na internet)
+        final c = kDemo ? 'Japonsko' : await reverseCountry(p.latitude, p.longitude);
         if (mounted && c != null) setState(() => _country = c);
       }
     } catch (e) {
@@ -312,7 +314,7 @@ class _EmergencyCard extends StatelessWidget {
   final ValueChanged<String> onPick;
 
   Future<void> _pick(BuildContext context) async {
-    final names = emergencyNumbers.keys.toList()..sort();
+    final names = emergencyNumbers.keys.toList()..sort((a, b) => tr(a).compareTo(tr(b)));
     final c = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
@@ -320,7 +322,7 @@ class _EmergencyCard extends StatelessWidget {
       builder: (ctx) => SafeArea(
         child: ListView(
           shrinkWrap: true,
-          children: [for (final n in names) ListTile(title: Text(n), onTap: () => Navigator.pop(ctx, n))],
+          children: [for (final n in names) ListTile(title: Text(tr(n)), onTap: () => Navigator.pop(ctx, n))],
         ),
       ),
     );
@@ -344,7 +346,7 @@ class _EmergencyCard extends StatelessWidget {
                 child: Text(
                   country == null
                       ? tr('Tísňová čísla')
-                      : tr('Tísňová čísla – {country}', {'country': country}),
+                      : tr('Tísňová čísla – {country}', {'country': tr(country!)}),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),

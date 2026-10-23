@@ -54,6 +54,8 @@ for page, items in PAGES.items():
             out = out.replace(en, tr)
         out = out.replace('<html lang="en">', f'<html lang="{lang}">')
         out = re.sub(r'(href|src)="(styles\.css|favicon\.svg|lr-tech-logo\.png)"', r'\1="../\2"', out)
+        out = re.sub(r'(img/[a-z0-9_]+)-en\.(webp|png)', rf'\1-{lang}.\2', out)  # obrázek v daném jazyce
+        out = re.sub(r'(href|src)="(img/[^"]+)"', r'\1="../\2"', out)
         out = put(out, 'LANGS', langs_nav(lang, page))
         os.makedirs(os.path.join('website', lang), exist_ok=True)
         open(os.path.join('website', lang, page), 'w', encoding='utf-8', newline='').write(out)

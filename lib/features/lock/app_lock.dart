@@ -6,6 +6,7 @@ import 'package:local_auth_android/local_auth_android.dart';
 import '../../core/app_settings.dart';
 import '../vault/vault_crypto.dart';
 import '../../l10n/tr.dart';
+import '../../demo/demo_mode.dart';
 
 /// Ověření otiskem / obličejem, případně PINem či gestem telefonu.
 /// Vrací true i tehdy, když telefon zámek nemá (to hlásí [deviceHasLock]).
@@ -65,7 +66,7 @@ class AppLockGate extends StatefulWidget {
 }
 
 class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
-  bool _locked = AppSettings.instance.lockAfterSeconds >= 0;
+  bool _locked = !kDemo && AppSettings.instance.lockAfterSeconds >= 0;
   bool _noDeviceLock = false;
   DateTime? _pausedAt;
 
@@ -91,7 +92,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       final away = _pausedAt == null ? Duration.zero : DateTime.now().difference(_pausedAt!);
       _pausedAt = null;
       final after = AppSettings.instance.lockAfterSeconds;
-      if (!_locked && after >= 0 && away >= Duration(seconds: after)) {
+      if (!kDemo && !_locked && after >= 0 && away >= Duration(seconds: after)) {
         VaultKeys.instance.lock();
         setState(() => _locked = true);
         _unlock();

@@ -30,6 +30,12 @@ class VaultKeys extends ChangeNotifier {
   SecretKey? _key;
   bool get unlocked => _key != null;
 
+  /// Prezentační režim: náhodný klíč jen v paměti (nic se neukládá do Keystore ani do cloudu).
+  void useDemoKey() {
+    _key = SecretKey(_random(32));
+    notifyListeners();
+  }
+
   /// Zamkne Vault (klíč zmizí z paměti).
   void lock() {
     if (_key == null) return;

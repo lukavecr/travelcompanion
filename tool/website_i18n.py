@@ -15,6 +15,7 @@ COMMON = [
 ]
 
 INDEX = [
+    ('alt="Travel Companion app: boarding pass, day-by-day plan and passport vault"', 'alt="Aplikace Travel Companion: palubenka, plán po dnech a trezor na pas"', 'alt="Travel Companion App: Bordkarte, Tagesplan und Pass-Tresor"', 'alt="App Travel Companion: tarjeta de embarque, plan diario y caja fuerte del pasaporte"'),
     ('<span class="eyebrow">Plan with AI</span>', '<span class="eyebrow">Plán s AI</span>', '<span class="eyebrow">Planen mit KI</span>', '<span class="eyebrow">Planifica con IA</span>'),
     ('<h2>Let ChatGPT or Claude plan it. The app fills it in.</h2>', '<h2>Naplánuj s ChatGPT nebo Claude. Aplikace to vyplní sama.</h2>', '<h2>Lass ChatGPT oder Claude planen. Die App trägt alles ein.</h2>', '<h2>Deja que ChatGPT o Claude planifiquen. La app lo rellena sola.</h2>'),
     ('<p>Works with ChatGPT, Claude, Copilot and Gemini. No AI subscription inside the app, no account linking.</p>', '<p>Funguje s ChatGPT, Claude, Copilotem i Gemini. Bez předplatného AI v aplikaci a bez propojování účtů.</p>', '<p>Funktioniert mit ChatGPT, Claude, Copilot und Gemini. Kein KI-Abo in der App, keine Kontoverknüpfung.</p>', '<p>Funciona con ChatGPT, Claude, Copilot y Gemini. Sin suscripción de IA en la app y sin vincular cuentas.</p>'),
@@ -55,15 +56,6 @@ INDEX = [
      '<p class="note">Brzy na Google Play. Verze pro iPhone se připravuje.</p>',
      '<p class="note">Bald bei Google Play. Die iPhone-Version ist in Arbeit.</p>',
      '<p class="note">Pronto en Google Play. La versión para iPhone está en camino.</p>'),
-    ('aria-label="Example of a boarding pass stored in the app: Prague to Tokyo, seat 23A, gate B12"',
-     'aria-label="Ukázka palubního lístku uloženého v aplikaci: Praha – Tokio, sedadlo 23A, gate B12"',
-     'aria-label="Beispiel einer in der App gespeicherten Bordkarte: Prag – Tokio, Sitz 23A, Gate B12"',
-     'aria-label="Ejemplo de tarjeta de embarque guardada en la app: Praga – Tokio, asiento 23A, puerta B12"'),
-    ('<span>Boarding pass</span><span>Day 1 · 08:35</span>', '<span>Palubní lístek</span><span>Den 1 · 08:35</span>',
-     '<span>Bordkarte</span><span>Tag 1 · 08:35</span>', '<span>Tarjeta de embarque</span><span>Día 1 · 08:35</span>'),
-    ('<div>Seat<b>23A</b></div>', '<div>Sedadlo<b>23A</b></div>', '<div>Sitz<b>23A</b></div>', '<div>Asiento<b>23A</b></div>'),
-    ('<div>Gate<b>B12</b></div>', '<div>Gate<b>B12</b></div>', '<div>Gate<b>B12</b></div>', '<div>Puerta<b>B12</b></div>'),
-    ('<div>Booking<b>K7XQ2M</b></div>', '<div>Rezervace<b>K7XQ2M</b></div>', '<div>Buchung<b>K7XQ2M</b></div>', '<div>Reserva<b>K7XQ2M</b></div>'),
     ('<span class="eyebrow">Features</span>', '<span class="eyebrow">Funkce</span>', '<span class="eyebrow">Funktionen</span>', '<span class="eyebrow">Funciones</span>'),
     ("<h2>Everything a long trip needs. Nothing it doesn't.</h2>",
      '<h2>Vše, co dlouhá cesta potřebuje. Nic navíc.</h2>',

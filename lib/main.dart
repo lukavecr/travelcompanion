@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/app_settings.dart';
 import 'core/db_crypto.dart';
 import 'data/database.dart';
+import 'demo/demo_mode.dart';
 import 'firebase_options.dart'; // vygeneruje `flutterfire configure`
 
 Future<void> main() async {
@@ -23,6 +24,15 @@ Future<void> main() async {
   // stávající přihlášení uživatelé úvodního průvodce už nepotřebují
   if (!AppSettings.instance.onboardingDone && FirebaseAuth.instance.currentUser != null) {
     await AppSettings.instance.setOnboardingDone(true);
+  }
+  if (kDemo) {
+    // prezentační režim: vymyšlená data jen v paměti, skutečná databáze se neotevře
+    final demo = await openDemoDatabase();
+    runApp(ProviderScope(
+      overrides: [databaseProvider.overrideWithValue(demo)],
+      child: const TravelApp(),
+    ));
+    return;
   }
   final key = await databaseKey();
   await encryptLegacyDatabase(key);

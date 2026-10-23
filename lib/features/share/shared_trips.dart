@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/database.dart';
 import '../sync/backup_crypto.dart';
 import 'share_logic.dart';
+import '../../demo/demo_mode.dart';
 
 /// Účastník společné cesty.
 class TripMember {
@@ -61,6 +62,7 @@ class SharedTrips extends ChangeNotifier {
   static const _net = Duration(seconds: 20);
 
   void start(AppDatabase db) {
+    if (kDemo) return; // prezentační režim: žádné sdílení
     _db = db;
     _authSub ??= FirebaseAuth.instance.authStateChanges().listen((u) {
       if (u != null) unawaited(_attachAll());
@@ -304,6 +306,7 @@ class SharedTrips extends ChangeNotifier {
   }
 
   Future<void> pushAll() async {
+    if (kDemo) return;
     final db = _db;
     if (db == null || myUid == null || _pushing) return;
     _pushing = true;

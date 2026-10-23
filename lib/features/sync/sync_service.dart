@@ -20,6 +20,7 @@ import 'backup_crypto.dart';
 import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
 import '../../l10n/tr.dart';
+import '../../demo/demo_mode.dart';
 
 class SyncStatus {
   const SyncStatus({
@@ -260,6 +261,7 @@ class SyncService {
   }
 
   Future<void> syncIfPending() async {
+    if (kDemo) return; // prezentační režim nesmí nic zapsat do účtu
     if (_running || FirebaseAuth.instance.currentUser == null) return;
     if (!ProService.instance.isPro) return; // záloha je součást Pro
     final n = await _pendingCount();
@@ -269,6 +271,7 @@ class SyncService {
   }
 
   Future<void> syncNow() async {
+    if (kDemo) return;
     final user = FirebaseAuth.instance.currentUser;
     if (_running || user == null) return;
     if (!ProService.instance.isPro) return; // záloha je součást Pro

@@ -25,6 +25,7 @@ import '../features/trips/trip_detail_screen.dart';
 import '../features/trips/trips_list_screen.dart';
 import '../features/onboarding/welcome_screen.dart';
 import '../features/vault/vault_screen.dart';
+import '../demo/demo_mode.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authStateProvider);
@@ -34,7 +35,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/${AppSettings.instance.startTab}',
     redirect: (context, state) {
       if (auth.isLoading) return null;
-      final loggedIn = auth.value != null;
+      final loggedIn = kDemo || auth.value != null;
       final atLogin = state.matchedLocation == '/login';
       final atWelcome = state.matchedLocation == '/welcome';
       if (!loggedIn) {

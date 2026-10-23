@@ -1,3 +1,4 @@
+import '../demo/demo_mode.dart' show kDemoLang;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/tr.dart';
@@ -77,6 +78,7 @@ class AppSettings extends ChangeNotifier {
 
   /// Jazyk, který se opravdu použije (u „Podle telefonu“ podle jazyka systému).
   String get effectiveLanguage {
+    if (kDemoLang.isNotEmpty) return kDemoLang; // prezentační režim (screenshoty v daném jazyce)
     if (language != 'system') return language;
     final sys = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     return supportedLanguages.contains(sys) ? sys : 'en';

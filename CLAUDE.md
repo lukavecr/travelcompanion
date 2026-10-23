@@ -164,6 +164,15 @@ proto je důležitá spolehlivost offline a záloha dat.
   Anglické názvy zemí → česky `localCountryName` (`country_info.dart`). Web: sekce `#ai` na úvodní stránce.
 - Mapa offline: styl a ikony se berou z kopie v telefonu, když internet do 4 s neodpoví; po chybě se styl za 10 s načte znovu
   (`MapTiles`). Klepnutí na staženou oblast ji ukáže na mapě (`RegionMapScreen`).
+- **Prezentační režim** `lib/demo/demo_mode.dart` (`--dart-define=TC_DEMO=true --dart-define=TC_LANG=cs|en|de|es`): vymyšlená data
+  jen v paměti (cesta Japonsko, palubenka, výdaje, Vault s fiktivním pasem, trasa), bez přihlášení, zálohy, sdílení a zámku –
+  pro screenshoty a videa. Nikdy nedávat do Google Play. Po focení vrátit do emulátoru běžnou verzi.
+- **Propagace** `tool/promo/`: `build_promo.py` (Google Play screenshoty + feature graphic, Instagram, Facebook, obrázky webu;
+  HTML → PNG přes Chrome), `videos.py` (svislá videa z nahrávky emulátoru + titulky, ffmpeg z `imageio-ffmpeg`), texty
+  `promo_texts.py`. Výstup `branding/promo/<jazyk>/` (mimo git), návod `branding/promo/README.md`. Web: `website/img/hero-*.webp`,
+  `og-*.png` (náhled odkazu). Emulátor občas zamrzne (hlavně po přepínání režimu letadlo) → zabít qemu, spustit
+  s `-gpu swiftshader_indirect`; po tvrdém vypnutí zmizí naposledy instalovaná aplikace → znovu `adb install -r` (data zůstanou).
+- **Ikona aplikace je zatím výchozí Flutter** (mipmap ic_launcher) – před Google Play nahradit (návrh: kompas z webu, barva #2DD4A7).
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);

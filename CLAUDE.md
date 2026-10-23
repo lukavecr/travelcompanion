@@ -151,7 +151,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   `share_screen.dart` (sdílet, pozvat, odebrat, opustit, `joinWithCode`), `settle_card.dart` + `share_logic.dart` (dělení útrat).
   `Trips.shareRole` (null/owner/member), `Expenses.paidBy`/`splitWith`. Účastník bez Pro plán jen čte (`canEditPlan`), přidává
   výdaje a místa; pozvané cesty se nepočítají do limitů Free. Pravidla: `firestore.rules` (nasazení
-  `firebase deploy --only firestore:rules`, jen se souhlasem uživatele). Doklady, účtenky a trasy se nesdílí.
+  `firebase deploy --only firestore:rules`, jen se souhlasem uživatele; nasazeno 23. 10. 2026). Test pravidel: `tool/rules_test`
+  (`npm i @firebase/rules-unit-testing@4 firebase@11`, pak `firebase emulators:exec --project demo-tc --only firestore "node test.mjs"`,
+  Java z Android Studia v PATH, kvůli Avastu `NODE_EXTRA_CA_CERTS` = wscert.pem). Avast blokuje i Firestore v emulátoru (SSL) – test na telefonu. Doklady, účtenky a trasy se nesdílí.
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);

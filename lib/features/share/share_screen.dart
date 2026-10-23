@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -89,6 +91,11 @@ class _ShareTripScreenState extends ConsumerState<ShareTripScreen> {
     setState(() => _busy = true);
     try {
       await f();
+    } on TimeoutException {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('Bez připojení k internetu – zkus to za chvíli znovu.'))));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -277,6 +284,8 @@ Future<void> joinWithCode(BuildContext context) async {
   try {
     final id = await SharedTrips.instance.join(norm, name);
     if (context.mounted) context.go('/trips/trip/$id');
+  } on TimeoutException {
+    snack(tr('Bez připojení k internetu – zkus to za chvíli znovu.'));
   } on StateError catch (e) {
     snack(e.message == 'expired'
         ? tr('Pozvánka už vypršela. Požádej o novou.')

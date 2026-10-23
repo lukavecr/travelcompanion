@@ -58,6 +58,7 @@ class SharedTrips extends ChangeNotifier {
   static FirebaseFirestore get _fs => FirebaseFirestore.instance;
   static String? get myUid => FirebaseAuth.instance.currentUser?.uid;
   static DocumentReference<Map<String, dynamic>> _trip(String id) => _fs.collection('shared').doc(id);
+  static const _net = Duration(seconds: 20);
 
   void start(AppDatabase db) {
     _db = db;
@@ -335,7 +336,7 @@ class SharedTrips extends ChangeNotifier {
           final ms = r['updatedAt'] as int;
           if (ms > maxMs) maxMs = ms;
         }
-        await batch.commit();
+        await batch.commit().timeout(_net);
         any = true;
       }
     }
@@ -352,8 +353,8 @@ class SharedTrips extends ChangeNotifier {
     final db = _db!, uid = myUid!;
     if (await _key(tripId) == null) {
       final raw = newTripKey();
-      await _trip(tripId).set({'ownerUid': uid, 'rev': DateTime.now().millisecondsSinceEpoch});
-      await _trip(tripId).collection('members').doc(uid).set({'name': myName, 'role': 'owner'});
+      await _trip(tripId).set({'ownerUid': uid, 'rev': DateTime.now().millisecondsSinceEpoch}).timeout(_net);
+      await _trip(tripId).collection('members').doc(uid).set({'name': myName, 'role': 'owner'}).timeout(_net);
       await _saveKey(tripId, raw, role: 'owner');
       await (db.update(db.trips)..where((x) => x.id.equals(tripId))).write(TripsCompanion(
           shareRole: const Value('owner'), updatedAt: Value(DateTime.now()), syncState: const Value('pending')));
@@ -374,7 +375,7 @@ class SharedTrips extends ChangeNotifier {
       'inviterUid': myUid,
       'wrappedKey': await wrapTripKey(code, await k.extractBytes()),
       'expiresAt': DateTime.now().add(const Duration(days: 7)).millisecondsSinceEpoch,
-    });
+    }).timeout(_net);
     return code;
   }
 
@@ -382,12 +383,12 @@ class SharedTrips extends ChangeNotifier {
   Future<String> join(String code, String myName) async {
     final uid = myUid!;
     final id = await inviteId(code);
-    final inv = (await _fs.collection('invites').doc(id).get(const GetOptions(source: Source.server))).data();
+    final inv = (await _fs.collection('invites').doc(id).get(const GetOptions(source: Source.server)).timeout(_net)).data();
     if (inv == null) throw StateError('invalid');
     if ((inv['expiresAt'] as num) < DateTime.now().millisecondsSinceEpoch) throw StateError('expired');
     final tripId = inv['tripId'] as String;
     final raw = await unwrapTripKey(code, inv['wrappedKey'] as String);
-    await _trip(tripId).collection('members').doc(uid).set({'name': myName, 'role': 'member', 'invite': id});
+    await _trip(tripId).collection('members').doc(uid).set({'name': myName, 'role': 'member', 'invite': id}).timeout(_net);
     await _saveKey(tripId, raw, role: 'member');
     for (final t in tables) {
       (await _p).remove('share_last_${tripId}_$t');

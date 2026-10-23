@@ -372,6 +372,7 @@ const en = <String, String>{
   'Tvoje jméno v cestě': 'Your name in the trip',
   'Uvidí ho ostatní účastníci (např. u výdajů).': 'Other members will see it (e.g. on expenses).',
   'Přidej se k mé cestě „{trip}“ v aplikaci Travel Companion: uvidíš plán i útraty. V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion': 'Join my trip “{trip}” in Travel Companion: you will see the plan and the spending. In the app open Trips, tap the “Join with code” icon and enter {code} (valid for 7 days).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
+  'Bez připojení k internetu – zkus to za chvíli znovu.': 'No internet connection – try again in a moment.',
   'Nepodařilo se: {e}. Zkontroluj připojení k internetu.': 'Failed: {e}. Check your internet connection.',
   'Společná cesta': 'Shared trip',
   'Pozvi partnera, rodinu nebo kamarády: všichni uvidí plán, místa a útraty a můžou přidávat výdaje. Aplikace spočítá, kdo komu kolik dluží.': 'Invite your partner, family or friends: everyone sees the plan, places and spending and can add expenses. The app works out who owes whom.',

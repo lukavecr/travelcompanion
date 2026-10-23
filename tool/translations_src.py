@@ -841,6 +841,7 @@ T = {
     'Viaje compartido: el plan lo edita el creador. Tú puedes añadir gastos y lugares.'),
 'Sdílet s ostatními': ('Share with others', 'Mit anderen teilen', 'Compartir con otros'),
 'společná': ('shared', 'gemeinsam', 'compartido'),
+'Bez připojení k internetu – zkus to za chvíli znovu.': ('No internet connection – try again in a moment.', 'Keine Internetverbindung – versuch es gleich noch einmal.', 'Sin conexión a internet: inténtalo de nuevo en un momento.'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

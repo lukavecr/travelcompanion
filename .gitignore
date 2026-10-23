@@ -53,3 +53,4 @@ ios/Runner/GoogleService-Info.plist
 # lib/firebase_options.dart – je v SOUKROMÉM repozitáři (jen identifikátory projektu, potřeba pro sestavení iPhonu v cloudu)
 *.jks
 key.properties
+node_modules/

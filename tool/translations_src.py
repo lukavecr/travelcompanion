@@ -918,6 +918,26 @@ T = {
     'Regeln: eine Zeile = ein Planeintrag; trip = Name der Reise (in jeder Zeile gleich); date = JJJJ-MM-TT; time = HH:MM (darf fehlen); title = was man macht; place = Name des konkreten Orts für die Karte; city und country auf Englisch; type = attraction, restaurant, hotel, transport oder other; lat und lng = Koordinaten dezimal; Unterkunft als eine Zeile mit type = hotel, date = Anreisetag und end_date = Abreisetag; note = kurzer Tipp. Texte mit Komma in Anführungszeichen.',
     'Reglas: una fila = un elemento del plan; trip = nombre del viaje (igual en cada fila); date = AAAA-MM-DD; time = HH:MM (puede faltar); title = qué se hace; place = nombre del lugar concreto para el mapa; city y country en inglés; type = attraction, restaurant, hotel, transport u other; lat y lng = coordenadas decimales; alojamiento como una fila con type = hotel, date = día de llegada y end_date = día de salida; note = consejo breve. Pon entre comillas los textos con comas.'),
 'Ukázka:': ('Example:', 'Beispiel:', 'Ejemplo:'),
+# --- plán z AI: vzorový soubor ---
+'Vyplň přiložený soubor detailním itinerářem den po dni s konkrétními místy, která mám navštívit: jedu do Vietnamu 5. 12. 2026 – 15. 1. 2027. Zachovej sloupce a vrať mi vyplněný soubor CSV ke stažení.': (
+    'Fill in the attached file with a detailed day-by-day itinerary with specific places I should visit: I am going to Vietnam from 5 Dec 2026 to 15 Jan 2027. Keep the columns and give me the filled-in CSV file to download.',
+    'Fülle die angehängte Datei mit einem detaillierten Reiseplan Tag für Tag mit konkreten Orten, die ich besuchen soll: Ich reise vom 5. 12. 2026 bis 15. 1. 2027 nach Vietnam. Behalte die Spalten bei und gib mir die ausgefüllte CSV-Datei zum Herunterladen.',
+    'Rellena el archivo adjunto con un itinerario detallado día a día con lugares concretos que debo visitar: voy a Vietnam del 5/12/2026 al 15/1/2027. Mantén las columnas y devuélveme el archivo CSV relleno para descargar.'),
+'Vzor plánu cesty': ('Trip plan template', 'Vorlage Reiseplan', 'Plantilla de plan de viaje'),
+'Dej AI vzorový soubor a napiš, kam a kdy jedeš': ('Give the AI the template and write where and when you are going', 'Gib der KI die Vorlage und schreib, wohin und wann du reist', 'Dale a la IA la plantilla y escribe adónde y cuándo vas'),
+'Stáhni vzor (můžeš ho rovnou sdílet do aplikace ChatGPT), v chatu ho přilož přes 📎 a napiš:': ('Download the template (you can share it straight to the ChatGPT app), attach it in the chat with 📎 and write:', 'Lade die Vorlage herunter (du kannst sie direkt mit der ChatGPT-App teilen), hänge sie im Chat mit 📎 an und schreib:', 'Descarga la plantilla (puedes compartirla directamente con la app de ChatGPT), adjúntala en el chat con 📎 y escribe:'),
+'Stáhnout vzorový soubor': ('Download template', 'Vorlage herunterladen', 'Descargar plantilla'),
+'Zkopírovat zprávu': ('Copy message', 'Nachricht kopieren', 'Copiar mensaje'),
+'Zpráva je zkopírovaná – uprav v ní cíl a termín.': ('Message copied – change the destination and dates in it.', 'Nachricht kopiert – passe Ziel und Termin an.', 'Mensaje copiado: cambia el destino y las fechas.'),
+'Bez vzoru: pokyn textem': ('Without template: text instruction', 'Ohne Vorlage: Anweisung als Text', 'Sin plantilla: instrucción en texto'),
+'Napiš, kam a kdy jedeš, a hned za to vlož tento pokyn:': ('Write where and when you are going and paste this instruction right after:', 'Schreib, wohin und wann du reist, und füge direkt danach diese Anweisung ein:', 'Escribe adónde y cuándo vas y pega justo después esta instrucción:'),
+'Aplikace přečte i jiný itinerář v CSV (třeba sloupce Datum, Program, Oblast), se vzorem ale bude plán přesnější – s časy, ubytováním a polohou míst.': (
+    'The app also reads other CSV itineraries (e.g. columns Date, Program, Area), but with the template the plan is more precise – with times, stays and place locations.',
+    'Die App liest auch andere CSV-Reisepläne (z. B. Spalten Datum, Programm, Gebiet), mit der Vorlage wird der Plan aber genauer – mit Zeiten, Unterkünften und Ortspositionen.',
+    'La app también lee otros itinerarios CSV (p. ej. columnas Fecha, Programa, Zona), pero con la plantilla el plan es más preciso: con horarios, alojamientos y ubicaciones.'),
+'Poslat do aplikace AI (ChatGPT, Claude…)': ('Send to an AI app (ChatGPT, Claude…)', 'An eine KI-App senden (ChatGPT, Claude…)', 'Enviar a una app de IA (ChatGPT, Claude…)'),
+'Uložit do telefonu': ('Save to phone', 'Auf dem Telefon speichern', 'Guardar en el teléfono'),
+'Vzor je uložený. V AI ho přilož přes 📎.': ('Template saved. Attach it in the AI with 📎.', 'Vorlage gespeichert. Hänge sie in der KI mit 📎 an.', 'Plantilla guardada. Adjúntala en la IA con 📎.'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

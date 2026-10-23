@@ -1,10 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
@@ -16,8 +21,9 @@ import '../../l10n/tr.dart';
 
 /// „Naplánovat s AI“: návod, jak si u AI nechat vytvořit soubor s plánem, a jeho import.
 class AiPlanScreen extends ConsumerStatefulWidget {
-  const AiPlanScreen({super.key, this.answer});
+  const AiPlanScreen({super.key, this.answer, this.fileName});
   final String? answer; // obsah souboru / text sdílený z aplikace AI
+  final String? fileName;
 
   @override
   ConsumerState<AiPlanScreen> createState() => _AiPlanScreenState();
@@ -26,6 +32,7 @@ class AiPlanScreen extends ConsumerStatefulWidget {
 class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
   final _answer = TextEditingController();
   bool _showPaste = false;
+  String? _fileName;
   AiTrip? _trip;
   String? _error;
 
@@ -34,6 +41,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
     super.initState();
     if (widget.answer != null) {
       _answer.text = widget.answer!;
+      _fileName = widget.fileName;
       WidgetsBinding.instance.addPostFrameCallback((_) => _read());
     }
   }
@@ -46,6 +54,48 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
 
   void _snack(String t) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t)));
 
+  String get _fillMessage => tr('Vyplň přiložený soubor detailním itinerářem den po dni s konkrétními místy, která mám navštívit: '
+      'jedu do Vietnamu 5. 12. 2026 – 15. 1. 2027. Zachovej sloupce a vrať mi vyplněný soubor CSV ke stažení.');
+
+  /// Vzorový soubor (hlavička + ukázkové řádky) – AI ho jen vyplní, takže ho aplikace určitě přečte.
+  Future<void> _shareTemplate() async {
+    final save = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.send),
+            title: Text(tr('Poslat do aplikace AI (ChatGPT, Claude…)')),
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+          ListTile(
+            leading: const Icon(Icons.save_alt),
+            title: Text(tr('Uložit do telefonu')),
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+        ]),
+      ),
+    );
+    if (save == null) return;
+    if (save) {
+      final uri = await FilePicker.saveFile(
+        fileName: 'travel-companion-plan.csv',
+        bytes: Uint8List.fromList(utf8.encode(aiCsvExample)),
+        mimeType: 'text/csv',
+      );
+      if (uri != null && mounted) _snack(tr('Vzor je uložený. V AI ho přilož přes 📎.'));
+      return;
+    }
+    final dir = await getTemporaryDirectory();
+    final f = File(p.join(dir.path, 'travel-companion-plan.csv'));
+    await f.writeAsString(aiCsvExample);
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(f.path, mimeType: 'text/csv')],
+      text: _fillMessage,
+      subject: tr('Vzor plánu cesty'),
+    ));
+  }
+
   Future<void> _copyInstruction() async {
     await Clipboard.setData(ClipboardData(text: buildAiCsvInstruction()));
     if (mounted) _snack(tr('Pokyn je zkopírovaný. V AI ho vlož za svou zprávu (podrž prst → Vložit).'));
@@ -54,6 +104,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
   Future<void> _pickFile() async {
     final f = await FilePicker.pickFile();
     if (f == null) return;
+    _fileName = f.name;
     try {
       final bytes = await f.readAsBytes();
       _answer.text = utf8.decode(bytes, allowMalformed: true);
@@ -70,7 +121,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
   }
 
   void _read() {
-    final t = parseAiTrip(_answer.text);
+    final t = parseAiTrip(_answer.text, fileName: _fileName);
     setState(() {
       _trip = t;
       _error = t == null && _answer.text.trim().isNotEmpty
@@ -130,32 +181,60 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
               open('Gemini', 'https://gemini.google.com/app'),
             ]),
           ]),
-          step(2, tr('Napiš, kam a kdy jedeš, a přidej pokyn pro soubor'), [
-            Text(tr('Například:'), style: theme.textTheme.bodySmall),
-            const SizedBox(height: 4),
+          step(2, tr('Dej AI vzorový soubor a napiš, kam a kdy jedeš'), [
+            Text(tr('Stáhni vzor (můžeš ho rovnou sdílet do aplikace ChatGPT), v chatu ho přilož přes 📎 a napiš:')),
+            const SizedBox(height: 6),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: box,
-              child: Text(tr('Jedu do Vietnamu 8. 12. 2026 – 15. 1. 2027, ve dvou, rádi jíme a chodíme po přírodě.'),
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
+              child: Text(_fillMessage, style: const TextStyle(fontStyle: FontStyle.italic)),
             ),
             const SizedBox(height: 8),
-            Text(tr('…a hned za to vlož tento pokyn (řekne AI, jaký soubor má vytvořit):'), style: theme.textTheme.bodySmall),
-            const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: box,
-              child: Text(buildAiCsvInstruction(),
-                  maxLines: 6, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
-            ),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              FilledButton.icon(
+                icon: const Icon(Icons.download),
+                label: Text(tr('Stáhnout vzorový soubor')),
+                onPressed: _shareTemplate,
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.copy),
+                label: Text(tr('Zkopírovat zprávu')),
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: _fillMessage));
+                  _snack(tr('Zpráva je zkopírovaná – uprav v ní cíl a termín.'));
+                },
+              ),
+            ]),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              icon: const Icon(Icons.copy),
-              label: Text(tr('Zkopírovat pokyn')),
-              onPressed: _copyInstruction,
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(tr('Bez vzoru: pokyn textem'), style: theme.textTheme.bodyMedium),
+              children: [
+                Text(tr('Napiš, kam a kdy jedeš, a hned za to vlož tento pokyn:'), style: theme.textTheme.bodySmall),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: box,
+                  child: Text(buildAiCsvInstruction(),
+                      maxLines: 6, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.copy),
+                    label: Text(tr('Zkopírovat pokyn')),
+                    onPressed: _copyInstruction,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
+            Text(tr('Aplikace přečte i jiný itinerář v CSV (třeba sloupce Datum, Program, Oblast), se vzorem ale bude '
+                'plán přesnější – s časy, ubytováním a polohou míst.'),
+                style: theme.textTheme.bodySmall),
           ]),
           step(3, tr('Stáhni soubor .csv, který AI vytvoří'), [
             Text(tr('Když AI soubor nenabídne ke stažení, napiš jí: „Vytvoř z toho soubor CSV ke stažení.“ '

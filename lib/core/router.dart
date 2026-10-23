@@ -65,7 +65,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               routes: [
                 GoRoute(
                   path: 'ai',
-                  builder: (context, state) => AiPlanScreen(answer: state.extra as String?),
+                  builder: (context, state) => switch (state.extra) {
+                    (String text, String? name) => AiPlanScreen(answer: text, fileName: name),
+                    final String text => AiPlanScreen(answer: text),
+                    _ => const AiPlanScreen(),
+                  },
                 ),
                 GoRoute(
                   path: 'trip/:id',

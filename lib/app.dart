@@ -101,6 +101,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
 
   Future<void> _handle(SharedMedia media) async {
     var text = media.content?.trim();
+    String? fileName;
     // sdílený soubor (CSV / JSON od AI ze složky Stažené)
     if (text == null || text.isEmpty) {
       for (final a in media.attachments ?? const <SharedAttachment?>[]) {
@@ -110,6 +111,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
           final f = File(path);
           if (await f.length() > 2 * 1024 * 1024) continue;
           text = utf8.decode(await f.readAsBytes(), allowMalformed: true);
+          fileName = path.split(RegExp(r'[\\/]')).last;
           break;
         } catch (_) {}
       }
@@ -128,7 +130,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
         : looksLikeBooking(text)
             ? '/docs/import'
             : '/share';
-    ref.read(routerProvider).push(route, extra: text);
+    ref.read(routerProvider).push(route, extra: route == '/trips/ai' ? (text, fileName) : text);
   }
 
   @override

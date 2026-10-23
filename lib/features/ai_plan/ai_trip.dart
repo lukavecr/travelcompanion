@@ -21,13 +21,26 @@ const aiTripFormat = 'travelcompanion-trip';
 // ---------- model ----------
 
 class AiPlace {
-  AiPlace({required this.key, required this.name, this.city, this.country, this.type = 'custom', this.lat, this.lng, this.note});
+  AiPlace({
+    required this.key,
+    required this.name,
+    this.city,
+    this.country,
+    this.type = 'custom',
+    this.lat,
+    this.lng,
+    this.note,
+    this.optional = false,
+  });
   final String key;
   final String name;
-  final String? city, country, note;
+  final String? city, note;
+  String? country; // když chybí, doplní se z OpenStreetMap
   final String type;
   double? lat, lng;
   bool verified = false; // poloha potvrzená v OpenStreetMap
+  /// Odhad z volného textu („Temple of Literature“) – na mapu jen, když ho OpenStreetMap najde.
+  final bool optional;
 }
 
 class AiItem {
@@ -156,9 +169,9 @@ String _country(String c) => localCountryName(c, lang: AppSettings.instance.effe
 String? _str(Object? v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
 
 /// Přečte plán z AI – soubor CSV (doporučený) nebo JSON. Vrátí null, když v textu žádný plán není.
-AiTrip? parseAiTrip(String text) {
+AiTrip? parseAiTrip(String text, {String? fileName}) {
   final j = _findJson(text);
-  if (j == null) return parseAiCsv(text);
+  if (j == null) return parseAiCsv(text, fileName: fileName);
 
   final places = <AiPlace>[];
   for (final (i, p) in ((j['places'] as List?) ?? const []).whereType<Map>().indexed) {
@@ -261,26 +274,34 @@ typedef Geocoder = Future<List<GeoResult>> Function(String query);
 /// Dohledá polohu míst v OpenStreetMap podle názvu a města. Souřadnice od AI se ponechají,
 /// když jsou do 1,5 km od nalezeného místa (nebo když OpenStreetMap nic nenajde).
 Future<void> verifyPlaces(AiTrip t, {Geocoder geocode = searchPlaces, void Function(int done, int total)? onProgress}) async {
+  final cache = <String, List<GeoResult>>{};
+  final areas = <String, (double, double)>{}; // oblast (nocleh) → poloha
+  Future<List<GeoResult>> look(String q) async => cache[q] ??= await geocode(q);
   for (final (i, p) in t.places.indexed) {
     onProgress?.call(i, t.places.length);
     final q = [p.name, p.city, p.country].whereType<String>().join(', ');
     GeoResult? hit;
     try {
-      final r = await geocode(q);
-      if (r.isEmpty && p.city != null) {
+      final r = await look(q);
+      if (r.isEmpty && p.city != null && !p.optional) {
         // „Ramen v Asakuse, Tokyo“ nic nenajde → aspoň obec
-        hit = (await geocode([p.name, p.country].whereType<String>().join(', '))).firstOrNull;
+        hit = (await look([p.name, p.country].whereType<String>().join(', '))).firstOrNull;
       } else {
         hit = r.firstOrNull;
       }
     } catch (_) {}
     if (hit == null) continue;
+    // místo odhadnuté z textu musí ležet u své oblasti („Staré město, Hanoi“ nesmí skončit v Česku)
+    final base = areas[p.city?.toLowerCase()];
+    if (p.optional && base != null && distanceM(base.$1, base.$2, hit.lat, hit.lng) > 150000) continue;
+    p.country ??= hit.country;
     final ai = p.lat != null && p.lng != null && (p.lat != 0 || p.lng != 0);
     if (!ai || distanceM(p.lat!, p.lng!, hit.lat, hit.lng) > 1500) {
       p.lat = hit.lat;
       p.lng = hit.lng;
     }
     p.verified = true;
+    if (p.key.startsWith('area|')) areas[p.name.toLowerCase()] = (p.lat!, p.lng!);
   }
   onProgress?.call(t.places.length, t.places.length);
 }
@@ -290,16 +311,20 @@ Future<String> importAiTrip(AppDatabase db, AiTrip t) async {
   const uuid = Uuid();
   final tripId = uuid.v4();
   final ids = <String, String>{};
+  final places = t.places.where((p) => !p.optional || p.lat != null).toList();
+  final countries = t.countries.isNotEmpty
+      ? t.countries
+      : {for (final p in places) if (p.country != null) _country(p.country!)}.toList();
   await db.transaction(() async {
     await db.into(db.trips).insert(TripsCompanion.insert(
           id: tripId,
           name: t.name,
           startDate: Value(t.start),
           endDate: Value(t.end),
-          countries: Value(jsonEncode(t.countries)),
+          countries: Value(jsonEncode(countries)),
           mainCurrency: Value(AppSettings.instance.homeCurrency),
         ));
-    for (final p in t.places) {
+    for (final p in places) {
       final id = uuid.v4();
       ids[p.key] = id;
       await db.into(db.places).insert(PlacesCompanion.insert(
@@ -382,9 +407,19 @@ const _csvAliases = <String, List<String>>{
   'note': ['note', 'notes', 'poznámka', 'poznamka', 'tip', 'tips', 'description', 'notiz', 'nota'],
 };
 
-/// Je řádek hlavičkou CSV plánu? Vrací (oddělovač, sloupec → index).
-(String, Map<String, int>)? _csvHeaderLine(String raw) {
-  final line = raw.replaceFirst('﻿', '').trim();
+/// Sloupce volného itineráře, jak ho AI napíše bez vzoru (stačí část názvu: „Oblast / nocleh“).
+const _freeAliases = <String, List<String>>{
+  'program': ['program', 'activit', 'aktivit', 'itiner', 'plan', 'plán', 'popis', 'description', 'sights', 'místa',
+      'places', 'what to do', 'co dělat', 'highlights', 'náplň'],
+  'area': ['nocleh', 'ubytování', 'overnight', 'accommodation', 'stay', 'base', 'oblast', 'region', 'area', 'destinace',
+      'destination', 'město', 'city', 'location', 'lokalita', 'kde'],
+  'transport': ['doprava', 'transport', 'přesun', 'travel'],
+  'note': ['poznámk', 'note', 'tip', 'comment', 'komentář'],
+};
+
+/// Je řádek hlavičkou CSV plánu? Vrací (oddělovač, sloupec → index, volný itinerář?).
+(String, Map<String, int>, bool)? _csvHeaderLine(String raw) {
+  final line = raw.replaceFirst('\ufeff', '').trim();
   if (line.isEmpty) return null;
   final sep = [',', ';', '\t'].reduce((a, b) => line.split(a).length >= line.split(b).length ? a : b);
   final cells = _csvLine(line, sep).map((c) => c.trim().toLowerCase()).toList();
@@ -393,10 +428,18 @@ const _csvAliases = <String, List<String>>{
     final i = cells.indexWhere(e.value.contains);
     if (i >= 0) idx[e.key] = i;
   }
-  return idx.containsKey('date') && (idx.containsKey('title') || idx.containsKey('place')) ? (sep, idx) : null;
+  if (!idx.containsKey('date')) return null;
+  if (idx.containsKey('title') || idx.containsKey('place')) return (sep, idx, false);
+  // volný itinerář: sloupce hledáme podle části názvu
+  final free = <String, int>{'date': idx['date']!};
+  for (final e in _freeAliases.entries) {
+    final i = cells.indexWhere((c) => !free.containsValue(cells.indexOf(c)) && e.value.any(c.contains));
+    if (i >= 0 && !free.containsValue(i)) free[e.key] = i;
+  }
+  return free.containsKey('program') || free.containsKey('area') ? (sep, free, true) : null;
 }
 
-(String, Map<String, int>)? _csvHeader(String text) {
+(String, Map<String, int>, bool)? _csvHeader(String text) {
   for (final line in text.split(RegExp(r'\r?\n')).take(30)) {
     final h = _csvHeaderLine(line);
     if (h != null) return h;
@@ -454,14 +497,15 @@ List<String> _csvRows(String text) {
 }
 
 /// Plán ze souboru CSV od AI. Vrací null, když to CSV plánu není.
-AiTrip? parseAiCsv(String text) {
+AiTrip? parseAiCsv(String text, {String? fileName}) {
   // AI občas dá CSV do bloku ```csv
   final block = RegExp(r'```(?:csv|CSV)?\s*([\s\S]*?)```').firstMatch(text)?.group(1);
   final src = (block != null && _csvHeader(block) != null) ? block : text;
-  final rows = _csvRows(src.replaceFirst('﻿', ''));
+  final rows = _csvRows(src.replaceFirst('\ufeff', ''));
   final headerAt = rows.indexWhere((r) => _csvHeaderLine(r) != null);
   if (headerAt < 0) return null;
-  final (sep, idx) = _csvHeaderLine(rows[headerAt])!;
+  final (sep, idx, free) = _csvHeaderLine(rows[headerAt])!;
+  if (free) return _parseFreeCsv(rows.skip(headerAt + 1), sep, idx, fileName);
 
   String? cell(List<String> c, String k) {
     final i = idx[k];
@@ -525,6 +569,125 @@ AiTrip? parseAiCsv(String text) {
     start: dates.first,
     end: dates.last,
     countries: {for (final p in places.values) if (p.country != null) _country(p.country!)}.toList(),
+    places: places.values.toList(),
+    stays: stays,
+    days: days,
+  );
+}
+
+
+// ---------- volný itinerář (AI bez vzoru: Datum, Den, Oblast / nocleh, Program, Doprava, Poznámka) ----------
+
+/// Začátky položek, které nejsou místem na mapu (přesuny, volno, část dne).
+final _notPlace = RegExp(
+  r'^(přejezd|přesun|přílet|přelet|odlet|návrat|cesta|let\b|transfer|arrival|arrive|departure|depart|travel|return|flight|'
+  r'drive|train to|bus to|volno|volný|volná|odpočinek|relax|rest|free|ranní|večer|ráno|odpoledne|morning|evening|afternoon|'
+  r'night|noc|lehký|rezervní|optional|nebo|or\b|check)',
+  caseSensitive: false,
+);
+
+/// Program dne → jednotlivé položky (čárka, středník, „+“; čárky v závorkách se nedělí).
+List<String> _splitProgram(String program) {
+  final out = <String>[];
+  final b = StringBuffer();
+  var depth = 0;
+  for (final ch in program.split('')) {
+    if (ch == '(') depth++;
+    if (ch == ')' && depth > 0) depth--;
+    if (depth == 0 && (ch == ',' || ch == ';')) {
+      out.add(b.toString());
+      b.clear();
+    } else {
+      b.write(ch);
+    }
+  }
+  out.add(b.toString());
+  return [
+    for (final x in out)
+      if (x.trim().isNotEmpty) x.trim()
+  ];
+}
+
+/// Název cesty z názvu souboru („Vietnam_itinerar_2026-12-05_2027-01-15.csv“ → „Vietnam itinerar“).
+String? _nameFromFile(String? fileName) {
+  if (fileName == null) return null;
+  final n = fileName
+      .replaceAll(RegExp(r'\.[A-Za-z0-9]+$'), '')
+      .replaceAll(RegExp(r'\d{4}-\d{2}-\d{2}'), '')
+      .replaceAll(RegExp(r'[_\-]+'), ' ')
+      .trim();
+  if (n.isEmpty) return null;
+  return n[0].toUpperCase() + n.substring(1);
+}
+
+AiTrip? _parseFreeCsv(Iterable<String> rows, String sep, Map<String, int> idx, String? fileName) {
+  String? cell(List<String> c, String k) {
+    final i = idx[k];
+    if (i == null || i >= c.length) return null;
+    final v = c[i].trim();
+    return v.isEmpty ? null : v;
+  }
+
+  final places = <String, AiPlace>{};
+  final days = <AiDay>[];
+  final stays = <AiStay>[];
+  String? lastArea, prevArea;
+  DateTime? areaFrom, lastDate;
+
+  void closeStay() {
+    if (lastArea != null && areaFrom != null && lastDate != null) {
+      stays.add(AiStay(lastArea, areaFrom, lastDate.add(const Duration(days: 1)), placeKey: 'area|${lastArea.toLowerCase()}'));
+    }
+  }
+
+  for (final r in rows) {
+    if (r.trim().isEmpty) continue;
+    final c = _csvLine(r, sep);
+    final date = _date(cell(c, 'date'));
+    if (date == null) continue;
+    final area = cell(c, 'area');
+    final program = cell(c, 'program');
+    final transport = cell(c, 'transport');
+    final note = cell(c, 'note');
+
+    // stejný nocleh ve dnech po sobě = jedno ubytování od–do
+    if (area != null && area != lastArea) {
+      closeStay();
+      lastArea = area;
+      areaFrom = date;
+      places.putIfAbsent('area|${area.toLowerCase()}',
+          () => AiPlace(key: 'area|${area.toLowerCase()}', name: area, type: 'hotel', optional: true));
+    }
+    final moved = prevArea != null && area != null && area != prevArea; // den přesunu
+    prevArea = area ?? prevArea;
+    lastDate = date;
+
+    final items = <AiItem>[];
+    if (transport != null && (moved || (program ?? '').contains('→'))) {
+      items.add(AiItem('🚌 $transport'));
+    }
+    for (final piece in _splitProgram(program ?? '')) {
+      final isPlace = !_notPlace.hasMatch(piece) &&
+          !piece.contains('→') &&
+          piece.length <= 60 &&
+          RegExp(r'\p{Lu}', unicode: true).hasMatch(piece);
+      String? key;
+      if (isPlace) {
+        key = '${piece.toLowerCase()}|${(area ?? '').toLowerCase()}';
+        places.putIfAbsent(key, () => AiPlace(key: key!, name: piece, city: area, type: 'attraction', optional: true));
+      }
+      items.add(AiItem(piece, placeKey: key));
+    }
+    if (note != null) items.add(AiItem('💡 $note'));
+    days.add(AiDay(date, items));
+  }
+  closeStay();
+  if (days.isEmpty) return null;
+  final dates = [for (final d in days) d.date]..sort();
+  return AiTrip(
+    name: _nameFromFile(fileName) ?? tr('Cesta z AI'),
+    start: dates.first,
+    end: dates.last,
     places: places.values.toList(),
     stays: stays,
     days: days,

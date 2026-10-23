@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:travelcompanion/core/app_settings.dart';
@@ -131,5 +133,45 @@ void main() {
     expect(t.days.single.items.single.minutes, 600);
     expect(t.stays.single.name, 'Lub d Silom');
     expect(t.end, DateTime(2027, 1, 28));
+  });
+
+  test('volný itinerář od AI bez vzoru (Datum, Oblast / nocleh, Program, Doprava, Poznámka)', () async {
+    final text = File('test/fixtures/free_itinerary.csv').readAsStringSync();
+    final t = parseAiTrip(text, fileName: 'Vietnam_itinerar_2026-12-05_2027-01-15.csv')!;
+    expect(t.name, 'Vietnam itinerar');
+    expect(t.start, DateTime(2026, 12, 5));
+    expect(t.days.length, 12);
+    // Hanoi 5. a 6. → ubytování 5.–7., pak Ha Long 7.–8.
+    expect(t.stays.first.name, 'Hanoi');
+    expect(t.stays.first.checkOut, DateTime(2026, 12, 7));
+    expect(t.stays[1].name, 'Ha Long Bay');
+    final d1 = t.days.first.items.map((i) => i.title).toList();
+    expect(d1, ['Přílet', 'Staré město', 'jezero Hoan Kiem', 'Temple of Literature', '💡 Lehký den po příletu']);
+    expect(t.days.first.items.first.placeKey, isNull); // přílet není místo
+    expect(t.days[2].items.first.title, '🚌 minivan + loď'); // den přesunu
+    expect(t.days[1].items.first.title, 'Ho Chi Minh Mausoleum'); // bez přesunu žádná doprava
+
+    // poloha: oblast Hanoi, místo „Staré město“ nalezené v Česku se zahodí
+    Future<List<GeoResult>> fake(String q) async {
+      if (q == 'Hanoi') return const [GeoResult(name: 'Hanoi', address: '', lat: 21.03, lng: 105.85, country: 'Vietnam')];
+      if (q.startsWith('Staré město')) return const [GeoResult(name: 'Staré Město', address: '', lat: 50.08, lng: 14.42)];
+      if (q.startsWith('Temple of Literature')) {
+        return const [GeoResult(name: 'Văn Miếu', address: '', lat: 21.0285, lng: 105.8355, country: 'Vietnam')];
+      }
+      return const [];
+    }
+
+    await verifyPlaces(t, geocode: fake);
+    final staro = t.places.firstWhere((p) => p.name == 'Staré město');
+    expect(staro.lat, isNull);
+    expect(t.places.firstWhere((p) => p.name == 'Temple of Literature').lat, 21.0285);
+
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final id = await importAiTrip(db, t);
+    final trip = await (db.select(db.trips)..where((x) => x.id.equals(id))).getSingle();
+    expect(trip.countries, contains('Vietnam'));
+    final places = await db.select(db.places).get();
+    expect(places.every((p) => p.lat != 0), isTrue); // nenalezené odhady se na mapu nepřidají
+    await db.close();
   });
 }

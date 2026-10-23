@@ -60,12 +60,11 @@ void main() {
     expect(t.stays.single.placeKey, isNotNull);
   });
 
-  test('bez plánu → null; zadání obsahuje formát', () {
+  test('bez plánu → null; pokyn pro AI obsahuje sloupce', () {
     expect(parseAiTrip('Ahoj, jak se máš? {"a": 1}'), isNull);
-    final p = buildAiPrompt(where: 'Lisabon', dates: '14.–16. 5. 2027', likes: 'jídlo');
-    expect(p, contains('Kam: Lisabon'));
-    expect(p, contains('"format": "travelcompanion-trip"'));
-    expect(parseAiTrip(p), isNotNull); // ukázka v zadání je sama platný plán
+    final p = buildAiCsvInstruction();
+    expect(p, contains(aiCsvColumns));
+    expect(parseAiTrip(p)!.name, 'Vietnam 2026'); // ukázka v pokynu je sama platný soubor
   });
 
   test('ověření polohy a zápis do databáze', () async {
@@ -99,5 +98,38 @@ void main() {
     expect(places.length, 4);
     expect(places.where((p) => p.lat == 0).length, 2); // pastéis + hotel bez polohy
     await db.close();
+  });
+
+  test('CSV od AI: ubytování od–do, místa, uvozovky, čas', () {
+    const csv = '﻿trip,date,time,title,place,city,country,type,lat,lng,end_date,note\n'
+        'Vietnam 2026,2026-12-08,,Hotel in the Old Quarter,Hanoi La Siesta Hotel,Hanoi,Vietnam,hotel,21.0340,105.8500,2026-12-11,\n'
+        'Vietnam 2026,2026-12-09,09:00,Walk around Hoan Kiem Lake,Hoan Kiem Lake,Hanoi,Vietnam,attraction,21.0287,105.8524,,"Best early, locals do tai chi"\n'
+        'Vietnam 2026,2026-12-09,07:30,Pho breakfast,Pho Gia Truyen,Hanoi,Vietnam,restaurant,,,,\n'
+        'Vietnam 2026,2026-12-10,,Train to Sapa,,,,transport,,,,\n';
+    expect(looksLikeAiTrip(csv), isTrue);
+    final t = parseAiTrip(csv)!;
+    expect(t.name, 'Vietnam 2026');
+    expect(t.start, DateTime(2026, 12, 8));
+    expect(t.end, DateTime(2026, 12, 11));
+    expect(t.countries, ['Vietnam']);
+    expect(t.stays.single.checkOut, DateTime(2026, 12, 11));
+    expect(t.places.length, 3);
+    expect(t.places[1].note, 'Best early, locals do tai chi');
+    expect(t.days.length, 2);
+    expect(t.days[0].items.map((i) => i.title), ['Pho breakfast', 'Walk around Hoan Kiem Lake']); // podle času
+    expect(t.days[1].items.single.placeKey, isNull);
+  });
+
+  test('CSV z Excelu (středník, české hlavičky, blok ```csv v odpovědi)', () {
+    const answer = 'Tady je soubor:\n```csv\n'
+        'Datum;Čas;Název;Místo;Město;Země;Typ;Do\n'
+        '2027-01-25;10:00;Velký palác;Grand Palace;Bangkok;Thailand;attraction;\n'
+        '2027-01-25;;Hostel;Lub d Silom;Bangkok;Thailand;hotel;2027-01-28\n'
+        '```\nHezkou cestu!';
+    final t = parseAiTrip(answer)!;
+    expect(t.countries, ['Thajsko']);
+    expect(t.days.single.items.single.minutes, 600);
+    expect(t.stays.single.name, 'Lub d Silom');
+    expect(t.end, DateTime(2027, 1, 28));
   });
 }

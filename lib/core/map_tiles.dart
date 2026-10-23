@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -27,14 +28,15 @@ List<Object> _labelExpr(String? lang) => lang == null
       ['get', 'name'],
     ];
 
-/// Načte styl OpenFreeMap (zdarma, bez klíče) a přepne popisky do [lang].
 /// Stáhne soubor stylu/ikon a uloží kopii do telefonu; bez internetu vrátí uloženou kopii
 /// (mapa pak funguje i offline – s dlaždicemi ze stažených oblastí nebo z cache).
+/// Když kopie existuje, čeká se na internet jen chvíli – slabý signál nesmí mapu zablokovat.
 Future<Uint8List> _cachedGet(String url) async {
   final name = url.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
   final file = File('${(await offlineDir()).path}/style_$name');
+  final cached = await file.exists();
   try {
-    final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
+    final res = await http.get(Uri.parse(url)).timeout(Duration(seconds: cached ? 4 : 15));
     if (res.statusCode != 200) throw Exception('Mapa: $url → ${res.statusCode}');
     await file.writeAsBytes(res.bodyBytes);
     return res.bodyBytes;
@@ -44,6 +46,7 @@ Future<Uint8List> _cachedGet(String url) async {
   }
 }
 
+/// Načte styl OpenFreeMap (zdarma, bez klíče) a přepne popisky do [lang].
 Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
   Future<dynamic> getJson(String url) async => jsonDecode(utf8.decode(await _cachedGet(url)));
   await OfflineMaps.instance.load();
@@ -109,14 +112,35 @@ final mapStyleProvider = FutureProvider.family<Style, (bool, String?)>(
     (ref, k) => loadMapStyle(dark: k.$1, lang: k.$2));
 
 /// Podklad mapy: vektorové dlaždice OpenFreeMap s anglickými popisky.
-/// Když se styl nepodaří načíst, použije se obyčejná mapa OSM.
-class MapTiles extends ConsumerWidget {
+/// Když se styl nepodaří načíst (první spuštění bez internetu), použije se obyčejná mapa OSM
+/// a načtení se za chvíli zkusí znovu – po připojení se mapa sama obnoví.
+class MapTiles extends ConsumerStatefulWidget {
   const MapTiles({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MapTiles> createState() => _MapTilesState();
+}
+
+class _MapTilesState extends ConsumerState<MapTiles> {
+  Timer? _retry;
+
+  @override
+  void dispose() {
+    _retry?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final style = ref.watch(mapStyleProvider((dark, AppSettings.instance.mapLabelLanguage)));
+    final key = (dark, AppSettings.instance.mapLabelLanguage);
+    final style = ref.watch(mapStyleProvider(key));
+    if (style.hasError && !style.isLoading && _retry == null) {
+      _retry = Timer(const Duration(seconds: 10), () {
+        _retry = null;
+        if (mounted) ref.invalidate(mapStyleProvider(key));
+      });
+    }
     return style.when(
       data: (s) => VectorTileLayer(
         key: ValueKey(dark),

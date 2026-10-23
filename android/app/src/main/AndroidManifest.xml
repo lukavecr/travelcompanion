@@ -38,6 +38,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/*" />
             </intent-filter>
+            <!-- soubor s plánem od AI (CSV některé aplikace označí jako Excel, JSON) -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="application/vnd.ms-excel" />
+                <data android:mimeType="application/csv" />
+            </intent-filter>
         </activity>
         <receiver
             android:exported="false"

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,7 +100,20 @@ class _TravelAppState extends ConsumerState<TravelApp>
   }
 
   Future<void> _handle(SharedMedia media) async {
-    final text = media.content?.trim();
+    var text = media.content?.trim();
+    // sdílený soubor (CSV / JSON od AI ze složky Stažené)
+    if (text == null || text.isEmpty) {
+      for (final a in media.attachments ?? const <SharedAttachment?>[]) {
+        final path = a?.path;
+        if (path == null) continue;
+        try {
+          final f = File(path);
+          if (await f.length() > 2 * 1024 * 1024) continue;
+          text = utf8.decode(await f.readAsBytes(), allowMalformed: true);
+          break;
+        } catch (_) {}
+      }
+    }
     if (text == null || text.isEmpty) return;
     try {
       await ref.read(authStateProvider.future); // počkej na přihlášení
@@ -107,7 +122,6 @@ class _TravelAppState extends ConsumerState<TravelApp>
     }
     await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    // text e-mailu s rezervací → doklad, jinak místo z Google Map
     // plán z AI → nová cesta, text e-mailu s rezervací → doklad, jinak místo z Google Map
     final route = looksLikeAiTrip(text)
         ? '/trips/ai'

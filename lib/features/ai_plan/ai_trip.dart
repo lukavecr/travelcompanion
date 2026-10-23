@@ -11,55 +11,12 @@ import '../../data/database.dart';
 import '../tracks/tracker_service.dart' show distanceM;
 import '../../l10n/tr.dart';
 
-/// Plán cesty z AI (ChatGPT, Claude, Copilot…) ve formátu „travelcompanion-trip“ verze 1.
+/// Plán cesty z AI (ChatGPT, Claude, Copilot, Gemini…).
 ///
-/// Uživatel zkopíruje zadání z aplikace ([buildAiPrompt]) do AI, ta na konci odpovědi vypíše
-/// blok JSON a ten se vloží zpět (schránka, sdílení textu). [parseAiTrip] je tolerantní:
-/// najde JSON i uprostřed textu, snese ```bloky```, čárky navíc, chybějící pole a dny bez data.
+/// Uživatel napíše AI, kam a kdy jede, přidá pokyn z aplikace ([buildAiCsvInstruction]) a AI vytvoří
+/// soubor CSV ([aiCsvColumns]), který se v aplikaci importuje. Čte se i starší JSON „travelcompanion-trip“ v1
+/// a text odpovědi s blokem kódu. [parseAiTrip] je tolerantní k textu kolem, středníkům z Excelu a chybějícím polím.
 const aiTripFormat = 'travelcompanion-trip';
-
-const aiTripTemplate = '''{
-  "format": "travelcompanion-trip",
-  "version": 1,
-  "name": "Japan 2027",
-  "startDate": "2027-04-01",
-  "endDate": "2027-04-10",
-  "countries": ["Japan"],
-  "places": [
-    {"id": "p1", "name": "Sensō-ji", "city": "Tokyo", "country": "Japan", "type": "attraction", "lat": 35.7148, "lng": 139.7967, "note": "Go early, fewer crowds"},
-    {"id": "p2", "name": "Hotel Gracery Shinjuku", "city": "Tokyo", "country": "Japan", "type": "hotel", "lat": 35.6948, "lng": 139.7020}
-  ],
-  "stays": [
-    {"name": "Hotel Gracery Shinjuku", "place": "p2", "checkIn": "2027-04-01", "checkOut": "2027-04-04"}
-  ],
-  "days": [
-    {"date": "2027-04-01", "items": [
-      {"time": "09:00", "title": "Sensō-ji temple", "place": "p1"},
-      {"time": "13:00", "title": "Lunch: ramen in Asakusa"}
-    ]}
-  ]
-}''';
-
-/// Zadání pro AI v jazyce aplikace.
-String buildAiPrompt({required String where, String? dates, String? likes}) {
-  final b = StringBuffer()
-    ..writeln(tr('Naplánuj mi cestu.'))
-    ..writeln(tr('Kam: {where}', {'where': where}));
-  if (dates != null && dates.isNotEmpty) b.writeln(tr('Termín: {dates}', {'dates': dates}));
-  if (likes != null && likes.isNotEmpty) b.writeln(tr('Co mě baví / s kým jedu: {likes}', {'likes': likes}));
-  b
-    ..writeln()
-    ..writeln(tr('Napiš podrobný plán po dnech: časy, místa, přesuny, ubytování a tipy.'))
-    ..writeln()
-    ..writeln(tr('Na úplný konec odpovědi přidej celý plán ještě jednou jako jeden blok kódu JSON přesně v tomto '
-        'formátu (data RRRR-MM-DD, časy HH:MM, souřadnice desetinně; co nevíš, vynech). Každé místo z plánu dej '
-        'do „places“ a odkaž na něj v položce dne přes „place“. Typ místa: attraction, restaurant, hotel, transport, other. '
-        'Blok si vložím do aplikace Travel Companion.'))
-    ..writeln('```json')
-    ..writeln(aiTripTemplate)
-    ..writeln('```');
-  return b.toString();
-}
 
 // ---------- model ----------
 
@@ -107,7 +64,8 @@ class AiTrip {
 // ---------- čtení ----------
 
 /// Vypadá text jako plán z AI? (pro sdílený text)
-bool looksLikeAiTrip(String text) => text.contains(aiTripFormat) || (text.contains('"days"') && text.contains('"places"'));
+bool looksLikeAiTrip(String text) =>
+    text.contains(aiTripFormat) || (text.contains('"days"') && text.contains('"places"')) || _csvHeader(text) != null;
 
 /// Najde v textu JSON objekt (blok ```json``` nebo první vyvážené {…}) a přečte ho.
 Map<String, dynamic>? _findJson(String text) {
@@ -197,10 +155,10 @@ String _country(String c) => localCountryName(c, lang: AppSettings.instance.effe
 
 String? _str(Object? v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
 
-/// Přečte plán z AI. Vrátí null, když v textu žádný plán není.
+/// Přečte plán z AI – soubor CSV (doporučený) nebo JSON. Vrátí null, když v textu žádný plán není.
 AiTrip? parseAiTrip(String text) {
   final j = _findJson(text);
-  if (j == null) return null;
+  if (j == null) return parseAiCsv(text);
 
   final places = <AiPlace>[];
   for (final (i, p) in ((j['places'] as List?) ?? const []).whereType<Map>().indexed) {
@@ -382,4 +340,193 @@ Future<String> importAiTrip(AppDatabase db, AiTrip t) async {
     }
   });
   return tripId;
+}
+
+
+// ---------- CSV (doporučený formát: AI ho umí vytvořit jako soubor ke stažení) ----------
+
+/// Sloupce souboru CSV v tomto pořadí (jeden řádek = jedna položka plánu).
+const aiCsvColumns = 'trip,date,time,title,place,city,country,type,lat,lng,end_date,note';
+
+/// Ukázka souboru (3 řádky) – je i součástí pokynu pro AI.
+const aiCsvExample = '''trip,date,time,title,place,city,country,type,lat,lng,end_date,note
+Vietnam 2026,2026-12-08,,Hotel in the Old Quarter,Hanoi La Siesta Hotel,Hanoi,Vietnam,hotel,21.0340,105.8500,2026-12-11,
+Vietnam 2026,2026-12-09,09:00,Walk around Hoan Kiem Lake,Hoan Kiem Lake,Hanoi,Vietnam,attraction,21.0287,105.8524,,"Best early, locals do tai chi"''';
+
+/// Pokyn pro AI, který si uživatel zkopíruje za svou zprávu („Jedu do Vietnamu 8. 12. – 15. 1. …“).
+String buildAiCsvInstruction() => [
+      tr('Vytvoř detailní plán cesty den po dni s konkrétními zajímavými místy, ubytováním a přesuny.'),
+      tr('Celý plán mi dej jako soubor CSV ke stažení (kódování UTF-8, oddělovač čárka, první řádek jsou názvy sloupců) s těmito sloupci v tomto pořadí:'),
+      aiCsvColumns,
+      tr('Pravidla: jeden řádek = jedna položka plánu; trip = název cesty (v každém řádku stejný); date = RRRR-MM-DD; '
+          'time = HH:MM (může chybět); title = co se dělá; place = název konkrétního místa pro mapu; city a country anglicky; '
+          'type = attraction, restaurant, hotel, transport nebo other; lat a lng = souřadnice místa desetinně; '
+          'ubytování jako jeden řádek s type = hotel, date = den příjezdu a end_date = den odjezdu; note = krátký tip. '
+          'Texty s čárkou dej do uvozovek.'),
+      tr('Ukázka:'),
+      aiCsvExample,
+    ].join('\n');
+
+const _csvAliases = <String, List<String>>{
+  'trip': ['trip', 'trip_name', 'trip name', 'cesta', 'reise', 'viaje'],
+  'date': ['date', 'datum', 'day_date', 'fecha'],
+  'time': ['time', 'start_time', 'čas', 'cas', 'zeit', 'hora'],
+  'title': ['title', 'activity', 'název', 'nazev', 'aktivita', 'titel', 'aktivität', 'actividad', 'titulo', 'título'],
+  'place': ['place', 'place_name', 'location', 'místo', 'misto', 'ort', 'lugar'],
+  'city': ['city', 'město', 'mesto', 'stadt', 'ciudad'],
+  'country': ['country', 'země', 'zeme', 'land', 'país', 'pais'],
+  'type': ['type', 'typ', 'category', 'kategorie', 'tipo'],
+  'lat': ['lat', 'latitude'],
+  'lng': ['lng', 'lon', 'long', 'longitude'],
+  'end_date': ['end_date', 'enddate', 'end', 'check_out', 'checkout', 'do', 'odjezd'],
+  'note': ['note', 'notes', 'poznámka', 'poznamka', 'tip', 'tips', 'description', 'notiz', 'nota'],
+};
+
+/// Je řádek hlavičkou CSV plánu? Vrací (oddělovač, sloupec → index).
+(String, Map<String, int>)? _csvHeaderLine(String raw) {
+  final line = raw.replaceFirst('﻿', '').trim();
+  if (line.isEmpty) return null;
+  final sep = [',', ';', '\t'].reduce((a, b) => line.split(a).length >= line.split(b).length ? a : b);
+  final cells = _csvLine(line, sep).map((c) => c.trim().toLowerCase()).toList();
+  final idx = <String, int>{};
+  for (final e in _csvAliases.entries) {
+    final i = cells.indexWhere(e.value.contains);
+    if (i >= 0) idx[e.key] = i;
+  }
+  return idx.containsKey('date') && (idx.containsKey('title') || idx.containsKey('place')) ? (sep, idx) : null;
+}
+
+(String, Map<String, int>)? _csvHeader(String text) {
+  for (final line in text.split(RegExp(r'\r?\n')).take(30)) {
+    final h = _csvHeaderLine(line);
+    if (h != null) return h;
+  }
+  return null;
+}
+
+/// Jeden řádek CSV s uvozovkami ("a, b" i "" uvnitř).
+List<String> _csvLine(String line, String sep) {
+  final out = <String>[];
+  final b = StringBuffer();
+  var q = false;
+  for (var i = 0; i < line.length; i++) {
+    final ch = line[i];
+    if (q) {
+      if (ch == '"') {
+        if (i + 1 < line.length && line[i + 1] == '"') {
+          b.write('"');
+          i++;
+        } else {
+          q = false;
+        }
+      } else {
+        b.write(ch);
+      }
+    } else if (ch == '"') {
+      q = true;
+    } else if (ch == sep) {
+      out.add(b.toString());
+      b.clear();
+    } else {
+      b.write(ch);
+    }
+  }
+  out.add(b.toString());
+  return out;
+}
+
+/// Řádky CSV (uvozovky můžou obsahovat i konec řádku).
+List<String> _csvRows(String text) {
+  final rows = <String>[];
+  final b = StringBuffer();
+  var q = false;
+  for (final ch in text.replaceAll('\r\n', '\n').split('')) {
+    if (ch == '"') q = !q;
+    if (ch == '\n' && !q) {
+      rows.add(b.toString());
+      b.clear();
+    } else {
+      b.write(ch);
+    }
+  }
+  if (b.isNotEmpty) rows.add(b.toString());
+  return rows;
+}
+
+/// Plán ze souboru CSV od AI. Vrací null, když to CSV plánu není.
+AiTrip? parseAiCsv(String text) {
+  // AI občas dá CSV do bloku ```csv
+  final block = RegExp(r'```(?:csv|CSV)?\s*([\s\S]*?)```').firstMatch(text)?.group(1);
+  final src = (block != null && _csvHeader(block) != null) ? block : text;
+  final rows = _csvRows(src.replaceFirst('﻿', ''));
+  final headerAt = rows.indexWhere((r) => _csvHeaderLine(r) != null);
+  if (headerAt < 0) return null;
+  final (sep, idx) = _csvHeaderLine(rows[headerAt])!;
+
+  String? cell(List<String> c, String k) {
+    final i = idx[k];
+    if (i == null || i >= c.length) return null;
+    final v = c[i].trim();
+    return v.isEmpty ? null : v;
+  }
+
+  String? tripName;
+  final places = <String, AiPlace>{};
+  final stays = <AiStay>[];
+  final byDay = <DateTime, List<AiItem>>{};
+
+  for (final r in rows.skip(headerAt + 1)) {
+    if (r.trim().isEmpty) continue;
+    final c = _csvLine(r, sep);
+    final date = _date(cell(c, 'date'));
+    if (date == null) continue;
+    tripName ??= cell(c, 'trip');
+    final title = cell(c, 'title');
+    final placeName = cell(c, 'place');
+    final type = _type(cell(c, 'type'));
+    final end = _date(cell(c, 'end_date'));
+    final name = placeName ?? title;
+    if (name == null) continue;
+
+    String? key;
+    if (placeName != null || type == 'hotel') {
+      final city = cell(c, 'city');
+      final k = '${name.toLowerCase()}|${(city ?? '').toLowerCase()}';
+      key = k;
+      places.putIfAbsent(
+          k,
+          () => AiPlace(
+                key: k,
+                name: name,
+                city: city,
+                country: cell(c, 'country'),
+                type: type,
+                lat: _num(cell(c, 'lat')),
+                lng: _num(cell(c, 'lng')),
+                note: cell(c, 'note'),
+              ));
+    }
+    if (type == 'hotel' || (end != null && end.isAfter(date))) {
+      final out = (end != null && end.isAfter(date)) ? end : date.add(const Duration(days: 1));
+      stays.add(AiStay(name, date, out, placeKey: key));
+      continue; // ubytování je v plánu jako od–do, ne jako položka dne
+    }
+    byDay.putIfAbsent(date, () => []).add(AiItem(title ?? name, minutes: _time(cell(c, 'time')), placeKey: key));
+  }
+
+  final dayList = byDay.keys.toList()..sort();
+  final days = [
+    for (final d in dayList) AiDay(d, byDay[d]!..sort((a, b) => (a.minutes ?? -1).compareTo(b.minutes ?? -1))),
+  ];
+  final dates = [...dayList, for (final s in stays) ...[s.checkIn, s.checkOut]]..sort();
+  if (dates.isEmpty) return null;
+  return AiTrip(
+    name: tripName ?? tr('Cesta z AI'),
+    start: dates.first,
+    end: dates.last,
+    countries: {for (final p in places.values) if (p.country != null) _country(p.country!)}.toList(),
+    places: places.values.toList(),
+    stays: stays,
+    days: days,
+  );
 }

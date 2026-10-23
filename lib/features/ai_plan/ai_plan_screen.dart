@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,20 +14,18 @@ import '../pro/paywall.dart';
 import 'ai_trip.dart';
 import '../../l10n/tr.dart';
 
-/// „Naplánovat s AI“: zadání pro ChatGPT/Claude/Copilot → vložit odpověď → náhled → nová cesta.
+/// „Naplánovat s AI“: návod, jak si u AI nechat vytvořit soubor s plánem, a jeho import.
 class AiPlanScreen extends ConsumerStatefulWidget {
   const AiPlanScreen({super.key, this.answer});
-  final String? answer; // text sdílený z aplikace AI
+  final String? answer; // obsah souboru / text sdílený z aplikace AI
 
   @override
   ConsumerState<AiPlanScreen> createState() => _AiPlanScreenState();
 }
 
 class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
-  final _where = TextEditingController();
-  final _likes = TextEditingController();
   final _answer = TextEditingController();
-  DateTimeRange? _range;
+  bool _showPaste = false;
   AiTrip? _trip;
   String? _error;
 
@@ -39,33 +40,32 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
 
   @override
   void dispose() {
-    for (final c in [_where, _likes, _answer]) {
-      c.dispose();
-    }
+    _answer.dispose();
     super.dispose();
   }
 
-  String get _prompt => buildAiPrompt(
-        where: _where.text.trim(),
-        dates: _range == null ? null : '${fmtDate(_range!.start)} – ${fmtDate(_range!.end)}',
-        likes: _likes.text.trim(),
-      );
+  void _snack(String t) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t)));
 
-  Future<void> _copy({Uri Function(String prompt)? open}) async {
-    if (_where.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Napiš, kam jedeš.'))));
+  Future<void> _copyInstruction() async {
+    await Clipboard.setData(ClipboardData(text: buildAiCsvInstruction()));
+    if (mounted) _snack(tr('Pokyn je zkopírovaný. V AI ho vlož za svou zprávu (podrž prst → Vložit).'));
+  }
+
+  Future<void> _pickFile() async {
+    final f = await FilePicker.pickFile();
+    if (f == null) return;
+    try {
+      final bytes = await f.readAsBytes();
+      _answer.text = utf8.decode(bytes, allowMalformed: true);
+    } catch (e) {
+      _snack(tr('Soubor se nepodařilo otevřít: {e}', {'e': e}));
       return;
     }
-    await Clipboard.setData(ClipboardData(text: _prompt));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(tr('Zadání je zkopírované. V AI ho vlož (podrž prst → Vložit) a odešli.'))));
-    if (open != null) await launchUrl(open(_prompt), mode: LaunchMode.externalApplication);
+    _read();
   }
 
   Future<void> _paste() async {
-    final t = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
-    _answer.text = t;
+    _answer.text = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
     _read();
   }
 
@@ -74,8 +74,8 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
     setState(() {
       _trip = t;
       _error = t == null && _answer.text.trim().isNotEmpty
-          ? tr('V textu jsem nenašel plán ve formátu pro aplikaci. Zkopíruj z AI celou odpověď včetně bloku kódu na konci, '
-              'případně AI napiš: „Vypiš plán ještě jednou jako JSON podle zadání.“')
+          ? tr('V souboru jsem nenašel plán. Zkontroluj, že je to soubor CSV od AI se sloupci podle pokynu, '
+              'případně AI napiš: „Vytvoř z plánu soubor CSV podle pokynu.“')
           : null;
     });
   }
@@ -85,82 +85,119 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
     final theme = Theme.of(context);
     if (_trip != null) return _AiPreview(trip: _trip!, onBack: () => setState(() => _trip = null));
 
-    Widget aiButton(String label, Uri Function(String p) url) =>
-        OutlinedButton(onPressed: () => _copy(open: url), child: Text(label));
+    Widget step(int n, String title, List<Widget> children) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(radius: 14, child: Text('$n')),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3, bottom: 6),
+                      child: Text(title, style: theme.textTheme.titleSmall),
+                    ),
+                    ...children,
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+    Widget open(String label, String url) => OutlinedButton(
+        onPressed: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication), child: Text(label));
+    final box = BoxDecoration(
+      color: theme.colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(tr('Naplánovat s AI'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(tr('Nech si plán cesty připravit od ChatGPT, Claude, Copilota nebo Gemini. Aplikace z odpovědi '
-              'sama vytvoří cestu, plán po dnech, ubytování a místa na mapě.')),
-          const SizedBox(height: 16),
-          Text(tr('1. Zadání pro AI'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          TextField(controller: _where, decoration: InputDecoration(labelText: tr('Kam jedeš'), hintText: tr('např. Japonsko – Tokio a Kjóto'))),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.date_range),
-            label: Text(_range == null
-                ? tr('Termín (nepovinné)')
-                : '${fmtDate(_range!.start)} – ${fmtDate(_range!.end)}'),
-            onPressed: () async {
-              final now = DateTime.now();
-              final r = await showDateRangePicker(
-                  context: context, firstDate: DateTime(now.year - 1), lastDate: DateTime(now.year + 5), initialDateRange: _range);
-              if (r != null) setState(() => _range = r);
-            },
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _likes,
-            minLines: 2,
-            maxLines: 4,
-            decoration: InputDecoration(
-                labelText: tr('Co tě baví, s kým jedeš (nepovinné)'),
-                hintText: tr('např. jídlo, chrámy, příroda; ve dvou; spíš levněji')),
-          ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            icon: const Icon(Icons.copy),
-            label: Text(tr('Zkopírovat zadání')),
-            onPressed: () => _copy(),
-          ),
-          const SizedBox(height: 8),
-          Text(tr('…nebo zkopírovat a rovnou otevřít:'), style: theme.textTheme.bodySmall),
-          Wrap(spacing: 8, children: [
-            aiButton('ChatGPT', (p) => Uri.https('chatgpt.com', '/', {'q': p})),
-            aiButton('Claude', (p) => Uri.https('claude.ai', '/new', {'q': p})),
-            aiButton('Copilot', (p) => Uri.https('copilot.microsoft.com', '/', {'q': p})),
-            aiButton('Gemini', (p) => Uri.https('gemini.google.com', '/app')),
+          Text(tr('Nech si plán cesty připravit od AI a naimportuj ho. Aplikace sama vyplní cestu, plán po dnech, '
+              'ubytování a místa na mapě.')),
+          const SizedBox(height: 20),
+          step(1, tr('Otevři svou AI'), [
+            Wrap(spacing: 8, runSpacing: 4, children: [
+              open('ChatGPT', 'https://chatgpt.com/'),
+              open('Claude', 'https://claude.ai/new'),
+              open('Copilot', 'https://copilot.microsoft.com/'),
+              open('Gemini', 'https://gemini.google.com/app'),
+            ]),
           ]),
-          const Divider(height: 40),
-          Text(tr('2. Vlož odpověď AI'), style: theme.textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text(tr('V AI zkopíruj celou odpověď (nebo jen blok kódu na konci). Jde i Sdílet → Travel Companion.'),
-              style: theme.textTheme.bodySmall),
-          const SizedBox(height: 8),
-          FilledButton.tonalIcon(
-            icon: const Icon(Icons.content_paste),
-            label: Text(tr('Vložit ze schránky')),
-            onPressed: _paste,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _answer,
-            minLines: 3,
-            maxLines: 8,
-            decoration: InputDecoration(border: const OutlineInputBorder(), hintText: tr('…nebo sem odpověď vlož ručně')),
-            onChanged: (_) => setState(() => _error = null),
-          ),
+          step(2, tr('Napiš, kam a kdy jedeš, a přidej pokyn pro soubor'), [
+            Text(tr('Například:'), style: theme.textTheme.bodySmall),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: box,
+              child: Text(tr('Jedu do Vietnamu 8. 12. 2026 – 15. 1. 2027, ve dvou, rádi jíme a chodíme po přírodě.'),
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+            ),
+            const SizedBox(height: 8),
+            Text(tr('…a hned za to vlož tento pokyn (řekne AI, jaký soubor má vytvořit):'), style: theme.textTheme.bodySmall),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: box,
+              child: Text(buildAiCsvInstruction(),
+                  maxLines: 6, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              icon: const Icon(Icons.copy),
+              label: Text(tr('Zkopírovat pokyn')),
+              onPressed: _copyInstruction,
+            ),
+          ]),
+          step(3, tr('Stáhni soubor .csv, který AI vytvoří'), [
+            Text(tr('Když AI soubor nenabídne ke stažení, napiš jí: „Vytvoř z toho soubor CSV ke stažení.“ '
+                'Soubor můžeš před importem upravit třeba v Excelu.')),
+          ]),
+          step(4, tr('Importuj soubor do aplikace'), [
+            FilledButton.icon(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+              icon: const Icon(Icons.upload_file),
+              label: Text(tr('Importovat soubor z AI (.csv)')),
+              onPressed: _pickFile,
+            ),
+            const SizedBox(height: 4),
+            Text(tr('Jde to i ze složky Stažené: soubor → Sdílet → Travel Companion.'), style: theme.textTheme.bodySmall),
+          ]),
           if (_error != null)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
             ),
-          const SizedBox(height: 8),
-          OutlinedButton(onPressed: _read, child: Text(tr('Načíst plán'))),
+          TextButton.icon(
+            icon: Icon(_showPaste ? Icons.expand_less : Icons.expand_more),
+            label: Text(tr('Nemáš soubor? Vlož text odpovědi')),
+            onPressed: () => setState(() => _showPaste = !_showPaste),
+          ),
+          if (_showPaste) ...[
+            OutlinedButton.icon(
+              icon: const Icon(Icons.content_paste),
+              label: Text(tr('Vložit ze schránky')),
+              onPressed: _paste,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _answer,
+              minLines: 3,
+              maxLines: 8,
+              decoration: InputDecoration(border: const OutlineInputBorder(), hintText: tr('…nebo sem odpověď vlož ručně')),
+              onChanged: (_) => setState(() => _error = null),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(onPressed: _read, child: Text(tr('Načíst plán'))),
+          ],
         ],
       ),
     );

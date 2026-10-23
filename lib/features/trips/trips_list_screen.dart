@@ -106,6 +106,11 @@ class TripsListScreen extends ConsumerWidget {
         title: Text(tr('Moje cesty')),
         actions: [
           IconButton(
+            tooltip: tr('Naplánovat s AI'),
+            icon: const Icon(Icons.auto_awesome_outlined),
+            onPressed: () => context.go('/trips/ai'),
+          ),
+          IconButton(
             tooltip: tr('Připojit se kódem'),
             icon: const Icon(Icons.group_add_outlined),
             onPressed: () => joinWithCode(context),
@@ -155,6 +160,12 @@ class TripsListScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
+                    FilledButton.tonalIcon(
+                      icon: const Icon(Icons.auto_awesome_outlined),
+                      label: Text(tr('Naplánovat s AI')),
+                      onPressed: () => context.go('/trips/ai'),
+                    ),
+                    const SizedBox(height: 8),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.auto_awesome),
                       label: Text(tr('Vyzkoušet ukázkovou cestu')),

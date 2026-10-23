@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'app_settings.dart';
 import '../features/auth/auth_providers.dart';
 import '../features/auth/login_screen.dart';
+import '../features/ai_plan/ai_plan_screen.dart';
 import '../features/documents/docs_list_screen.dart';
 import '../features/documents/email_import_screen.dart';
 import '../features/share/share_screen.dart';
@@ -62,6 +63,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               path: '/trips',
               builder: (context, state) => const TripsListScreen(),
               routes: [
+                GoRoute(
+                  path: 'ai',
+                  builder: (context, state) => AiPlanScreen(answer: state.extra as String?),
+                ),
                 GoRoute(
                   path: 'trip/:id',
                   builder: (context, state) =>

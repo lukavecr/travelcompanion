@@ -154,6 +154,12 @@ proto je důležitá spolehlivost offline a záloha dat.
   `firebase deploy --only firestore:rules`, jen se souhlasem uživatele; nasazeno 23. 10. 2026). Test pravidel: `tool/rules_test`
   (`npm i @firebase/rules-unit-testing@4 firebase@11`, pak `firebase emulators:exec --project demo-tc --only firestore "node test.mjs"`,
   Java z Android Studia v PATH, kvůli Avastu `NODE_EXTRA_CA_CERTS` = wscert.pem). Avast blokuje i Firestore v emulátoru (SSL) – test na telefonu. Doklady, účtenky a trasy se nesdílí.
+- **Plán z AI** `ai_plan/ai_trip.dart` (formát JSON „travelcompanion-trip“ v1: name, startDate, endDate, countries, places
+  [id, name, city, country, type, lat, lng, note], stays [name, place, checkIn, checkOut], days [date|day, items [time, title, place]];
+  `buildAiPrompt` = zadání v jazyce aplikace, `parseAiTrip` tolerantní k textu kolem a chybám, `verifyPlaces` ověří polohu
+  v Nominatim (AI do 1,5 km se ponechá), `importAiTrip`), `ai_plan_screen.dart` (`/trips/ai`, tlačítka ChatGPT/Claude/Copilot/Gemini
+  s předvyplněním `?q=`, vložení ze schránky; sdílený text s plánem jde rovnou sem). Zdarma, počítá se do limitu cest.
+  Anglické názvy zemí → česky `localCountryName` (`country_info.dart`). Web: sekce `#ai` na úvodní stránce.
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);

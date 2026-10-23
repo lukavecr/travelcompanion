@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
+import 'features/ai_plan/ai_trip.dart';
 import 'features/documents/email_parser.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -107,7 +108,12 @@ class _TravelAppState extends ConsumerState<TravelApp>
     await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
     // text e-mailu s rezervací → doklad, jinak místo z Google Map
-    final route = looksLikeBooking(text) ? '/docs/import' : '/share';
+    // plán z AI → nová cesta, text e-mailu s rezervací → doklad, jinak místo z Google Map
+    final route = looksLikeAiTrip(text)
+        ? '/trips/ai'
+        : looksLikeBooking(text)
+            ? '/docs/import'
+            : '/share';
     ref.read(routerProvider).push(route, extra: text);
   }
 

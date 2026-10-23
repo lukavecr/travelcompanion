@@ -77,6 +77,30 @@ const _keywords = <String, String>{
 
 String normalizeCountry(String name) => _aliases[name] ?? name;
 
+/// Anglické názvy zemí → česky (plán z AI je anglicky, aplikace v češtině má české názvy).
+const _englishNames = <String, String>{
+  'czechia': 'Česko', 'czech republic': 'Česko', 'japan': 'Japonsko', 'thailand': 'Thajsko',
+  'vietnam': 'Vietnam', 'viet nam': 'Vietnam', 'cambodia': 'Kambodža', 'laos': 'Laos',
+  'malaysia': 'Malajsie', 'singapore': 'Singapur', 'indonesia': 'Indonésie', 'philippines': 'Filipíny',
+  'china': 'Čína', 'hong kong': 'Hongkong', 'taiwan': 'Tchaj-wan', 'south korea': 'Jižní Korea',
+  'korea': 'Jižní Korea', 'india': 'Indie', 'sri lanka': 'Srí Lanka', 'nepal': 'Nepál',
+  'new zealand': 'Nový Zéland', 'australia': 'Austrálie', 'united states': 'USA', 'usa': 'USA',
+  'mexico': 'Mexiko', 'canada': 'Kanada', 'united kingdom': 'Velká Británie', 'uk': 'Velká Británie',
+  'germany': 'Německo', 'france': 'Francie', 'italy': 'Itálie', 'spain': 'Španělsko',
+  'portugal': 'Portugalsko', 'austria': 'Rakousko', 'greece': 'Řecko', 'croatia': 'Chorvatsko',
+  'turkey': 'Turecko', 'türkiye': 'Turecko', 'egypt': 'Egypt', 'morocco': 'Maroko',
+  'peru': 'Peru', 'brazil': 'Brazílie', 'argentina': 'Argentina', 'chile': 'Chile',
+  'iceland': 'Island', 'norway': 'Norsko', 'switzerland': 'Švýcarsko', 'netherlands': 'Nizozemsko',
+  'poland': 'Polsko', 'slovakia': 'Slovensko', 'hungary': 'Maďarsko', 'united arab emirates': 'SAE',
+};
+
+/// Název země v jazyce aplikace (u češtiny převede anglický název).
+String localCountryName(String name, {required String lang}) {
+  final n = normalizeCountry(name.trim());
+  if (lang != 'cs') return n;
+  return _englishNames[n.toLowerCase()] ?? n;
+}
+
 String? currencyForCountry(String country) {
   final lc = country.toLowerCase();
   for (final e in _countryCurrency.entries) {

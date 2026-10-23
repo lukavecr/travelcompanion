@@ -61,7 +61,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   Keystore přes `flutter_secure_storage` (`core/db_crypto.dart`), načte se v `main()` → `databaseKeyProvider`; drift_flutter `setup` volá
   `PRAGMA key`. Starou nešifrovanou DB `encryptLegacyDatabase` jednorázově převede (`PRAGMA rekey`, mimo WAL, se zálohou).
   Odinstalace aplikace = ztráta klíče → data jen ze zálohy Firestore. Kontrola z PC: `dart run tool/crypto_probe.dart`.
-- Testy: `flutter test` (`test/vault_types_test.dart` – texty upozornění, Plus Code; `test/free_limits_test.dart` – limity Free).
+- Testy: `flutter test` (mimo jiné `email_import_test`, `features_b_test` – widget, trasy, dlaždice; `share_test` – pozvánky, vyrovnání).
 - **Zámek aplikace** (`features/lock/app_lock.dart`, `local_auth` 3): při spuštění a po >60 s v pozadí; biometrie nebo PIN telefonu.
   `MainActivity` musí být `FlutterFragmentActivity`. Emulátor nemá zámek obrazovky → ukáže „Pokračovat bez zámku“
   (zámek emulátoru nenastavovat bez souhlasu uživatele). Smazání všech dat se potvrzuje stejným ověřením.
@@ -88,7 +88,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   popisky přepsané na `name:<jazyk>` → `name:latin` → `name`, konstanta `mapLabelLanguage = 'en'`; při chybě záloha na raster OSM),
   `theme.dart` (tmavý režim výchozí), `format.dart` (data, čas, `fmtMoney`, `parseAmount`), `dialogs.dart`, `full_image_screen.dart`,
   `country_info.dart` (země↔měna, tipování země), `geocode.dart` (Nominatim reverse + `searchPlaces`, společné omezení 1 dotaz/s).
-- `data/database.dart` – Drift (SQLite) = **zdroj pravdy v telefonu**. `schemaVersion = 5`, migrace v `onUpgrade`.
+- `data/database.dart` – Drift (SQLite) = **zdroj pravdy v telefonu**. `schemaVersion = 6`, migrace v `onUpgrade`.
 - `features/map` (záložka Mapa: místa všech cest, filtr podle cesty, „Doplnit“ polohu, moje poloha přes `geolocator`,
   dlouhé podržení = uložit bod), `places/locate_place_screen.dart` (hledání polohy: nejdřív uložený odkaz z Map, pak Plus Code /
   adresa / název přes Nominatim, náhled na mapě, klepnutí do mapy = ruční bod).
@@ -134,6 +134,24 @@ proto je důležitá spolehlivost offline a záloha dat.
   Zapíná se ručně (Záloha a účet → Šifrovat zálohu; vyžaduje Pro + Vault) a vše se znovu odešle zašifrovaně
   (`SyncService.enableEncryptedBackup`). Pull bez klíče se zastaví (`lockedRemote`) a čeká na odemčení Vaultu.
   **Na účtu uživatele ho nezapínat za něj.**
+- **Import rezervací z e-mailu** `documents/email_parser.dart` (`parseBookingText` → lety po segmentech, ubytování check-in/out,
+  vlak/bus; `looksLikeBooking` rozhodne u sdíleného textu doklad vs. místo z Map) + `email_import_screen.dart` (`/docs/import`).
+  Doklad bez obrázku má `localPath = 'text:'` (sync ho neodesílá jako soubor, detail ukáže text e-mailu).
+- **Widget na plochu** `widget/home_widget_service.dart` (balíček `home_widget`) + Kotlin `PlanWidgetProvider.kt`,
+  `res/layout/plan_widget.xml`: data na 14 dní dopředu (`w_days`, `w_spend`), widget si vybere dnešek + 2 dny; překreslení
+  o půlnoci (`scheduleWidgetUpdates`, receiver v manifestu). Nastavení → Personalizace → Widget na plochu.
+- **Tracker trasy** `tracks/tracker_service.dart` (ruční Start/Stop, geolocator se službou v popředí, oprávnění
+  `FOREGROUND_SERVICE_LOCATION`; body JSON v tabulce `Tracks`, synchronizuje se), `tracks_screen.dart` (`/map/tracks`, GPX).
+  Google Play bude chtít prohlášení k službě v popředí typu location (krátké video záznamu).
+- **Offline mapy** `offline_maps/offline_tiles.dart`: oblasti z mapy (`regions.json`, dlaždice OpenFreeMap z14 do
+  `app_support/offline_map/tiles`), `OfflineFirstTileProvider` čte nejdřív z telefonu; styl a ikony mapy se ukládají
+  (`_cachedGet` v `map_tiles.dart`), takže mapa jde i bez internetu. Free = 1 oblast (`ProLimit.offlineMap`), Pro neomezeně.
+- **Společná cesta** `share/`: `shared_trips.dart` (Firestore `shared/{tripId}` + `members` + šifrované řádky trips/places/
+  expenses/calendarEvents klíčem cesty; pozvánka = kód 12 znaků, `invites/{hash}` s klíčem zamčeným kódem; běží i ve Free),
+  `share_screen.dart` (sdílet, pozvat, odebrat, opustit, `joinWithCode`), `settle_card.dart` + `share_logic.dart` (dělení útrat).
+  `Trips.shareRole` (null/owner/member), `Expenses.paidBy`/`splitWith`. Účastník bez Pro plán jen čte (`canEditPlan`), přidává
+  výdaje a místa; pozvané cesty se nepočítají do limitů Free. Pravidla: `firestore.rules` (nasazení
+  `firebase deploy --only firestore:rules`, jen se souhlasem uživatele). Doklady, účtenky a trasy se nesdílí.
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);
@@ -153,6 +171,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   barcodeFormat, passenger, seat, gate, price, currency)
 - `Expenses` (tripId, amount, currency, amountMain, fxRate, category, spentAt, country, receiptDocumentId?, source, note, receiptPath)
 - `VaultItems` (type, encryptedBlob = AES-GCM JSON {fields, photos}, expiresAt), `Photos` (zatím nepoužité)
+- `Tracks` (tripId?, name, startedAt, endedAt, distanceM, points JSON)
 
 **Pravidlo:** každý zápis do tabulky musí nastavit `updatedAt = now` a `syncState = 'pending'`, mazání je jen soft delete.
 Jediná výjimka: Nastavení → „Smazat všechna data“ (`SyncService.wipeAllData`) – nejdřív smaže Firestore, pak natvrdo telefon

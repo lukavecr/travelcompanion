@@ -32,7 +32,7 @@ Slogan, který z toho plyne: *„Celá cesta v jedné kapse – i bez signálu, 
 4. **Upozornění „check-in“ a „odjezd“** – automaticky 24 h před letem z dokladu a ráno v den odjezdu z ubytování.
 5. **Export plánu do kalendáře (ICS) a do PDF** – sdílení plánu s rodinou bez účtu. Zdarma, jednoduché.
 
-### B. Velké funkce s potenciálem pro Pro
+### B. Velké funkce s potenciálem pro Pro – ✔ 23. 10.: B6, B7, B8, B10 (jako tracker), B11; B9 uživatel nechce
 6. **Offline mapa země** – stáhnout vybranou zemi (PMTiles z OpenStreetMap, vector_map_tiles_pmtiles). Nejčastější stížnost konkurence → **základ zdarma (1 země), Pro neomezeně**. Soubor je potřeba hostovat (Firebase Hosting má limit; ověřit velikosti zemí).
 7. **Import rezervací z e-mailu bez serveru** – v Gmailu „Sdílet“ → text e-mailu do aplikace → rozpoznání letu/hotelu/rezervace v telefonu (stejné parsery jako u fotek). Konkurence (TripIt) to dělá přes server; my offline a soukromě.
 8. **Společná cesta a dělení útrat** – pozvat partnera/kamarády, společný plán a výdaje „kdo komu dluží“ (Splitwise uvnitř). Silný důvod k Pro a k šíření aplikace. Vyžaduje sdílené dokumenty ve Firestore a nová pravidla.

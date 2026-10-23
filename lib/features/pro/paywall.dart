@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../onboarding/demo_trip.dart';
 import 'pro_service.dart';
 import '../../l10n/tr.dart';
 
@@ -30,8 +31,12 @@ Future<(int, int)> usageOf(AppDatabase db, ProLimit kind) async => switch (kind)
     };
 
 Future<int> _count(AppDatabase db, TableInfo<Table, dynamic> t) async {
+  // ukázková cesta (notes = 'demo') se do limitů nepočítá
+  final notDemo = t.actualTableName == 'documents' || t.actualTableName == 'expenses'
+      ? " AND trip_id NOT IN (SELECT id FROM trips WHERE notes = '$demoTripNote')"
+      : '';
   final rows = await db
-      .customSelect('SELECT COUNT(*) AS c FROM ${t.actualTableName} WHERE deleted_at IS NULL')
+      .customSelect('SELECT COUNT(*) AS c FROM ${t.actualTableName} WHERE deleted_at IS NULL$notDemo')
       .getSingle();
   return rows.read<int>('c');
 }
@@ -40,7 +45,10 @@ Future<int> _count(AppDatabase db, TableInfo<Table, dynamic> t) async {
 Future<int> _activeTrips(AppDatabase db) async {
   final today = dayOnly(DateTime.now());
   final trips = await (db.select(db.trips)..where((t) => t.deletedAt.isNull())).get();
-  return trips.where((t) => t.endDate == null || !t.endDate!.isBefore(today)).length;
+  return trips
+      .where((t) => t.notes != demoTripNote)
+      .where((t) => t.endDate == null || !t.endDate!.isBefore(today))
+      .length;
 }
 
 Future<void> openPaywall(BuildContext context, [ProLimit? reason]) => Navigator.of(context)

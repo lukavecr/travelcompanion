@@ -55,6 +55,8 @@ class AppSettings extends ChangeNotifier {
   int lockAfterSeconds = 60;
   bool expiryReminders = true;
   int expiryReminderMinutes = 9 * 60;
+  bool onboardingDone = false;
+  bool tripReminders = true; // check-in 24 h před letem, odlet, den odjezdu z ubytování
 
   Future<void> load() async {
     _p = await SharedPreferences.getInstance();
@@ -69,6 +71,8 @@ class AppSettings extends ChangeNotifier {
     lockAfterSeconds = _p.getInt('set_lock_after') ?? lockAfterSeconds;
     expiryReminders = _p.getBool('set_expiry_on') ?? expiryReminders;
     expiryReminderMinutes = _p.getInt('set_expiry_time') ?? expiryReminderMinutes;
+    onboardingDone = _p.getBool('set_onboarding_done') ?? onboardingDone;
+    tripReminders = _p.getBool('set_trip_reminders') ?? tripReminders;
   }
 
   /// Jazyk, který se opravdu použije (u „Podle telefonu“ podle jazyka systému).
@@ -106,6 +110,10 @@ class AppSettings extends ChangeNotifier {
       _save(() => lockAfterSeconds = v, () => _p.setInt('set_lock_after', v));
   Future<void> setExpiryReminders(bool v) =>
       _save(() => expiryReminders = v, () => _p.setBool('set_expiry_on', v));
+  Future<void> setOnboardingDone(bool v) =>
+      _save(() => onboardingDone = v, () => _p.setBool('set_onboarding_done', v));
+  Future<void> setTripReminders(bool v) =>
+      _save(() => tripReminders = v, () => _p.setBool('set_trip_reminders', v));
   Future<void> setExpiryReminderMinutes(int v) =>
       _save(() => expiryReminderMinutes = v, () => _p.setInt('set_expiry_time', v));
 }

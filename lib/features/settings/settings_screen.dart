@@ -349,6 +349,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           await st.setExpiryReminderMinutes(t.hour * 60 + t.minute);
           await ReminderService.reschedule();
         }),
+      Card(
+        child: SwitchListTile(
+          secondary: const Icon(Icons.flight_takeoff),
+          title: Text(tr('Upozornění na cestu')),
+          subtitle: Text(tr('Check-in 24 h před letem, odjezd na letiště, odjezd z ubytování')),
+          value: st.tripReminders,
+          onChanged: (v) async {
+            await st.setTripReminders(v);
+            await ReminderService.reschedule();
+          },
+        ),
+      ),
       _header(c, tr('Export')),
       _tile(Icons.table_chart_outlined, tr('Výdaje do tabulky (CSV)'), tr('Pro Excel nebo Tabulky Google'),
           () => export.exportExpensesCsv()),

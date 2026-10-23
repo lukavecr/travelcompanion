@@ -11,6 +11,7 @@ import 'core/app_settings.dart';
 import 'core/week_start_localizations.dart';
 import 'features/lock/app_lock.dart';
 import 'features/pro/pro_service.dart';
+import 'features/reminders/trip_reminders.dart';
 import 'features/vault/vault_repository.dart';
 import 'core/theme.dart';
 import 'data/database.dart';
@@ -62,6 +63,14 @@ class _TravelAppState extends ConsumerState<TravelApp>
       },
       fireImmediately: true,
     );
+    // check-in, odjezd na letiště, odjezd z ubytování
+    void tripReminders() {
+      final f = ref.read(flightsForRemindersProvider).value;
+      final s = ref.read(staysForRemindersProvider).value;
+      if (f != null && s != null) ReminderService.syncTrip(buildTripReminders(f, s));
+    }
+    ref.listenManual(flightsForRemindersProvider, (_, _) => tripReminders(), fireImmediately: true);
+    ref.listenManual(staysForRemindersProvider, (_, _) => tripReminders(), fireImmediately: true);
     ref.listenManual<AsyncValue<List<VaultItem>>>(
       vaultExpiryProvider,
       (prev, next) {

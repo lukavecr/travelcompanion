@@ -6,6 +6,7 @@ import '../../core/app_settings.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
 import '../vault/vault_types.dart';
+import 'trip_reminders.dart';
 import '../../l10n/tr.dart';
 
 /// Plánuje upozornění na položky dne. Čas položky se bere jako místní čas
@@ -57,6 +58,13 @@ class ReminderService {
 
   static List<CalendarEvent> _events = const [];
   static List<VaultItem> _vault = const [];
+  static List<TripReminder> _trip = const [];
+
+  /// Automatická upozornění na cestu (check-in, odlet, odjezd z ubytování).
+  static Future<void> syncTrip(List<TripReminder> items) {
+    _trip = items;
+    return _schedule();
+  }
 
   /// Zruší všechna naplánovaná upozornění a naplánuje znovu ta budoucí.
   static Future<void> sync(List<CalendarEvent> events) {
@@ -77,7 +85,8 @@ class ReminderService {
   static Future<void> _schedule() {
     final events = _events;
     final vault = _vault;
-    _last = _last.then((_) => _run(events, vault)).catchError((Object _) {});
+    final trip = _trip;
+    _last = _last.then((_) => _run(events, vault, trip)).catchError((Object _) {});
     return _last;
   }
 
@@ -90,7 +99,8 @@ class ReminderService {
     return h;
   }
 
-  static Future<void> _run(List<CalendarEvent> events, List<VaultItem> vault) async {
+  static Future<void> _run(
+      List<CalendarEvent> events, List<VaultItem> vault, List<TripReminder> trip) async {
     await init();
     await _plugin.cancelAll();
     final now = DateTime.now();
@@ -126,6 +136,28 @@ class ReminderService {
     }
 
     final settings = AppSettings.instance;
+    for (final r in settings.tripReminders ? trip : const <TripReminder>[]) {
+      if (!r.fire.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: _idFor(r.key),
+        title: r.title,
+        body: r.body,
+        scheduledDate: tz.TZDateTime.fromMillisecondsSinceEpoch(tz.UTC, r.fire.millisecondsSinceEpoch),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'trip_reminders',
+            tr('Upozornění na cestu'),
+            channelDescription: tr('Check-in, odjezd na letiště a odjezd z ubytování'),
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+        ),
+        androidScheduleMode: exact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
+
     for (final v in settings.expiryReminders ? vault : const <VaultItem>[]) {
       final exp = v.expiresAt;
       if (exp == null) continue;

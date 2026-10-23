@@ -121,6 +121,19 @@ proto je důležitá spolehlivost offline a záloha dat.
 - **Web** (`website/`): angličtina v kořeni = zdroj, `python tool/build_website.py` vytvoří `website/cs|de|es/` podle
   `tool/website_i18n.py` (přepínač jazyků, hreflang). Po úpravě anglického textu doplnit překlad, jinak build skončí chybou.
   Zveřejnění: `firebase deploy --only hosting` (jen se souhlasem uživatele).
+- **Úvodní průvodce** `features/onboarding/welcome_screen.dart` (route `/welcome`, jen před prvním přihlášením;
+  `AppSettings.onboardingDone`, přihlášení uživatelé ho přeskočí) a **ukázková cesta** `demo_trip.dart` (Japonsko,
+  `notes = 'demo'` → nepočítá se do limitů Free; tlačítko v prázdném seznamu cest).
+- **Upozornění na cestu** `reminders/trip_reminders.dart`: check-in 24 h před letem (z Tickets.departAt u dokladu typu flight,
+  bez času → den předem v 9:00), odjezd na letiště 3 h předem, odjezd z ubytování v den „do“ v 8:00. Přepínač
+  `AppSettings.tripReminders` (Nastavení → Data). Plánuje `ReminderService.syncTrip`.
+- **Export plánu** `trips/trip_export.dart` (menu ⋮ v detailu cesty): kalendář ICS (`buildTripIcs`) a PDF (`buildTripPdf`,
+  balíček `pdf`, písmo `assets/fonts/NotoSans-*.ttf` latinka – šipky/emoji se nahrazují, japonské znaky se nezobrazí).
+- **Šifrovaná záloha** `sync/backup_crypto.dart`: vlastní klíč zálohy v Keystore, v cloudu zamčený klíčem Vaultu
+  (`vault_meta/key.backupKey`) → obnova heslem Vaultu. Dokument = `{id, updatedAt, deletedAt, enc}`, obrázky `{b64 šifrované, enc: true}`.
+  Zapíná se ručně (Záloha a účet → Šifrovat zálohu; vyžaduje Pro + Vault) a vše se znovu odešle zašifrovaně
+  (`SyncService.enableEncryptedBackup`). Pull bez klíče se zastaví (`lockedRemote`) a čeká na odemčení Vaultu.
+  **Na účtu uživatele ho nezapínat za něj.**
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);

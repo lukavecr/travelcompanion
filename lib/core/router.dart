@@ -19,6 +19,7 @@ import '../features/sync/sync_screen.dart';
 import '../features/shell/shell_scaffold.dart';
 import '../features/trips/trip_detail_screen.dart';
 import '../features/trips/trips_list_screen.dart';
+import '../features/onboarding/welcome_screen.dart';
 import '../features/vault/vault_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -31,11 +32,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.isLoading) return null;
       final loggedIn = auth.value != null;
       final atLogin = state.matchedLocation == '/login';
-      if (!loggedIn) return atLogin ? null : '/login';
+      final atWelcome = state.matchedLocation == '/welcome';
+      if (!loggedIn) {
+        if (!AppSettings.instance.onboardingDone) return atWelcome ? null : '/welcome';
+        return atLogin ? null : '/login';
+      }
+      if (atWelcome) return '/${AppSettings.instance.startTab}';
       if (atLogin) return '/${AppSettings.instance.startTab}';
       return null;
     },
     routes: [
+      GoRoute(path: '/welcome', builder: (context, state) => const WelcomeScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/sync', builder: (context, state) => const SyncScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),

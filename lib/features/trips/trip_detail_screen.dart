@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../data/database.dart';
 import '../places/place_types.dart';
 import '../reminders/reminder_service.dart';
+import 'trip_export.dart';
 import 'trip_repository.dart';
 import '../../l10n/tr.dart';
 import 'trips_list_screen.dart' show askTrip;
@@ -23,7 +24,7 @@ class TripDetailScreen extends ConsumerWidget {
     return trip.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text('Chyba: $e'))),
+      error: (e, _) => Scaffold(body: Center(child: Text(tr('Chyba: {e}', {'e': e})))),
       data: (t) {
         if (t == null) {
           return Scaffold(body: Center(child: Text(tr('Cesta nenalezena'))));
@@ -62,6 +63,8 @@ class TripDetailScreen extends ConsumerWidget {
               ),
               PopupMenuButton<String>(
                 onSelected: (v) async {
+                  if (v == 'ics') return exportTripIcs(ref.read(databaseProvider), t.id);
+                  if (v == 'pdf') return exportTripPdf(ref.read(databaseProvider), t.id);
                   if (v == 'edit') {
                     final r = await askTrip(
                       context,
@@ -84,6 +87,22 @@ class TripDetailScreen extends ConsumerWidget {
                 itemBuilder: (_) => [
                   PopupMenuItem(
                       value: 'edit', child: Text(tr('Upravit cestu (název, termín)'))),
+                  PopupMenuItem(
+                    value: 'ics',
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.event_available),
+                      title: Text(tr('Do kalendáře (ICS)')),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'pdf',
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.picture_as_pdf_outlined),
+                      title: Text(tr('Plán do PDF')),
+                    ),
+                  ),
                 ],
               ),
             ],

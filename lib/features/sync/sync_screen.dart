@@ -1,11 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
 import '../pro/paywall.dart';
 import '../pro/pro_service.dart';
+import '../vault/vault_crypto.dart';
+import 'backup_crypto.dart';
 import 'sync_service.dart';
 import '../../l10n/tr.dart';
 
@@ -92,6 +95,7 @@ class SyncScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              const _EncryptionCard(),
               const SizedBox(height: 8),
               FilledButton.icon(
                 icon: const Icon(Icons.sync),
@@ -191,6 +195,89 @@ Future<void> _changeEmail(BuildContext context) async {
       builder: (ctx) => AlertDialog(
         content: Text(msg),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+      ),
+    );
+  }
+}
+
+/// Stav a zapnutí šifrované zálohy.
+class _EncryptionCard extends ConsumerStatefulWidget {
+  const _EncryptionCard();
+
+  @override
+  ConsumerState<_EncryptionCard> createState() => _EncryptionCardState();
+}
+
+class _EncryptionCardState extends ConsumerState<_EncryptionCard> {
+  bool _busy = false;
+
+  Future<void> _enable() async {
+    if (!ProService.instance.isPro) return openPaywall(context, ProLimit.backup);
+    final vault = VaultKeys.instance;
+    if (!await vault.hasLocalKey()) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(tr('Nejdřív založ Vault – jeho heslo chrání i zálohu.'))));
+      context.go('/vault');
+      return;
+    }
+    if (!mounted) return;
+    final ok = await confirm(
+        context,
+        tr('Celá záloha se zašifruje. Na novém telefonu ji odemkneš heslem Vaultu – '
+            'bez něj ji nepřečte nikdo, ani my. Pokračovat?'));
+    if (!ok || !await vault.unlockWithDevice() || !mounted) return;
+    setState(() => _busy = true);
+    final err = await ref.read(syncServiceProvider).enableEncryptedBackup();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(err == null
+          ? tr('Hotovo – záloha je zašifrovaná.')
+          : tr('Šifrování se nepovedlo dokončit, zkus to znovu: {err}', {'err': err})),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bc = BackupCrypto.instance;
+    return ListenableBuilder(
+      listenable: bc,
+      builder: (context, _) => FutureBuilder<bool>(
+        future: bc.active,
+        builder: (context, snap) {
+          final active = snap.data ?? false;
+          if (active) {
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.lock, color: Colors.green),
+                title: Text(tr('Záloha je šifrovaná')),
+                subtitle: Text(tr('Klíč chrání heslo Vaultu. Bez něj zálohu nikdo nepřečte.')),
+              ),
+            );
+          }
+          if (bc.lockedRemote) {
+            return Card(
+              color: Colors.orange.withValues(alpha: 0.15),
+              child: ListTile(
+                leading: const Icon(Icons.lock_outline, color: Colors.orange),
+                title: Text(tr('Záloha je šifrovaná – odemkni ji')),
+                subtitle: Text(tr('Otevři Vault a zadej heslo Vaultu, pak se data stáhnou.')),
+                onTap: () => context.go('/vault'),
+              ),
+            );
+          }
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.enhanced_encryption_outlined),
+              title: Text(tr('Šifrovat zálohu (doporučeno)')),
+              subtitle: Text(tr('Data v cloudu uvidíš jen ty. Klíč chrání heslo Vaultu.')),
+              trailing: _busy
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  : FilledButton(onPressed: _enable, child: Text(tr('Zapnout'))),
+            ),
+          );
+        },
       ),
     );
   }

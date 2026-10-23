@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../sync/backup_crypto.dart';
 import '../sync/sync_service.dart';
 import 'sos_screen.dart';
 import 'vault_crypto.dart';
@@ -42,8 +43,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     if (!mounted) return;
     if (_keys.unlocked) {
       setState(() => _stage = _Stage.open);
-      // stáhne položky z jiného telefonu / po obnově a odešle čekající
-      ref.read(syncServiceProvider).syncNow();
+      // nový telefon: odemkne i šifrovanou zálohu; pak stáhne položky z jiného telefonu
+      final sync = ref.read(syncServiceProvider);
+      BackupCrypto.instance.restoreFromVault().then((_) => sync.syncNow());
     } else if (_stage == _Stage.open) {
       setState(() => _stage = _Stage.locked);
     }

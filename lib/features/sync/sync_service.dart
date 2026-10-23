@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database.dart';
 import '../pro/pro_service.dart';
+import 'backup_crypto.dart';
 import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
 import '../../l10n/tr.dart';
@@ -280,6 +281,7 @@ class SyncService {
 
   // ---------- odeslání ----------
   Future<void> _push(String uid) async {
+    final encrypted = await BackupCrypto.instance.active;
     for (final t in _tables) {
       final rows = await t.pending();
       for (var i = 0; i < rows.length; i += 100) {
@@ -302,7 +304,9 @@ class SyncService {
             }
             if (path != null) out['receiptPath'] = 'sync:receipt';
           }
-          batch.set(_col(uid, t.name).doc(id), out);
+          // šifrovaná záloha: do cloudu jen {id, updatedAt, deletedAt, enc}
+          batch.set(_col(uid, t.name).doc(id),
+              encrypted ? await BackupCrypto.instance.encryptRow(out) : out);
         }
         await batch.commit().timeout(const Duration(seconds: 20));
         for (final r in chunk) {
@@ -326,7 +330,15 @@ class SyncService {
 
       var okUpTo = last;
       for (final d in snap.docs) {
-        final j = Map<String, dynamic>.from(d.data());
+        var j = Map<String, dynamic>.from(d.data());
+        if (j.containsKey('enc')) {
+          if (!await BackupCrypto.instance.active) {
+            // nový telefon: záloha je šifrovaná, klíč odemkne Vault (heslo Vaultu)
+            BackupCrypto.instance.lockedRemote = true;
+            break;
+          }
+          j = await BackupCrypto.instance.decryptRow(j);
+        }
         final id = j['id'] as String;
         final remoteMs = (j['updatedAt'] as num).toInt();
         j['updatedAt'] = remoteMs;
@@ -395,8 +407,10 @@ class SyncService {
     if (!await File(path).exists()) return;
     final bytes = await _compress(path);
     if (bytes == null) return; // nejde zmenšit, doklad se zazálohuje bez obrázku
+    final enc = await BackupCrypto.instance.active;
     await _col(uid, 'files').doc(id).set({
-      'b64': base64Encode(bytes),
+      'b64': base64Encode(enc ? await BackupCrypto.instance.encryptBytes(bytes) : bytes),
+      if (enc) 'enc': true,
       'updatedAt': DateTime.now().millisecondsSinceEpoch,
     }).timeout(const Duration(seconds: 30));
     _uploaded.add(key);
@@ -411,11 +425,15 @@ class SyncService {
           .timeout(const Duration(seconds: 30));
       final b64 = snap.data()?['b64'] as String?;
       if (b64 == null) return null;
+      var bytes = base64Decode(b64);
+      if (snap.data()?['enc'] == true) {
+        bytes = Uint8List.fromList(await BackupCrypto.instance.decryptBytes(bytes));
+      }
       final base = await getApplicationDocumentsDirectory();
       final dir = Directory(p.join(base.path, 'documents'));
       if (!await dir.exists()) await dir.create(recursive: true);
       final path = p.join(dir.path, '$id.jpg');
-      await File(path).writeAsBytes(base64Decode(b64));
+      await File(path).writeAsBytes(bytes);
       return path;
     } catch (_) {
       return null;
@@ -520,6 +538,7 @@ extension WipeAll on SyncService {
               .delete(recursive: true);
         } catch (_) {}
         await VaultKeys.instance.forget();
+        await BackupCrypto.instance.forget();
       }
       for (final k in prefs
           .getKeys()
@@ -532,6 +551,28 @@ extension WipeAll on SyncService {
     } finally {
       _running = false;
     }
+  }
+}
+
+extension EncryptBackup on SyncService {
+  /// Zapne šifrovanou zálohu a všechno v ní přepíše zašifrovaně (řádky i obrázky).
+  /// Vrací kód chyby (`vault-locked`, `not-signed-in`…) nebo null.
+  Future<String?> enableEncryptedBackup() async {
+    final err = await BackupCrypto.instance.enable();
+    if (err != null) return err;
+    // všechno znovu označit k odeslání → přepíše se zašifrovanou verzí
+    await db.transaction(() async {
+      for (final t in <TableInfo<Table, dynamic>>[
+        db.trips, db.places, db.documents, db.expenses, db.calendarEvents, db.tickets,
+      ]) {
+        await db.customUpdate("UPDATE ${t.actualTableName} SET sync_state = 'pending'",
+            updates: {t});
+      }
+    });
+    _uploaded.clear();
+    await (await _p).remove('sync_uploaded');
+    await syncNow();
+    return status.value.error;
   }
 }
 

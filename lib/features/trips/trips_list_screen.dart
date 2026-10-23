@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/dialogs.dart';
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../onboarding/demo_trip.dart';
 import '../pro/paywall.dart';
 import 'trip_repository.dart';
 import '../../l10n/tr.dart';
@@ -134,15 +135,29 @@ class TripsListScreen extends ConsumerWidget {
       ),
       body: trips.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Chyba: $e')),
+        error: (e, _) => Center(child: Text(tr('Chyba: {e}', {'e': e}))),
         data: (list) {
           if (list.isEmpty) {
             return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  tr('Zatím tu nemáš žádnou cestu.\nKlepni na „Nová cesta“.'),
-                  textAlign: TextAlign.center,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      tr('Zatím tu nemáš žádnou cestu.\nKlepni na „Nová cesta“.'),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.auto_awesome),
+                      label: Text(tr('Vyzkoušet ukázkovou cestu')),
+                      onPressed: () async {
+                        final id = await createDemoTrip(ref.read(databaseProvider));
+                        if (context.mounted) context.go('/trips/trip/$id');
+                      },
+                    ),
+                  ],
                 ),
               ),
             );

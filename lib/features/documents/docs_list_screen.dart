@@ -85,7 +85,7 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
       ),
       body: docs.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Chyba: $e')),
+        error: (e, _) => Center(child: Text(tr('Chyba: {e}', {'e': e}))),
         data: (list) {
           if (list.isEmpty) {
             return Center(

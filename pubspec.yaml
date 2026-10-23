@@ -71,6 +71,7 @@ dependencies:
     sdk: flutter
   share_plus: ^13.3.1
   package_info_plus: ^10.2.2
+  pdf: ^3.13.1
 
 dev_dependencies:
   flutter_test:
@@ -97,6 +98,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/lr-tech-logo.png
+    - assets/fonts/NotoSans-Regular.ttf
+    - assets/fonts/NotoSans-Bold.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

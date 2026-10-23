@@ -25,7 +25,7 @@ Slogan, který z toho plyne: *„Celá cesta v jedné kapse – i bez signálu, 
 
 ## 3. Doporučení (seřazeno: dopad ÷ práce, vše bez placených služeb)
 
-### A. Než půjdeme do Google Play (rychlé, velký efekt)
+### A. Než půjdeme do Google Play (rychlé, velký efekt) – ✔ hotovo 23. 10. (A1–A5)
 1. **Tísňová čísla podle země v SOS** – statická tabulka (112, 911, 191 Thajsko, 113/114/115 Vietnam…), jedním klepnutím volat. Malá práce, velká důvěra.
 2. **Úvodní průvodce + ukázková cesta** – 3 obrazovky „co aplikace umí“ a demo cesta, ať nový uživatel hned vidí plán, doklad a výdaje. Zásadní pro hodnocení v obchodě.
 3. **Šifrovat i hlavní zálohu** (stejně jako Vault) – sedí to na náš slib soukromí; teď ho v zásadách musíme přiznat jako „zatím ne“.

@@ -25,6 +25,7 @@ class ProService extends ChangeNotifier {
   static const freeActiveTrips = 1;
   static const freeDocuments = 10;
   static const freeExpenses = 30;
+  static const freeOfflineRegions = 1;
 
   /// SHA-256 e-mailů majitele (Pro napořád, bez nákupu). E-mail sám v aplikaci není.
   static const _ownerHashes = {

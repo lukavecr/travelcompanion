@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
+import 'features/documents/email_parser.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/app_settings.dart';
@@ -19,6 +20,8 @@ import 'features/auth/auth_providers.dart';
 import 'features/reminders/reminder_service.dart';
 import 'features/sync/sync_service.dart';
 import 'features/trips/trip_repository.dart';
+import 'features/tracks/tracker_service.dart';
+import 'features/widget/home_widget_service.dart';
 import 'l10n/tr.dart';
 
 class TravelApp extends ConsumerStatefulWidget {
@@ -31,6 +34,7 @@ class TravelApp extends ConsumerStatefulWidget {
 class _TravelAppState extends ConsumerState<TravelApp>
     with WidgetsBindingObserver {
   StreamSubscription<SharedMedia>? _sub;
+  late final HomeWidgetService _widget = HomeWidgetService(ref.read(databaseProvider));
 
   @override
   void initState() {
@@ -40,6 +44,8 @@ class _TravelAppState extends ConsumerState<TravelApp>
     // záloha: po přihlášení a při každém návratu do aplikace (jen Pro)
     ref.read(syncServiceProvider).start();
     ProService.instance.init();
+    _widget.start(); // widget na plochu: plán na 3 dny + dnešní útrata
+    TrackerService.instance.init(ref.read(databaseProvider));
     AppSettings.instance.addListener(_onSettings);
     var wasPro = false;
     ProService.instance.addListener(() {
@@ -98,13 +104,16 @@ class _TravelAppState extends ConsumerState<TravelApp>
     }
     await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    ref.read(routerProvider).push('/share', extra: text);
+    // text e-mailu s rezervací → doklad, jinak místo z Google Map
+    final route = looksLikeBooking(text) ? '/docs/import' : '/share';
+    ref.read(routerProvider).push(route, extra: text);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(syncServiceProvider).syncNow();
+      _widget.update();
     }
   }
 
@@ -112,6 +121,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   void _onSettings() {
     if (!mounted) return;
     ReminderService.reschedule(); // texty upozornění v novém jazyce / nový čas
+    _widget.update();
     setState(() {});
     void mark(Element e) {
       e.markNeedsBuild();
@@ -125,6 +135,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
     AppSettings.instance.removeListener(_onSettings);
     WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
+    _widget.dispose();
     super.dispose();
   }
 

@@ -25,6 +25,8 @@ class Trips extends Table with SyncColumns {
   RealColumn get budget => real().nullable()();
   TextColumn get mainCurrency => text().withDefault(const Constant('CZK'))();
   TextColumn get countries => text().withDefault(const Constant('[]'))(); // JSON
+  // společná cesta: null = jen moje, 'owner' = sdílím ji já, 'member' = jsem pozvaný
+  TextColumn get shareRole => text().nullable()();
 }
 
 class Places extends Table with SyncColumns {
@@ -64,6 +66,9 @@ class Expenses extends Table with SyncColumns {
   TextColumn get source => text().withDefault(const Constant('manual'))();
   TextColumn get note => text().nullable()();
   TextColumn get receiptPath => text().nullable()();
+  // společná cesta: kdo platil (uid) a za koho (JSON seznam uid; null = všichni)
+  TextColumn get paidBy => text().nullable()();
+  TextColumn get splitWith => text().nullable()();
 }
 
 class CalendarEvents extends Table with SyncColumns {
@@ -113,6 +118,16 @@ class Photos extends Table with SyncColumns {
   TextColumn get note => text().nullable()();
 }
 
+/// Zaznamenaná trasa (tracker): body jako JSON [[lat, lng, sekundy od začátku], …].
+class Tracks extends Table with SyncColumns {
+  TextColumn get tripId => text().nullable().references(Trips, #id)();
+  TextColumn get name => text()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime().nullable()();
+  RealColumn get distanceM => real().withDefault(const Constant(0))();
+  TextColumn get points => text().withDefault(const Constant('[]'))();
+}
+
 /// Šifrovaný blob; klíč nikdy neopouští zařízení (Android Keystore / iOS Keychain).
 class VaultItems extends Table with SyncColumns {
   TextColumn get type => text()();
@@ -129,6 +144,7 @@ class VaultItems extends Table with SyncColumns {
   Tickets,
   Photos,
   VaultItems,
+  Tracks,
 ])
 class AppDatabase extends _$AppDatabase {
   /// [key] = klíč šifrování z Android Keystore (viz `core/db_crypto.dart`).
@@ -140,7 +156,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -164,6 +180,12 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(tickets, tickets.gate);
             await m.addColumn(documents, documents.country);
             await m.addColumn(places, places.country);
+          }
+          if (from < 6) {
+            await m.createTable(tracks);
+            await m.addColumn(trips, trips.shareRole);
+            await m.addColumn(expenses, expenses.paidBy);
+            await m.addColumn(expenses, expenses.splitWith);
           }
         },
         beforeOpen: (details) async {

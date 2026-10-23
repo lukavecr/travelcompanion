@@ -4,11 +4,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../offline_maps/offline_tiles.dart';
 import '../onboarding/demo_trip.dart';
 import 'pro_service.dart';
 import '../../l10n/tr.dart';
 
-enum ProLimit { trip, document, expense, backup }
+enum ProLimit { trip, document, expense, backup, offlineMap, shareTrip }
 
 /// Smí uživatel přidat další položku? Když ne, ukáže nabídku Pro.
 /// Vrací true, když může pokračovat (je Pro, nebo je pod limitem, nebo si Pro právě koupil).
@@ -28,6 +29,8 @@ Future<(int, int)> usageOf(AppDatabase db, ProLimit kind) async => switch (kind)
       ProLimit.document => (await _count(db, db.documents), ProService.freeDocuments),
       ProLimit.expense => (await _count(db, db.expenses), ProService.freeExpenses),
       ProLimit.backup => (1, 0),
+      ProLimit.offlineMap => (OfflineMaps.instance.regions.length, ProService.freeOfflineRegions),
+      ProLimit.shareTrip => (1, 0),
     };
 
 Future<int> _count(AppDatabase db, TableInfo<Table, dynamic> t) async {
@@ -64,6 +67,8 @@ class PaywallScreen extends StatelessWidget {
         ProLimit.document => tr('Ve verzi zdarma můžeš mít {freeDocuments} dokladů.', {'freeDocuments': ProService.freeDocuments}),
         ProLimit.expense => tr('Ve verzi zdarma můžeš mít {freeExpenses} výdajů.', {'freeExpenses': ProService.freeExpenses}),
         ProLimit.backup => tr('Záloha do cloudu a synchronizace mezi telefony jsou součástí Pro.'),
+        ProLimit.offlineMap => tr('Ve verzi zdarma můžeš mít 1 offline oblast mapy.'),
+        ProLimit.shareTrip => tr('Sdílet cestu a zvát ostatní můžeš s Pro. Pozvaní můžou mít verzi zdarma.'),
         null => null,
       };
 
@@ -105,6 +110,8 @@ class PaywallScreen extends StatelessWidget {
               _Benefit(Icons.cloud_done_outlined,
                   tr('Šifrovaná záloha do cloudu a synchronizace mezi telefony (i Vault)')),
               _Benefit(Icons.phonelink_setup, tr('Nový telefon? Po přihlášení se vše samo stáhne')),
+              _Benefit(Icons.download_for_offline_outlined, tr('Offline mapy bez omezení')),
+              _Benefit(Icons.group_outlined, tr('Společné cesty: pozvi ostatní a dělte se o útraty')),
               Padding(
                 padding: EdgeInsets.fromLTRB(4, 12, 4, 0),
                 child: Text(tr('Zdarma zůstává: plán cest, mapa, Vault, SOS – bez reklam.')),

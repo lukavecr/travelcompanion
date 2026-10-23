@@ -1,3 +1,4 @@
+import 'package:home_widget/home_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -296,6 +297,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             {false: tr('V jazyce aplikace (Tokyo, Hanoi…)'), true: tr('Místní (東京, Hà Nội…)')},
             st.mapLocalNames);
         if (v != null) await st.setMapLocalNames(v);
+      }),
+      _tile(Icons.widgets_outlined, tr('Widget na plochu'), tr('Plán na 3 dny a dnešní útrata'), () async {
+        final ok = await HomeWidget.isRequestPinWidgetSupported() ?? false;
+        if (ok) {
+          await HomeWidget.requestPinWidget(androidName: 'PlanWidgetProvider');
+        } else {
+          _snack(tr('Podrž prst na ploše → Widgety → Travel Companion.'));
+        }
       }),
     ];
   }

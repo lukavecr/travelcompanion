@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../pro/paywall.dart';
 import 'doc_types.dart';
 import 'document_repository.dart';
+import 'email_import_screen.dart';
 import 'scan_service.dart';
 import '../../l10n/tr.dart';
 
@@ -32,7 +33,7 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
   Future<void> _add() async {
     if (!await ensureCanAdd(context, ref.read(databaseProvider), ProLimit.document)) return;
     if (!mounted) return;
-    final source = await showModalBottomSheet<ImageSource>(
+    final source = await showModalBottomSheet<Object>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
@@ -48,13 +49,23 @@ class _DocsListScreenState extends ConsumerState<DocsListScreen> {
               title: Text(tr('Vybrat fotku nebo screenshot')),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
+            ListTile(
+              leading: const Icon(Icons.mail_outline),
+              title: Text(tr('Vložit text e-mailu s rezervací')),
+              onTap: () => Navigator.pop(ctx, 'email'),
+            ),
           ],
         ),
       ),
     );
-    if (source == null) return;
+    if (source == null || !mounted) return;
+    if (source == 'email') {
+      final text = await askEmailText(context);
+      if (text != null && mounted) context.push('/docs/import', extra: text);
+      return;
+    }
 
-    final picked = await ImagePicker().pickImage(source: source);
+    final picked = await ImagePicker().pickImage(source: source as ImageSource);
     if (picked == null || !mounted) return;
 
     setState(() => _busy = true);

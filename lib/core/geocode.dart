@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import 'app_settings.dart';
 import 'country_info.dart';
 
 // Nominatim chce v User-Agent kontakt na autora aplikace.
@@ -60,6 +62,33 @@ Future<List<GeoResult>> searchPlaces(String query) async {
         },
       ),
   ];
+}
+
+/// Název obce/oblasti podle souřadnic (pro pojmenování offline mapy).
+Future<String?> reverseName(double lat, double lng, {int zoom = 10}) async {
+  try {
+    await _throttle();
+    final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
+      'format': 'jsonv2',
+      'lat': '$lat',
+      'lon': '$lng',
+      'zoom': '$zoom',
+      'accept-language': AppSettings.instance.effectiveLanguage,
+    });
+    final res = await http.get(uri, headers: _headers).timeout(const Duration(seconds: 8));
+    if (res.statusCode != 200) {
+      debugPrint('reverseName: HTTP ${res.statusCode}');
+      return null;
+    }
+    final a = (jsonDecode(res.body) as Map<String, dynamic>)['address'] as Map<String, dynamic>?;
+    if (a == null) return null;
+    final place = a['city'] ?? a['town'] ?? a['village'] ?? a['county'] ?? a['state'];
+    final country = a['country'];
+    return [place, country].whereType<String>().join(', ');
+  } catch (e) {
+    debugPrint('reverseName: $e');
+    return null;
+  }
 }
 
 /// Země podle souřadnic (OpenStreetMap Nominatim, zdarma, bez klíče).

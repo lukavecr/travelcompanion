@@ -12,6 +12,7 @@ import '../money/receipt_reader.dart' show guessCurrency;
 import '../trips/trip_repository.dart';
 import 'bcbp.dart';
 import 'doc_types.dart';
+import 'email_parser.dart';
 import 'document_repository.dart';
 import 'guess.dart';
 import 'scan_service.dart';
@@ -19,9 +20,10 @@ import '../../l10n/tr.dart';
 
 /// Nový doklad (z naskenovaného obrázku) i úprava existujícího dokladu.
 class NewDocumentScreen extends ConsumerStatefulWidget {
-  const NewDocumentScreen({super.key, this.scan, this.existing});
+  const NewDocumentScreen({super.key, this.scan, this.existing, this.popOnSave = false});
   final ScanResult? scan;
   final DocView? existing;
+  final bool popOnSave; // import z e-mailu s více doklady: po uložení zpět na seznam
 
   @override
   ConsumerState<NewDocumentScreen> createState() => _NewDocumentScreenState();
@@ -45,12 +47,14 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   String? _tripId;
   int _codeIdx = 0;
   DateTime? _date;
+  DateTime? _endDate; // ubytování: do kdy
   int? _minutes;
   bool _addToPlan = false;
   bool _defaultsDone = false;
   bool _saving = false;
 
   bool get _editing => widget.existing != null;
+  bool get _fromText => _scan.path == emailDocPath;
 
   @override
   void initState() {
@@ -109,8 +113,13 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
       _to.text = found.to;
       _carrier.text = found.carrier;
     } else {
-      _type = _guessType(_scan.text);
+      _type = f['type'] ?? _guessType(_scan.text);
       _title.text = f['title'] ?? '';
+      _number.text = f['flight'] ?? '';
+      _carrier.text = f['carrier'] ?? '';
+      _from.text = f['from'] ?? '';
+      _to.text = f['to'] ?? '';
+      _endDate = f['endDate'] != null ? DateTime.tryParse(f['endDate']!) : null;
     }
     _ref.text = found?.pnr ?? f['ref'] ?? guessBookingRef(_scan.text) ?? '';
     _passenger.text = found?.name ?? f['name'] ?? '';
@@ -219,7 +228,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
         departAt: departAt,
       );
     } else {
-      final stored = await storeImage(_scan.path);
+      final stored = _fromText ? emailDocPath : await storeImage(_scan.path);
       final code = _scan.codes.isEmpty ? null : _scan.codes[_codeIdx];
       docId = await repo.saveScanned(
         tripId: _tripId!,
@@ -247,11 +256,16 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
               title: title,
               startMinutes: _minutes,
               documentId: docId,
+              endDate: _type == 'hotel' ? _endDate : null,
             );
       }
     }
     if (!mounted) return;
-    context.go('/docs/doc/$docId');
+    if (widget.popOnSave) {
+      context.pop(docId);
+    } else {
+      context.go('/docs/doc/$docId');
+    }
   }
 
   @override
@@ -279,6 +293,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (!_fromText)
                 GestureDetector(
                   onTap: () => openFullImage(context, tr('Doklad'), scan.path),
                   child: ClipRRect(
@@ -297,7 +312,9 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 const SizedBox(height: 12),
                 if (!_editing)
                   Text(
-                    _bcbp != null
+                    _fromText
+                        ? tr('Údaje z e-mailu jsou předvyplněné, zkontroluj je.')
+                        : _bcbp != null
                         ? tr('Rozpoznán palubní lístek – údaje jsou předvyplněné.')
                         : scan.fields.isNotEmpty || scan.codes.isNotEmpty
                             ? tr('Něco se rozpoznalo, údaje zkontroluj.')
@@ -467,6 +484,24 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                     ),
                   ],
                 ),
+                if (_type == 'hotel' && !_editing) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.logout),
+                    label: Text(_endDate == null
+                        ? tr('Odjezd (do kdy)')
+                        : tr('Odjezd: {d}', {'d': fmtDate(_endDate!)})),
+                    onPressed: () async {
+                      final d = await showDatePicker(
+                        context: context,
+                        initialDate: _endDate ?? _date ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2040),
+                      );
+                      if (d != null) setState(() => _endDate = d);
+                    },
+                  ),
+                ],
                 if (_date != null && !_editing)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,

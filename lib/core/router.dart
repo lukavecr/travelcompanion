@@ -5,6 +5,8 @@ import 'app_settings.dart';
 import '../features/auth/auth_providers.dart';
 import '../features/auth/login_screen.dart';
 import '../features/documents/docs_list_screen.dart';
+import '../features/documents/email_import_screen.dart';
+import '../features/tracks/tracks_screen.dart';
 import '../features/documents/document_detail_screen.dart';
 import '../features/documents/new_document_screen.dart';
 import '../features/documents/document_repository.dart' show DocView;
@@ -75,7 +77,23 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
+            GoRoute(
+              path: '/map',
+              builder: (context, state) => const MapScreen(),
+              routes: [
+                GoRoute(
+                  path: 'tracks',
+                  builder: (context, state) => const TracksScreen(),
+                  routes: [
+                    GoRoute(
+                      path: ':id',
+                      builder: (context, state) =>
+                          TrackDetailScreen(trackId: state.pathParameters['id']!),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
@@ -86,6 +104,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   path: 'new',
                   builder: (context, state) =>
                       NewDocumentScreen(scan: state.extra as ScanResult),
+                ),
+                GoRoute(
+                  path: 'import',
+                  builder: (context, state) =>
+                      EmailImportScreen(text: (state.extra as String?) ?? ''),
                 ),
                 GoRoute(
                   path: 'edit',

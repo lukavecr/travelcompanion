@@ -16,6 +16,8 @@ import '../../data/database.dart';
 import '../places/locate_place_screen.dart';
 import '../places/open_in_maps.dart';
 import '../places/place_types.dart';
+import '../offline_maps/offline_maps_screen.dart';
+import '../tracks/tracker_service.dart';
 import '../trips/trip_repository.dart';
 import '../../l10n/tr.dart';
 
@@ -54,7 +56,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   StreamSubscription<Position>? _meSub;
 
   @override
+  void initState() {
+    super.initState();
+    TrackerService.instance.addListener(_trackChanged); // živá stopa záznamu
+  }
+
+  void _trackChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    TrackerService.instance.removeListener(_trackChanged);
     _meSub?.cancel();
     super.dispose();
   }
@@ -303,6 +316,22 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         title: Text(tr('Mapa')),
         actions: [
           IconButton(
+            tooltip: tr('Trasy'),
+            icon: Icon(TrackerService.instance.recording ? Icons.fiber_manual_record : Icons.route,
+                color: TrackerService.instance.recording ? Colors.redAccent : null),
+            onPressed: () => context.push('/map/tracks'),
+          ),
+          IconButton(
+            tooltip: tr('Offline mapy'),
+            icon: const Icon(Icons.download_for_offline_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => OfflineMapsScreen(
+                center: _ready ? _map.camera.center : null,
+                zoom: _ready ? _map.camera.zoom.clamp(8, 14) : null,
+              ),
+            )),
+          ),
+          IconButton(
             tooltip: tr('Vložit odkaz z Google Map'),
             icon: const Icon(Icons.content_paste_go),
             onPressed: _pasteLink,
@@ -378,6 +407,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
               children: [
                 const MapTiles(),
+                if (TrackerService.instance.points.length > 1)
+                  PolylineLayer(polylines: [
+                    Polyline(
+                      points: [for (final x in TrackerService.instance.points) LatLng(x.$1, x.$2)],
+                      strokeWidth: 5,
+                      color: const Color(0xFFE5484D),
+                    ),
+                  ]),
                 if (_me != null && (_meAccuracy ?? 0) > 20)
                   CircleLayer(circles: [
                     CircleMarker(

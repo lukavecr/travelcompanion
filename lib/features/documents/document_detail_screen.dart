@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/dialogs.dart';
 import 'bcbp.dart';
 import 'doc_types.dart';
+import 'email_parser.dart';
 import 'docs_list_screen.dart';
 import 'document_repository.dart';
 import '../../l10n/tr.dart';
@@ -200,6 +201,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
     final bcbp = hasCode ? parseBcbp(code) : null;
     final title = view.doc.title ?? docTypes[view.doc.type] ?? tr('Doklad');
     final showOriginal = _showOriginal ?? !canRender;
+    final fromText = view.doc.localPath == emailDocPath;
 
     String? pick(String? saved, String? fromCode) =>
         (saved != null && saved.isNotEmpty) ? saved : fromCode;
@@ -272,6 +274,20 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
               ),
             ),
           const SizedBox(height: 12),
+          if (fromText && showOriginal)
+            Card(
+              child: ExpansionTile(
+                leading: const Icon(Icons.mail_outline),
+                title: Text(tr('Z e-mailu')),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SelectableText(view.doc.rawText ?? ''),
+                  ),
+                ],
+              ),
+            )
+          else
           GestureDetector(
             onTap: openFull,
             child: showOriginal
@@ -300,7 +316,8 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                   ),
           ),
           const SizedBox(height: 6),
-          Center(child: Text(tr('Klepnutím zvětšíš na celou obrazovku'))),
+          if (!(fromText && showOriginal))
+            Center(child: Text(tr('Klepnutím zvětšíš na celou obrazovku'))),
           const SizedBox(height: 16),
           _row(tr('Typ'), docTypes[view.doc.type]),
           _row(tr('Cesta'), view.trip.name),

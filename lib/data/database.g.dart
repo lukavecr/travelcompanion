@@ -125,6 +125,17 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
+  static const VerificationMeta _shareRoleMeta = const VerificationMeta(
+    'shareRole',
+  );
+  @override
+  late final GeneratedColumn<String> shareRole = GeneratedColumn<String>(
+    'share_role',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -138,6 +149,7 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     budget,
     mainCurrency,
     countries,
+    shareRole,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -221,6 +233,12 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         countries.isAcceptableOrUnknown(data['countries']!, _countriesMeta),
       );
     }
+    if (data.containsKey('share_role')) {
+      context.handle(
+        _shareRoleMeta,
+        shareRole.isAcceptableOrUnknown(data['share_role']!, _shareRoleMeta),
+      );
+    }
     return context;
   }
 
@@ -274,6 +292,10 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         DriftSqlType.string,
         data['${effectivePrefix}countries'],
       )!,
+      shareRole: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}share_role'],
+      ),
     );
   }
 
@@ -295,6 +317,7 @@ class Trip extends DataClass implements Insertable<Trip> {
   final double? budget;
   final String mainCurrency;
   final String countries;
+  final String? shareRole;
   const Trip({
     required this.id,
     required this.updatedAt,
@@ -307,6 +330,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     this.budget,
     required this.mainCurrency,
     required this.countries,
+    this.shareRole,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -332,6 +356,9 @@ class Trip extends DataClass implements Insertable<Trip> {
     }
     map['main_currency'] = Variable<String>(mainCurrency);
     map['countries'] = Variable<String>(countries);
+    if (!nullToAbsent || shareRole != null) {
+      map['share_role'] = Variable<String>(shareRole);
+    }
     return map;
   }
 
@@ -358,6 +385,9 @@ class Trip extends DataClass implements Insertable<Trip> {
           : Value(budget),
       mainCurrency: Value(mainCurrency),
       countries: Value(countries),
+      shareRole: shareRole == null && nullToAbsent
+          ? const Value.absent()
+          : Value(shareRole),
     );
   }
 
@@ -378,6 +408,7 @@ class Trip extends DataClass implements Insertable<Trip> {
       budget: serializer.fromJson<double?>(json['budget']),
       mainCurrency: serializer.fromJson<String>(json['mainCurrency']),
       countries: serializer.fromJson<String>(json['countries']),
+      shareRole: serializer.fromJson<String?>(json['shareRole']),
     );
   }
   @override
@@ -395,6 +426,7 @@ class Trip extends DataClass implements Insertable<Trip> {
       'budget': serializer.toJson<double?>(budget),
       'mainCurrency': serializer.toJson<String>(mainCurrency),
       'countries': serializer.toJson<String>(countries),
+      'shareRole': serializer.toJson<String?>(shareRole),
     };
   }
 
@@ -410,6 +442,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     Value<double?> budget = const Value.absent(),
     String? mainCurrency,
     String? countries,
+    Value<String?> shareRole = const Value.absent(),
   }) => Trip(
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -422,6 +455,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     budget: budget.present ? budget.value : this.budget,
     mainCurrency: mainCurrency ?? this.mainCurrency,
     countries: countries ?? this.countries,
+    shareRole: shareRole.present ? shareRole.value : this.shareRole,
   );
   Trip copyWithCompanion(TripsCompanion data) {
     return Trip(
@@ -438,6 +472,7 @@ class Trip extends DataClass implements Insertable<Trip> {
           ? data.mainCurrency.value
           : this.mainCurrency,
       countries: data.countries.present ? data.countries.value : this.countries,
+      shareRole: data.shareRole.present ? data.shareRole.value : this.shareRole,
     );
   }
 
@@ -454,7 +489,8 @@ class Trip extends DataClass implements Insertable<Trip> {
           ..write('notes: $notes, ')
           ..write('budget: $budget, ')
           ..write('mainCurrency: $mainCurrency, ')
-          ..write('countries: $countries')
+          ..write('countries: $countries, ')
+          ..write('shareRole: $shareRole')
           ..write(')'))
         .toString();
   }
@@ -472,6 +508,7 @@ class Trip extends DataClass implements Insertable<Trip> {
     budget,
     mainCurrency,
     countries,
+    shareRole,
   );
   @override
   bool operator ==(Object other) =>
@@ -487,7 +524,8 @@ class Trip extends DataClass implements Insertable<Trip> {
           other.notes == this.notes &&
           other.budget == this.budget &&
           other.mainCurrency == this.mainCurrency &&
-          other.countries == this.countries);
+          other.countries == this.countries &&
+          other.shareRole == this.shareRole);
 }
 
 class TripsCompanion extends UpdateCompanion<Trip> {
@@ -502,6 +540,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
   final Value<double?> budget;
   final Value<String> mainCurrency;
   final Value<String> countries;
+  final Value<String?> shareRole;
   final Value<int> rowid;
   const TripsCompanion({
     this.id = const Value.absent(),
@@ -515,6 +554,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.budget = const Value.absent(),
     this.mainCurrency = const Value.absent(),
     this.countries = const Value.absent(),
+    this.shareRole = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TripsCompanion.insert({
@@ -529,6 +569,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.budget = const Value.absent(),
     this.mainCurrency = const Value.absent(),
     this.countries = const Value.absent(),
+    this.shareRole = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name);
@@ -544,6 +585,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Expression<double>? budget,
     Expression<String>? mainCurrency,
     Expression<String>? countries,
+    Expression<String>? shareRole,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -558,6 +600,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       if (budget != null) 'budget': budget,
       if (mainCurrency != null) 'main_currency': mainCurrency,
       if (countries != null) 'countries': countries,
+      if (shareRole != null) 'share_role': shareRole,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -574,6 +617,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Value<double?>? budget,
     Value<String>? mainCurrency,
     Value<String>? countries,
+    Value<String?>? shareRole,
     Value<int>? rowid,
   }) {
     return TripsCompanion(
@@ -588,6 +632,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       budget: budget ?? this.budget,
       mainCurrency: mainCurrency ?? this.mainCurrency,
       countries: countries ?? this.countries,
+      shareRole: shareRole ?? this.shareRole,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -628,6 +673,9 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     if (countries.present) {
       map['countries'] = Variable<String>(countries.value);
     }
+    if (shareRole.present) {
+      map['share_role'] = Variable<String>(shareRole.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -648,6 +696,7 @@ class TripsCompanion extends UpdateCompanion<Trip> {
           ..write('budget: $budget, ')
           ..write('mainCurrency: $mainCurrency, ')
           ..write('countries: $countries, ')
+          ..write('shareRole: $shareRole, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2278,6 +2327,26 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _paidByMeta = const VerificationMeta('paidBy');
+  @override
+  late final GeneratedColumn<String> paidBy = GeneratedColumn<String>(
+    'paid_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _splitWithMeta = const VerificationMeta(
+    'splitWith',
+  );
+  @override
+  late final GeneratedColumn<String> splitWith = GeneratedColumn<String>(
+    'split_with',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2296,6 +2365,8 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     source,
     note,
     receiptPath,
+    paidBy,
+    splitWith,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2418,6 +2489,18 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         ),
       );
     }
+    if (data.containsKey('paid_by')) {
+      context.handle(
+        _paidByMeta,
+        paidBy.isAcceptableOrUnknown(data['paid_by']!, _paidByMeta),
+      );
+    }
+    if (data.containsKey('split_with')) {
+      context.handle(
+        _splitWithMeta,
+        splitWith.isAcceptableOrUnknown(data['split_with']!, _splitWithMeta),
+      );
+    }
     return context;
   }
 
@@ -2491,6 +2574,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.string,
         data['${effectivePrefix}receipt_path'],
       ),
+      paidBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}paid_by'],
+      ),
+      splitWith: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}split_with'],
+      ),
     );
   }
 
@@ -2517,6 +2608,8 @@ class Expense extends DataClass implements Insertable<Expense> {
   final String source;
   final String? note;
   final String? receiptPath;
+  final String? paidBy;
+  final String? splitWith;
   const Expense({
     required this.id,
     required this.updatedAt,
@@ -2534,6 +2627,8 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.source,
     this.note,
     this.receiptPath,
+    this.paidBy,
+    this.splitWith,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2568,6 +2663,12 @@ class Expense extends DataClass implements Insertable<Expense> {
     if (!nullToAbsent || receiptPath != null) {
       map['receipt_path'] = Variable<String>(receiptPath);
     }
+    if (!nullToAbsent || paidBy != null) {
+      map['paid_by'] = Variable<String>(paidBy);
+    }
+    if (!nullToAbsent || splitWith != null) {
+      map['split_with'] = Variable<String>(splitWith);
+    }
     return map;
   }
 
@@ -2601,6 +2702,12 @@ class Expense extends DataClass implements Insertable<Expense> {
       receiptPath: receiptPath == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptPath),
+      paidBy: paidBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidBy),
+      splitWith: splitWith == null && nullToAbsent
+          ? const Value.absent()
+          : Value(splitWith),
     );
   }
 
@@ -2628,6 +2735,8 @@ class Expense extends DataClass implements Insertable<Expense> {
       source: serializer.fromJson<String>(json['source']),
       note: serializer.fromJson<String?>(json['note']),
       receiptPath: serializer.fromJson<String?>(json['receiptPath']),
+      paidBy: serializer.fromJson<String?>(json['paidBy']),
+      splitWith: serializer.fromJson<String?>(json['splitWith']),
     );
   }
   @override
@@ -2650,6 +2759,8 @@ class Expense extends DataClass implements Insertable<Expense> {
       'source': serializer.toJson<String>(source),
       'note': serializer.toJson<String?>(note),
       'receiptPath': serializer.toJson<String?>(receiptPath),
+      'paidBy': serializer.toJson<String?>(paidBy),
+      'splitWith': serializer.toJson<String?>(splitWith),
     };
   }
 
@@ -2670,6 +2781,8 @@ class Expense extends DataClass implements Insertable<Expense> {
     String? source,
     Value<String?> note = const Value.absent(),
     Value<String?> receiptPath = const Value.absent(),
+    Value<String?> paidBy = const Value.absent(),
+    Value<String?> splitWith = const Value.absent(),
   }) => Expense(
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -2689,6 +2802,8 @@ class Expense extends DataClass implements Insertable<Expense> {
     source: source ?? this.source,
     note: note.present ? note.value : this.note,
     receiptPath: receiptPath.present ? receiptPath.value : this.receiptPath,
+    paidBy: paidBy.present ? paidBy.value : this.paidBy,
+    splitWith: splitWith.present ? splitWith.value : this.splitWith,
   );
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
@@ -2714,6 +2829,8 @@ class Expense extends DataClass implements Insertable<Expense> {
       receiptPath: data.receiptPath.present
           ? data.receiptPath.value
           : this.receiptPath,
+      paidBy: data.paidBy.present ? data.paidBy.value : this.paidBy,
+      splitWith: data.splitWith.present ? data.splitWith.value : this.splitWith,
     );
   }
 
@@ -2735,7 +2852,9 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('receiptDocumentId: $receiptDocumentId, ')
           ..write('source: $source, ')
           ..write('note: $note, ')
-          ..write('receiptPath: $receiptPath')
+          ..write('receiptPath: $receiptPath, ')
+          ..write('paidBy: $paidBy, ')
+          ..write('splitWith: $splitWith')
           ..write(')'))
         .toString();
   }
@@ -2758,6 +2877,8 @@ class Expense extends DataClass implements Insertable<Expense> {
     source,
     note,
     receiptPath,
+    paidBy,
+    splitWith,
   );
   @override
   bool operator ==(Object other) =>
@@ -2778,7 +2899,9 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.receiptDocumentId == this.receiptDocumentId &&
           other.source == this.source &&
           other.note == this.note &&
-          other.receiptPath == this.receiptPath);
+          other.receiptPath == this.receiptPath &&
+          other.paidBy == this.paidBy &&
+          other.splitWith == this.splitWith);
 }
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
@@ -2798,6 +2921,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<String> source;
   final Value<String?> note;
   final Value<String?> receiptPath;
+  final Value<String?> paidBy;
+  final Value<String?> splitWith;
   final Value<int> rowid;
   const ExpensesCompanion({
     this.id = const Value.absent(),
@@ -2816,6 +2941,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.source = const Value.absent(),
     this.note = const Value.absent(),
     this.receiptPath = const Value.absent(),
+    this.paidBy = const Value.absent(),
+    this.splitWith = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ExpensesCompanion.insert({
@@ -2835,6 +2962,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.source = const Value.absent(),
     this.note = const Value.absent(),
     this.receiptPath = const Value.absent(),
+    this.paidBy = const Value.absent(),
+    this.splitWith = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        tripId = Value(tripId),
@@ -2858,6 +2987,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<String>? source,
     Expression<String>? note,
     Expression<String>? receiptPath,
+    Expression<String>? paidBy,
+    Expression<String>? splitWith,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2877,6 +3008,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (source != null) 'source': source,
       if (note != null) 'note': note,
       if (receiptPath != null) 'receipt_path': receiptPath,
+      if (paidBy != null) 'paid_by': paidBy,
+      if (splitWith != null) 'split_with': splitWith,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2898,6 +3031,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<String>? source,
     Value<String?>? note,
     Value<String?>? receiptPath,
+    Value<String?>? paidBy,
+    Value<String?>? splitWith,
     Value<int>? rowid,
   }) {
     return ExpensesCompanion(
@@ -2917,6 +3052,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       source: source ?? this.source,
       note: note ?? this.note,
       receiptPath: receiptPath ?? this.receiptPath,
+      paidBy: paidBy ?? this.paidBy,
+      splitWith: splitWith ?? this.splitWith,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2972,6 +3109,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (receiptPath.present) {
       map['receipt_path'] = Variable<String>(receiptPath.value);
     }
+    if (paidBy.present) {
+      map['paid_by'] = Variable<String>(paidBy.value);
+    }
+    if (splitWith.present) {
+      map['split_with'] = Variable<String>(splitWith.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2997,6 +3140,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('source: $source, ')
           ..write('note: $note, ')
           ..write('receiptPath: $receiptPath, ')
+          ..write('paidBy: $paidBy, ')
+          ..write('splitWith: $splitWith, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6042,6 +6187,605 @@ class VaultItemsCompanion extends UpdateCompanion<VaultItem> {
   }
 }
 
+class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TracksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<String> syncState = GeneratedColumn<String>(
+    'sync_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _tripIdMeta = const VerificationMeta('tripId');
+  @override
+  late final GeneratedColumn<String> tripId = GeneratedColumn<String>(
+    'trip_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES trips (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _distanceMMeta = const VerificationMeta(
+    'distanceM',
+  );
+  @override
+  late final GeneratedColumn<double> distanceM = GeneratedColumn<double>(
+    'distance_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _pointsMeta = const VerificationMeta('points');
+  @override
+  late final GeneratedColumn<String> points = GeneratedColumn<String>(
+    'points',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    updatedAt,
+    deletedAt,
+    syncState,
+    tripId,
+    name,
+    startedAt,
+    endedAt,
+    distanceM,
+    points,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tracks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Track> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('trip_id')) {
+      context.handle(
+        _tripIdMeta,
+        tripId.isAcceptableOrUnknown(data['trip_id']!, _tripIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('distance_m')) {
+      context.handle(
+        _distanceMMeta,
+        distanceM.isAcceptableOrUnknown(data['distance_m']!, _distanceMMeta),
+      );
+    }
+    if (data.containsKey('points')) {
+      context.handle(
+        _pointsMeta,
+        points.isAcceptableOrUnknown(data['points']!, _pointsMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Track map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Track(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_state'],
+      )!,
+      tripId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}trip_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      distanceM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}distance_m'],
+      )!,
+      points: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}points'],
+      )!,
+    );
+  }
+
+  @override
+  $TracksTable createAlias(String alias) {
+    return $TracksTable(attachedDatabase, alias);
+  }
+}
+
+class Track extends DataClass implements Insertable<Track> {
+  final String id;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String syncState;
+  final String? tripId;
+  final String name;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+  final double distanceM;
+  final String points;
+  const Track({
+    required this.id,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.syncState,
+    this.tripId,
+    required this.name,
+    required this.startedAt,
+    this.endedAt,
+    required this.distanceM,
+    required this.points,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || tripId != null) {
+      map['trip_id'] = Variable<String>(tripId);
+    }
+    map['name'] = Variable<String>(name);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    map['distance_m'] = Variable<double>(distanceM);
+    map['points'] = Variable<String>(points);
+    return map;
+  }
+
+  TracksCompanion toCompanion(bool nullToAbsent) {
+    return TracksCompanion(
+      id: Value(id),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      syncState: Value(syncState),
+      tripId: tripId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tripId),
+      name: Value(name),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      distanceM: Value(distanceM),
+      points: Value(points),
+    );
+  }
+
+  factory Track.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Track(
+      id: serializer.fromJson<String>(json['id']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      syncState: serializer.fromJson<String>(json['syncState']),
+      tripId: serializer.fromJson<String?>(json['tripId']),
+      name: serializer.fromJson<String>(json['name']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      distanceM: serializer.fromJson<double>(json['distanceM']),
+      points: serializer.fromJson<String>(json['points']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'syncState': serializer.toJson<String>(syncState),
+      'tripId': serializer.toJson<String?>(tripId),
+      'name': serializer.toJson<String>(name),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'distanceM': serializer.toJson<double>(distanceM),
+      'points': serializer.toJson<String>(points),
+    };
+  }
+
+  Track copyWith({
+    String? id,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? syncState,
+    Value<String?> tripId = const Value.absent(),
+    String? name,
+    DateTime? startedAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+    double? distanceM,
+    String? points,
+  }) => Track(
+    id: id ?? this.id,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    syncState: syncState ?? this.syncState,
+    tripId: tripId.present ? tripId.value : this.tripId,
+    name: name ?? this.name,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    distanceM: distanceM ?? this.distanceM,
+    points: points ?? this.points,
+  );
+  Track copyWithCompanion(TracksCompanion data) {
+    return Track(
+      id: data.id.present ? data.id.value : this.id,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      tripId: data.tripId.present ? data.tripId.value : this.tripId,
+      name: data.name.present ? data.name.value : this.name,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      distanceM: data.distanceM.present ? data.distanceM.value : this.distanceM,
+      points: data.points.present ? data.points.value : this.points,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Track(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('tripId: $tripId, ')
+          ..write('name: $name, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('points: $points')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    updatedAt,
+    deletedAt,
+    syncState,
+    tripId,
+    name,
+    startedAt,
+    endedAt,
+    distanceM,
+    points,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Track &&
+          other.id == this.id &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.syncState == this.syncState &&
+          other.tripId == this.tripId &&
+          other.name == this.name &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.distanceM == this.distanceM &&
+          other.points == this.points);
+}
+
+class TracksCompanion extends UpdateCompanion<Track> {
+  final Value<String> id;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> syncState;
+  final Value<String?> tripId;
+  final Value<String> name;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<double> distanceM;
+  final Value<String> points;
+  final Value<int> rowid;
+  const TracksCompanion({
+    this.id = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.tripId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.points = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TracksCompanion.insert({
+    required String id,
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.tripId = const Value.absent(),
+    required String name,
+    required DateTime startedAt,
+    this.endedAt = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.points = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       startedAt = Value(startedAt);
+  static Insertable<Track> custom({
+    Expression<String>? id,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? syncState,
+    Expression<String>? tripId,
+    Expression<String>? name,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<double>? distanceM,
+    Expression<String>? points,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (syncState != null) 'sync_state': syncState,
+      if (tripId != null) 'trip_id': tripId,
+      if (name != null) 'name': name,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (distanceM != null) 'distance_m': distanceM,
+      if (points != null) 'points': points,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TracksCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<String>? syncState,
+    Value<String?>? tripId,
+    Value<String>? name,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<double>? distanceM,
+    Value<String>? points,
+    Value<int>? rowid,
+  }) {
+    return TracksCompanion(
+      id: id ?? this.id,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncState: syncState ?? this.syncState,
+      tripId: tripId ?? this.tripId,
+      name: name ?? this.name,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      distanceM: distanceM ?? this.distanceM,
+      points: points ?? this.points,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<String>(syncState.value);
+    }
+    if (tripId.present) {
+      map['trip_id'] = Variable<String>(tripId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (distanceM.present) {
+      map['distance_m'] = Variable<double>(distanceM.value);
+    }
+    if (points.present) {
+      map['points'] = Variable<String>(points.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TracksCompanion(')
+          ..write('id: $id, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('tripId: $tripId, ')
+          ..write('name: $name, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('points: $points, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6053,6 +6797,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TicketsTable tickets = $TicketsTable(this);
   late final $PhotosTable photos = $PhotosTable(this);
   late final $VaultItemsTable vaultItems = $VaultItemsTable(this);
+  late final $TracksTable tracks = $TracksTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6066,6 +6811,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tickets,
     photos,
     vaultItems,
+    tracks,
   ];
 }
 
@@ -6081,6 +6827,7 @@ typedef $$TripsTableCreateCompanionBuilder = TripsCompanion Function({
   Value<double?> budget,
   Value<String> mainCurrency,
   Value<String> countries,
+  Value<String?> shareRole,
   Value<int> rowid,
 });
 typedef $$TripsTableUpdateCompanionBuilder = TripsCompanion Function({
@@ -6095,6 +6842,7 @@ typedef $$TripsTableUpdateCompanionBuilder = TripsCompanion Function({
   Value<double?> budget,
   Value<String> mainCurrency,
   Value<String> countries,
+  Value<String?> shareRole,
   Value<int> rowid,
 });
 
@@ -6175,6 +6923,25 @@ final class $$TripsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$TracksTable, List<Track>> _tracksRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.tracks,
+    aliasName: 'trips__id__tracks__trip_id',
+  );
+
+  $$TracksTableProcessedTableManager get tracksRefs {
+    final manager = $$TracksTableTableManager(
+      $_db,
+      $_db.tracks,
+    ).filter((f) => f.tripId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tracksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TripsTableFilterComposer extends Composer<_$AppDatabase, $TripsTable> {
@@ -6237,6 +7004,11 @@ class $$TripsTableFilterComposer extends Composer<_$AppDatabase, $TripsTable> {
 
   ColumnFilters<String> get countries => $composableBuilder(
     column: $table.countries,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shareRole => $composableBuilder(
+    column: $table.shareRole,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6339,6 +7111,31 @@ class $$TripsTableFilterComposer extends Composer<_$AppDatabase, $TripsTable> {
     );
     return f(composer);
   }
+
+  Expression<bool> tracksRefs(
+    Expression<bool> Function($$TracksTableFilterComposer f) f,
+  ) {
+    final $$TracksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.tripId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableFilterComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TripsTableOrderingComposer
@@ -6404,6 +7201,11 @@ class $$TripsTableOrderingComposer
     column: $table.countries,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get shareRole => $composableBuilder(
+    column: $table.shareRole,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TripsTableAnnotationComposer
@@ -6449,6 +7251,9 @@ class $$TripsTableAnnotationComposer
 
   GeneratedColumn<String> get countries =>
       $composableBuilder(column: $table.countries, builder: (column) => column);
+
+  GeneratedColumn<String> get shareRole =>
+      $composableBuilder(column: $table.shareRole, builder: (column) => column);
 
   Expression<T> placesRefs<T extends Object>(
     Expression<T> Function($$PlacesTableAnnotationComposer a) f,
@@ -6549,6 +7354,31 @@ class $$TripsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> tracksRefs<T extends Object>(
+    Expression<T> Function($$TracksTableAnnotationComposer a) f,
+  ) {
+    final $$TracksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.tripId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TripsTableTableManager
@@ -6569,6 +7399,7 @@ class $$TripsTableTableManager
             bool documentsRefs,
             bool expensesRefs,
             bool calendarEventsRefs,
+            bool tracksRefs,
           })
         > {
   $$TripsTableTableManager(_$AppDatabase db, $TripsTable table)
@@ -6595,6 +7426,7 @@ class $$TripsTableTableManager
                 Value<double?> budget = const Value.absent(),
                 Value<String> mainCurrency = const Value.absent(),
                 Value<String> countries = const Value.absent(),
+                Value<String?> shareRole = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TripsCompanion(
                 id: id,
@@ -6608,6 +7440,7 @@ class $$TripsTableTableManager
                 budget: budget,
                 mainCurrency: mainCurrency,
                 countries: countries,
+                shareRole: shareRole,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6623,6 +7456,7 @@ class $$TripsTableTableManager
                 Value<double?> budget = const Value.absent(),
                 Value<String> mainCurrency = const Value.absent(),
                 Value<String> countries = const Value.absent(),
+                Value<String?> shareRole = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TripsCompanion.insert(
                 id: id,
@@ -6636,6 +7470,7 @@ class $$TripsTableTableManager
                 budget: budget,
                 mainCurrency: mainCurrency,
                 countries: countries,
+                shareRole: shareRole,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -6652,6 +7487,7 @@ class $$TripsTableTableManager
                 documentsRefs = false,
                 expensesRefs = false,
                 calendarEventsRefs = false,
+                tracksRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6660,6 +7496,7 @@ class $$TripsTableTableManager
                     if (documentsRefs) db.documents,
                     if (expensesRefs) db.expenses,
                     if (calendarEventsRefs) db.calendarEvents,
+                    if (tracksRefs) db.tracks,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6732,6 +7569,19 @@ class $$TripsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (tracksRefs)
+                        await $_getPrefetchedData<Trip, $TripsTable, Track>(
+                          currentTable: table,
+                          referencedTable: $$TripsTableReferences
+                              ._tracksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TripsTableReferences(db, table, p0).tracksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.tripId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6757,6 +7607,7 @@ typedef $$TripsTableProcessedTableManager =
         bool documentsRefs,
         bool expensesRefs,
         bool calendarEventsRefs,
+        bool tracksRefs,
       })
     >;
 typedef $$PlacesTableCreateCompanionBuilder = PlacesCompanion Function({
@@ -8166,6 +9017,8 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   Value<String> source,
   Value<String?> note,
   Value<String?> receiptPath,
+  Value<String?> paidBy,
+  Value<String?> splitWith,
   Value<int> rowid,
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
@@ -8185,6 +9038,8 @@ typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<String> source,
   Value<String?> note,
   Value<String?> receiptPath,
+  Value<String?> paidBy,
+  Value<String?> splitWith,
   Value<int> rowid,
 });
 
@@ -8321,6 +9176,16 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get receiptPath => $composableBuilder(
     column: $table.receiptPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paidBy => $composableBuilder(
+    column: $table.paidBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get splitWith => $composableBuilder(
+    column: $table.splitWith,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8475,6 +9340,16 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get paidBy => $composableBuilder(
+    column: $table.paidBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get splitWith => $composableBuilder(
+    column: $table.splitWith,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TripsTableOrderingComposer get tripId {
     final $$TripsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -8576,6 +9451,12 @@ class $$ExpensesTableAnnotationComposer
     column: $table.receiptPath,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get paidBy =>
+      $composableBuilder(column: $table.paidBy, builder: (column) => column);
+
+  GeneratedColumn<String> get splitWith =>
+      $composableBuilder(column: $table.splitWith, builder: (column) => column);
 
   $$TripsTableAnnotationComposer get tripId {
     final $$TripsTableAnnotationComposer composer = $composerBuilder(
@@ -8697,6 +9578,8 @@ class $$ExpensesTableTableManager
                 Value<String> source = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<String?> receiptPath = const Value.absent(),
+                Value<String?> paidBy = const Value.absent(),
+                Value<String?> splitWith = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
@@ -8715,6 +9598,8 @@ class $$ExpensesTableTableManager
                 source: source,
                 note: note,
                 receiptPath: receiptPath,
+                paidBy: paidBy,
+                splitWith: splitWith,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8735,6 +9620,8 @@ class $$ExpensesTableTableManager
                 Value<String> source = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<String?> receiptPath = const Value.absent(),
+                Value<String?> paidBy = const Value.absent(),
+                Value<String?> splitWith = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
@@ -8753,6 +9640,8 @@ class $$ExpensesTableTableManager
                 source: source,
                 note: note,
                 receiptPath: receiptPath,
+                paidBy: paidBy,
+                splitWith: splitWith,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -10904,6 +11793,415 @@ typedef $$VaultItemsTableProcessedTableManager =
       VaultItem,
       PrefetchHooks Function()
     >;
+typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
+  required String id,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncState,
+  Value<String?> tripId,
+  required String name,
+  required DateTime startedAt,
+  Value<DateTime?> endedAt,
+  Value<double> distanceM,
+  Value<String> points,
+  Value<int> rowid,
+});
+typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
+  Value<String> id,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> syncState,
+  Value<String?> tripId,
+  Value<String> name,
+  Value<DateTime> startedAt,
+  Value<DateTime?> endedAt,
+  Value<double> distanceM,
+  Value<String> points,
+  Value<int> rowid,
+});
+
+final class $$TracksTableReferences
+    extends BaseReferences<_$AppDatabase, $TracksTable, Track> {
+  $$TracksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TripsTable _tripIdTable(_$AppDatabase db) =>
+      db.trips.createAlias('tracks__trip_id__trips__id');
+
+  $$TripsTableProcessedTableManager? get tripId {
+    final $_column = $_itemColumn<String>('trip_id');
+    if ($_column == null) return null;
+    final manager = $$TripsTableTableManager(
+      $_db,
+      $_db.trips,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tripIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TracksTableFilterComposer
+    extends Composer<_$AppDatabase, $TracksTable> {
+  $$TracksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get distanceM => $composableBuilder(
+    column: $table.distanceM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get points => $composableBuilder(
+    column: $table.points,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TripsTableFilterComposer get tripId {
+    final $$TripsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tripId,
+      referencedTable: $db.trips,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripsTableFilterComposer(
+            $db: $db,
+            $table: $db.trips,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TracksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TracksTable> {
+  $$TracksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get distanceM => $composableBuilder(
+    column: $table.distanceM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get points => $composableBuilder(
+    column: $table.points,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TripsTableOrderingComposer get tripId {
+    final $$TripsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tripId,
+      referencedTable: $db.trips,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripsTableOrderingComposer(
+            $db: $db,
+            $table: $db.trips,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TracksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TracksTable> {
+  $$TracksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<double> get distanceM =>
+      $composableBuilder(column: $table.distanceM, builder: (column) => column);
+
+  GeneratedColumn<String> get points =>
+      $composableBuilder(column: $table.points, builder: (column) => column);
+
+  $$TripsTableAnnotationComposer get tripId {
+    final $$TripsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tripId,
+      referencedTable: $db.trips,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TripsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.trips,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TracksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TracksTable,
+          Track,
+          $$TracksTableFilterComposer,
+          $$TracksTableOrderingComposer,
+          $$TracksTableAnnotationComposer,
+          $$TracksTableCreateCompanionBuilder,
+          $$TracksTableUpdateCompanionBuilder,
+          (Track, $$TracksTableReferences),
+          Track,
+          PrefetchHooks Function({bool tripId})
+        > {
+  $$TracksTableTableManager(_$AppDatabase db, $TracksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TracksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TracksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TracksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String?> tripId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<double> distanceM = const Value.absent(),
+                Value<String> points = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TracksCompanion(
+                id: id,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                syncState: syncState,
+                tripId: tripId,
+                name: name,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                distanceM: distanceM,
+                points: points,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String?> tripId = const Value.absent(),
+                required String name,
+                required DateTime startedAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<double> distanceM = const Value.absent(),
+                Value<String> points = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TracksCompanion.insert(
+                id: id,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                syncState: syncState,
+                tripId: tripId,
+                name: name,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                distanceM: distanceM,
+                points: points,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TracksTable, Track>(table),
+                  $$TracksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({tripId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (tripId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.tripId,
+                        referencedTable: $$TracksTableReferences._tripIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$TracksTableReferences
+                            ._tripIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TracksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TracksTable,
+      Track,
+      $$TracksTableFilterComposer,
+      $$TracksTableOrderingComposer,
+      $$TracksTableAnnotationComposer,
+      $$TracksTableCreateCompanionBuilder,
+      $$TracksTableUpdateCompanionBuilder,
+      (Track, $$TracksTableReferences),
+      Track,
+      PrefetchHooks Function({bool tripId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10924,4 +12222,6 @@ class $AppDatabaseManager {
       $$PhotosTableTableManager(_db, _db.photos);
   $$VaultItemsTableTableManager get vaultItems =>
       $$VaultItemsTableTableManager(_db, _db.vaultItems);
+  $$TracksTableTableManager get tracks =>
+      $$TracksTableTableManager(_db, _db.tracks);
 }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vtr;
 
+import '../features/offline_maps/offline_tiles.dart';
 import 'app_settings.dart';
 
 
@@ -25,12 +28,25 @@ List<Object> _labelExpr(String? lang) => lang == null
     ];
 
 /// Načte styl OpenFreeMap (zdarma, bez klíče) a přepne popisky do [lang].
-Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
-  Future<dynamic> getJson(String url) async {
+/// Stáhne soubor stylu/ikon a uloží kopii do telefonu; bez internetu vrátí uloženou kopii
+/// (mapa pak funguje i offline – s dlaždicemi ze stažených oblastí nebo z cache).
+Future<Uint8List> _cachedGet(String url) async {
+  final name = url.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
+  final file = File('${(await offlineDir()).path}/style_$name');
+  try {
     final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
     if (res.statusCode != 200) throw Exception('Mapa: $url → ${res.statusCode}');
-    return jsonDecode(res.body);
+    await file.writeAsBytes(res.bodyBytes);
+    return res.bodyBytes;
+  } catch (e) {
+    if (await file.exists()) return file.readAsBytes();
+    rethrow;
   }
+}
+
+Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
+  Future<dynamic> getJson(String url) async => jsonDecode(utf8.decode(await _cachedGet(url)));
+  await OfflineMaps.instance.load();
 
   final style = Map<String, dynamic>.from(
       await getJson('$_ofm/styles/${dark ? 'dark' : 'liberty'}') as Map);
@@ -45,11 +61,13 @@ Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
       continue;
     }
     final tileJson = src['url'] is String ? await getJson(src['url'] as String) as Map : src;
-    providers[e.key] = NetworkVectorTileProvider(
-      urlTemplate: (tileJson['tiles'] as List).first as String,
+    final template = (tileJson['tiles'] as List).first as String;
+    if (e.key == 'openmaptiles') OfflineMaps.instance.urlTemplate = template;
+    providers[e.key] = OfflineFirstTileProvider(NetworkVectorTileProvider(
+      urlTemplate: template,
       maximumZoom: tileJson['maxzoom'] as int? ?? 14,
       minimumZoom: tileJson['minzoom'] as int? ?? 0,
-    );
+    ));
   }
   style['sources'] = sources;
 
@@ -73,8 +91,7 @@ Future<Style> loadMapStyle({required bool dark, required String? lang}) async {
     try {
       final index = await getJson('$sprite@2x.json');
       sprites = SpriteStyle(
-        atlasProvider: () async =>
-            (await http.get(Uri.parse('$sprite@2x.png'))).bodyBytes,
+        atlasProvider: () => _cachedGet('$sprite@2x.png'),
         index: vtr.SpriteIndexReader().read(index),
       );
     } catch (_) {}

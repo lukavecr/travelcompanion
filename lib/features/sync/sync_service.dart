@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/database.dart';
+import '../documents/email_parser.dart' show emailDocPath;
 import '../pro/pro_service.dart';
 import 'backup_crypto.dart';
 import '../vault/vault_crypto.dart';
@@ -50,7 +51,7 @@ class _T {
   final Future<void> Function(Map<String, dynamic> json) upsertJson;
 }
 
-const _realKeys = {'budget', 'lat', 'lng', 'amount', 'fxRate', 'amountMain', 'price'};
+const _realKeys = {'budget', 'lat', 'lng', 'amount', 'fxRate', 'amountMain', 'price', 'distanceM'};
 const _maxImageBytes = 650000; // Firestore dokument má limit 1 MiB (base64 +33 %)
 
 class SyncService {
@@ -226,6 +227,28 @@ class SyncService {
       upsertJson: (j) => db.into(db.tickets).insertOnConflictUpdate(
           Ticket.fromJson({...j, 'syncState': 'synced'})),
     ),
+    _T(
+      'tracks',
+      pending: () async => [
+        for (final r in await (db.select(db.tracks)
+              ..where((t) => t.syncState.equals('pending')))
+            .get())
+          r.toJson()
+      ],
+      markSynced: (j) => (db.update(db.tracks)
+            ..where((t) =>
+                t.id.equals(j['id'] as String) &
+                t.updatedAt.equals(
+                    DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int))))
+          .write(TracksCompanion(syncState: Value('synced'))),
+      localUpdatedAt: (id) async => (await (db.select(db.tracks)
+                ..where((t) => t.id.equals(id)))
+              .getSingleOrNull())
+          ?.updatedAt
+          .millisecondsSinceEpoch,
+      upsertJson: (j) => db.into(db.tracks).insertOnConflictUpdate(
+          Track.fromJson({...j, 'syncState': 'synced'})),
+    ),
   ];
 
   Future<int> _pendingCount() async {
@@ -293,10 +316,14 @@ class SyncService {
 
           if (t.name == 'documents') {
             final path = out['localPath'] as String?;
-            if (path != null && path.isNotEmpty && !path.startsWith('sync:')) {
-              await _upload(uid, id, path);
+            if (path == emailDocPath) {
+              // doklad z textu e-mailu – žádný obrázek
+            } else {
+              if (path != null && path.isNotEmpty && !path.startsWith('sync:')) {
+                await _upload(uid, id, path);
+              }
+              out['localPath'] = 'sync:file';
             }
-            out['localPath'] = 'sync:file';
           } else if (t.name == 'expenses') {
             final path = out['receiptPath'] as String?;
             if (path != null && path.isNotEmpty && !path.startsWith('sync:')) {
@@ -350,7 +377,9 @@ class SyncService {
         final localMs = await t.localUpdatedAt(id);
         if (localMs == null || localMs < remoteMs) {
           var needsFile = false;
-          if (t.name == 'documents') {
+          if (t.name == 'documents' && j['localPath'] == emailDocPath) {
+            // bez obrázku
+          } else if (t.name == 'documents') {
             final local = await (db.select(db.documents)
                   ..where((x) => x.id.equals(id)))
                 .getSingleOrNull();
@@ -523,6 +552,7 @@ extension WipeAll on SyncService {
           db.documents,
           db.places,
           db.photos,
+          db.tracks,
           db.trips,
           if (includeVault) db.vaultItems,
         ]) {
@@ -563,7 +593,7 @@ extension EncryptBackup on SyncService {
     // všechno znovu označit k odeslání → přepíše se zašifrovanou verzí
     await db.transaction(() async {
       for (final t in <TableInfo<Table, dynamic>>[
-        db.trips, db.places, db.documents, db.expenses, db.calendarEvents, db.tickets,
+        db.trips, db.places, db.documents, db.expenses, db.calendarEvents, db.tickets, db.tracks,
       ]) {
         await db.customUpdate("UPDATE ${t.actualTableName} SET sync_state = 'pending'",
             updates: {t});

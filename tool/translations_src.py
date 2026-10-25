@@ -967,6 +967,8 @@ T = {
 'Sdílet jako obrázek': ('Share as image', 'Als Bild teilen', 'Compartir como imagen'),
 'kroků': ('steps', 'Schritte', 'pasos'),
 'Trasa': ('Track', 'Strecke', 'Ruta'),
+'Zapnout kroky': ('Turn on steps', 'Schritte einschalten', 'Activar pasos'),
+'Kroky na widgetu jsou zapnuté.': ('Steps on the widget are on.', 'Schritte im Widget sind eingeschaltet.', 'Los pasos en el widget están activados.'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

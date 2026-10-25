@@ -92,9 +92,9 @@ class PlanWidgetProvider : HomeWidgetProvider() {
 
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.plan_widget)
-            views.setTextViewText(R.id.widget_title, title)
+            // název cesty, případně s dnešní útratou
             val spent = spend.optString(today, "")
-            views.setTextViewText(R.id.widget_spend, if (spent.isEmpty()) "" else "$labelSpent: $spent")
+            views.setTextViewText(R.id.widget_title, if (spent.isEmpty()) title else "$title · $labelSpent $spent")
 
             for (i in 0 until 3) {
                 if (i < shown.size) {
@@ -107,7 +107,7 @@ class PlanWidgetProvider : HomeWidgetProvider() {
                     views.setTextViewText(heads[i], prefix + d.optString("label"))
                     val items = d.optJSONArray("items") ?: JSONArray()
                     val lines = (0 until items.length()).map { items.getString(it) }
-                    views.setTextViewText(bodies[i], if (lines.isEmpty()) labelEmpty else lines.joinToString("\n"))
+                    views.setTextViewText(bodies[i], if (lines.isEmpty()) labelEmpty else lines.joinToString(" · "))
                     views.setViewVisibility(heads[i], View.VISIBLE)
                     views.setViewVisibility(bodies[i], View.VISIBLE)
                 } else {
@@ -120,19 +120,31 @@ class PlanWidgetProvider : HomeWidgetProvider() {
                 views.setTextViewText(heads[0], labelEmpty)
             }
 
-            // kroky
-            if (steps != null && s("w_steps_on", "0") == "1") {
-                views.setTextViewText(R.id.widget_steps, "👣 " + String.format(Locale.getDefault(), "%,d", steps) + " " + s("w_steps", "kroků"))
-                views.setViewVisibility(R.id.widget_steps, View.VISIBLE)
-            } else {
-                views.setTextViewText(R.id.widget_steps, "")
+            // kroky (vpravo nahoře); vypnuté → klepnutím zapnout
+            when {
+                s("w_steps_on", "0") != "1" -> {
+                    views.setTextViewText(R.id.widget_steps, "👣")
+                    views.setTextViewText(R.id.widget_steps_label, s("w_steps_enable", "Zapnout kroky"))
+                }
+                steps == null -> {
+                    views.setTextViewText(R.id.widget_steps, "👣 …")
+                    views.setTextViewText(R.id.widget_steps_label, s("w_steps", "kroků"))
+                }
+                else -> {
+                    views.setTextViewText(R.id.widget_steps, String.format(Locale.getDefault(), "%,d", steps))
+                    views.setTextViewText(R.id.widget_steps_label, "👣 " + s("w_steps", "kroků"))
+                }
             }
+            views.setOnClickPendingIntent(
+                R.id.widget_steps_box,
+                HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java, Uri.parse("travelcompanion://steps")),
+            )
 
-            // záznam trasy
+            // záznam trasy (vpravo dole)
+            views.setTextViewText(R.id.widget_track_icon, if (recording) "■" else "▶")
             views.setTextViewText(
-                R.id.widget_track,
-                if (recording) "■ " + s("w_track_stop", "Stop") + "  " + s("w_track_dist", "")
-                else "▶ " + s("w_track_start", "Trasa"),
+                R.id.widget_track_label,
+                if (recording) s("w_track_dist", "").ifEmpty { s("w_track_stop", "Stop") } else s("w_track_start", "Trasa"),
             )
             views.setInt(
                 R.id.widget_track, "setBackgroundResource",

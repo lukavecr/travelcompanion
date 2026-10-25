@@ -1,6 +1,8 @@
 // VYGENEROVÁNO z tool/translations_src.py (python tool/gen_translations.py) – needitovat ručně.
 // ignore_for_file: lines_longer_than_80_chars
 const en = <String, String>{
+  'Bez oprávnění „Fyzická aktivita“ nejde kroky číst.': 'Steps cannot be read without the “Physical activity” permission.',
+  'Kroky na widgetu jsou zapnuté.': 'Steps on the widget are on.',
   'Podle telefonu': 'System default',
   'Cesty': 'Trips',
   'Mapa': 'Map',
@@ -378,7 +380,6 @@ const en = <String, String>{
   'Podrž prst na ploše → Widgety → Travel Companion.': 'Long-press the home screen → Widgets → Travel Companion.',
   'Kroky na widgetu': 'Steps on the widget',
   'Krokoměr telefonu, počítá se od půlnoci': 'Phone step counter, counted from midnight',
-  'Bez oprávnění „Fyzická aktivita“ nejde kroky číst.': 'Steps cannot be read without the “Physical activity” permission.',
   'V této měně uvidíš součty výdajů a rozpočty. Nové cesty ji dostanou automaticky.': 'Expense totals and budgets are shown in this currency. New trips use it automatically.',
   'Přepočítat všechny cesty a výdaje na {v}? Použijí se kurzy ECB ze dne každého výdaje.': 'Convert all trips and expenses to {v}? ECB rates from the day of each expense are used.',
   'Hotovo, vše je v {v}.': 'Done, everything is in {v}.',
@@ -652,6 +653,7 @@ const en = <String, String>{
   'Nic naplánováno': 'Nothing planned',
   'Dnes utraceno': 'Spent today',
   'kroků': 'steps',
+  'Zapnout kroky': 'Turn on steps',
   'Trasa': 'Track',
   'Odkaz vede na:': 'The link leads to:',
   'společná': 'shared',

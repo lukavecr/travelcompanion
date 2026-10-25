@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
@@ -105,6 +106,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   }
 
   Future<void> _onWidget(Uri? uri) async {
+    if (uri?.host == 'steps') return _enableSteps();
     if (uri?.host != 'track') return;
     await Future<void>.delayed(const Duration(milliseconds: 600)); // až je aplikace vykreslená
     if (!mounted) return;
@@ -118,6 +120,19 @@ class _TravelAppState extends ConsumerState<TravelApp>
       }
     }
     ref.read(routerProvider).go('/map/tracks');
+  }
+
+  /// Dlaždice kroků na widgetu: když jsou vypnuté, požádá o oprávnění a zapne je.
+  Future<void> _enableSteps() async {
+    if (AppSettings.instance.widgetSteps) return;
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    if (!(await Permission.activityRecognition.request()).isGranted) {
+      rootScaffoldKey.currentState?.showSnackBar(
+          SnackBar(content: Text(tr('Bez oprávnění „Fyzická aktivita“ nejde kroky číst.'))));
+      return;
+    }
+    await AppSettings.instance.setWidgetSteps(true);
+    rootScaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(tr('Kroky na widgetu jsou zapnuté.'))));
   }
 
   Future<void> _initShare() async {

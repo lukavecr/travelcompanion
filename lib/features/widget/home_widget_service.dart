@@ -163,6 +163,7 @@ class HomeWidgetService {
       await HomeWidget.saveWidgetData<String>('w_empty', tr('Nic naplánováno'));
       await HomeWidget.saveWidgetData<String>('w_spent', tr('Dnes utraceno'));
       await HomeWidget.saveWidgetData<String>('w_steps', tr('kroků'));
+      await HomeWidget.saveWidgetData<String>('w_steps_enable', tr('Zapnout kroky'));
       await HomeWidget.saveWidgetData<String>('w_steps_on', AppSettings.instance.widgetSteps ? '1' : '0');
       await HomeWidget.saveWidgetData<String>('w_track_start', tr('Trasa'));
       await HomeWidget.saveWidgetData<String>('w_track_stop', tr('Stop'));

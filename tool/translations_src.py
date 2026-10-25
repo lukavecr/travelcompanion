@@ -960,6 +960,13 @@ T = {
 'Indie': ('India', 'Indien', 'India'),
 'Austrálie': ('Australia', 'Australien', 'Australia'),
 'Nový Zéland': ('New Zealand', 'Neuseeland', 'Nueva Zelanda'),
+# --- widget: kroky a trasa, obrázek trasy ---
+'Kroky na widgetu': ('Steps on the widget', 'Schritte im Widget', 'Pasos en el widget'),
+'Krokoměr telefonu, počítá se od půlnoci': ('Phone step counter, counted from midnight', 'Schrittzähler des Telefons, ab Mitternacht', 'Podómetro del teléfono, desde medianoche'),
+'Bez oprávnění „Fyzická aktivita“ nejde kroky číst.': ('Steps cannot be read without the “Physical activity” permission.', 'Ohne die Berechtigung „Körperliche Aktivität“ können keine Schritte gelesen werden.', 'Sin el permiso «Actividad física» no se pueden leer los pasos.'),
+'Sdílet jako obrázek': ('Share as image', 'Als Bild teilen', 'Compartir como imagen'),
+'kroků': ('steps', 'Schritte', 'pasos'),
+'Trasa': ('Track', 'Strecke', 'Ruta'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:travelcompanion/core/app_settings.dart';
+import 'package:travelcompanion/core/format.dart';
 import 'package:travelcompanion/data/database.dart';
 import 'package:travelcompanion/features/offline_maps/offline_tiles.dart';
 import 'package:travelcompanion/features/tracks/tracker_service.dart';
@@ -68,5 +69,11 @@ void main() {
     expect(tilesOf(praha, 14).where((t) => t.$1 == 14).length, 10 * 8);
     expect(tileCount(praha, 14), tilesOf(praha, 14).length);
     expect(tileCount(praha, 14), lessThan(maxTilesPerRegion));
+  });
+
+  test('widget: den přechodu na zimní čas (25. 10. 2026 má 25 hodin)', () async {
+    final p = buildWidgetPayload(trips: const [], events: const [], expenses: const [], today: DateTime(2026, 10, 25, 8, 21));
+    expect([for (final d in p.days.take(3)) d['d']], ['2026-10-25', '2026-10-26', '2026-10-27']);
+    expect(addDays(DateTime(2026, 3, 28), 1), DateTime(2026, 3, 29)); // letní čas (23 hodin)
   });
 }

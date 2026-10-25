@@ -102,7 +102,7 @@ String buildTripIcs(Trip trip, List<CalendarEvent> events, Map<String, Place> pl
     event('trip-${trip.id}', [
       'SUMMARY:${_icsEscape(trip.name)}',
       'DTSTART;VALUE=DATE:${_d8(trip.startDate!)}',
-      'DTEND;VALUE=DATE:${_d8(trip.endDate!.add(const Duration(days: 1)))}',
+      'DTEND;VALUE=DATE:${_d8(addDays(trip.endDate!, 1))}',
       'TRANSP:TRANSPARENT',
     ]);
   }
@@ -123,7 +123,7 @@ String buildTripIcs(Trip trip, List<CalendarEvent> events, Map<String, Place> pl
     } else {
       body
         ..add('DTSTART;VALUE=DATE:${_d8(e.date)}')
-        ..add('DTEND;VALUE=DATE:${_d8(e.date.add(const Duration(days: 1)))}')
+        ..add('DTEND;VALUE=DATE:${_d8(addDays(e.date, 1))}')
         ..add('TRANSP:TRANSPARENT');
     }
     if (place != null) {

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -166,11 +168,19 @@ class TracksScreen extends ConsumerWidget {
   }
 }
 
-class TrackDetailScreen extends ConsumerWidget {
+class TrackDetailScreen extends ConsumerStatefulWidget {
   const TrackDetailScreen({super.key, required this.trackId});
   final String trackId;
 
-  Future<void> _rename(BuildContext context, AppDatabase db, Track t) async {
+  @override
+  ConsumerState<TrackDetailScreen> createState() => _TrackDetailScreenState();
+}
+
+class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
+  final _shotKey = GlobalKey();
+  bool _exporting = false; // při exportu se do mapy přidá název, údaje a logo
+
+  Future<void> _rename(AppDatabase db, Track t) async {
     final c = TextEditingController(text: t.name);
     final name = await showDialog<String>(
       context: context,
@@ -193,16 +203,37 @@ class TrackDetailScreen extends ConsumerWidget {
 
   Future<void> _gpx(Track t) async {
     final dir = await getTemporaryDirectory();
-    final safe = t.name.replaceAll(RegExp(r'[^\w\- ]+'), '_');
-    final f = File(p.join(dir.path, '$safe.gpx'));
+    final f = File(p.join(dir.path, '${_safe(t.name)}.gpx'));
     await f.writeAsString(buildGpx(t));
     await SharePlus.instance.share(ShareParams(files: [XFile(f.path, mimeType: 'application/gpx+xml')], subject: t.name));
   }
 
+  String _safe(String s) => s.replaceAll(RegExp(r'[^\w\- ]+'), '_');
+
+  /// Obrázek trasy: mapa tak, jak ji uživatel přiblížil, + název, datum, údaje a logo aplikace.
+  Future<void> _image(Track t) async {
+    setState(() => _exporting = true);
+    try {
+      await WidgetsBinding.instance.endOfFrame;
+      await Future<void>.delayed(const Duration(milliseconds: 250)); // dlaždice mapy pod popisky
+      final boundary = _shotKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3);
+      final png = await image.toByteData(format: ui.ImageByteFormat.png);
+      final dir = await getTemporaryDirectory();
+      final f = File(p.join(dir.path, '${_safe(t.name)}.png'));
+      await f.writeAsBytes(png!.buffer.asUint8List());
+      if (!mounted) return;
+      setState(() => _exporting = false);
+      await SharePlus.instance.share(ShareParams(files: [XFile(f.path, mimeType: 'image/png')], text: t.name));
+    } finally {
+      if (mounted && _exporting) setState(() => _exporting = false);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final db = ref.watch(databaseProvider);
-    final track = ref.watch(trackProvider(trackId)).value;
+    final track = ref.watch(trackProvider(widget.trackId)).value;
     if (track == null) {
       return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator()));
     }
@@ -210,14 +241,27 @@ class TrackDetailScreen extends ConsumerWidget {
     final dur = (track.endedAt ?? DateTime.now()).difference(track.startedAt);
     final hours = dur.inSeconds / 3600;
     final speed = hours > 0 ? track.distanceM / 1000 / hours : 0.0;
+    final when = '${fmtDate(track.startedAt)} ${fmtTime(track.startedAt.hour * 60 + track.startedAt.minute)}';
+    final stats = [
+      (tr('Vzdálenost'), fmtDistance(track.distanceM)),
+      (tr('Čas'), fmtDuration(dur)),
+      (tr('Průměr'), '${fmtMoney(speed, 1)} km/h'),
+    ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(track.name),
         actions: [
+          if (pts.length >= 2)
+            IconButton(
+              tooltip: tr('Sdílet jako obrázek'),
+              icon: const Icon(Icons.ios_share),
+              onPressed: _exporting ? null : () => _image(track),
+            ),
           PopupMenuButton<String>(
             onSelected: (v) async {
-              if (v == 'rename') await _rename(context, db, track);
+              if (v == 'rename') await _rename(db, track);
+              if (v == 'image') await _image(track);
               if (v == 'gpx') await _gpx(track);
               if (v == 'delete' && context.mounted && await confirm(context, tr('Smazat trasu?'))) {
                 await (db.update(db.tracks)..where((x) => x.id.equals(track.id))).write(TracksCompanion(
@@ -230,6 +274,7 @@ class TrackDetailScreen extends ConsumerWidget {
             },
             itemBuilder: (_) => [
               PopupMenuItem(value: 'rename', child: Text(tr('Přejmenovat'))),
+              if (pts.length >= 2) PopupMenuItem(value: 'image', child: Text(tr('Sdílet jako obrázek'))),
               PopupMenuItem(value: 'gpx', child: Text(tr('Sdílet jako GPX'))),
               PopupMenuItem(value: 'delete', child: Text(tr('Smazat'))),
             ],
@@ -242,41 +287,118 @@ class TrackDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _Stat(tr('Vzdálenost'), fmtDistance(track.distanceM)),
-                _Stat(tr('Čas'), fmtDuration(dur)),
-                _Stat(tr('Průměr'), '${fmtMoney(speed, 1)} km/h'),
-              ],
+              children: [for (final (l, v) in stats) _Stat(l, v)],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-                '${fmtDate(track.startedAt)} ${fmtTime(track.startedAt.hour * 60 + track.startedAt.minute)}'),
-          ),
+          Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(when)),
           Expanded(
             child: pts.length < 2
                 ? Center(child: Text(tr('Trasa nemá dost bodů.')))
-                : FlutterMap(
-                    options: MapOptions(
-                      initialCameraFit: CameraFit.coordinates(
-                          coordinates: pts, padding: const EdgeInsets.all(40), maxZoom: 17),
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-                      ),
+                : RepaintBoundary(
+                    key: _shotKey,
+                    child: Stack(
+                      children: [
+                        FlutterMap(
+                          options: MapOptions(
+                            initialCameraFit: CameraFit.coordinates(
+                                coordinates: pts, padding: const EdgeInsets.all(40), maxZoom: 17),
+                            interactionOptions: const InteractionOptions(
+                              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                          ),
+                          children: [
+                            const MapTiles(),
+                            PolylineLayer(polylines: [
+                              Polyline(points: pts, strokeWidth: 5, color: const Color(0xFFE5484D)),
+                            ]),
+                            MarkerLayer(markers: [
+                              Marker(point: pts.first, width: 18, height: 18, child: const _Dot(Color(0xFF30A46C))),
+                              Marker(point: pts.last, width: 18, height: 18, child: const _Dot(Color(0xFFE5484D))),
+                            ]),
+                            if (!_exporting) const MapAttribution(),
+                          ],
+                        ),
+                        if (_exporting) _ShareOverlay(title: track.name, when: when, stats: stats),
+                      ],
                     ),
-                    children: [
-                      const MapTiles(),
-                      PolylineLayer(polylines: [
-                        Polyline(points: pts, strokeWidth: 5, color: const Color(0xFFE5484D)),
-                      ]),
-                      MarkerLayer(markers: [
-                        Marker(point: pts.first, width: 18, height: 18, child: const _Dot(Color(0xFF30A46C))),
-                        Marker(point: pts.last, width: 18, height: 18, child: const _Dot(Color(0xFFE5484D))),
-                      ]),
-                      const MapAttribution(),
-                    ],
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Popisky na sdíleném obrázku trasy: název a datum nahoře, údaje a logo dole.
+class _ShareOverlay extends StatelessWidget {
+  const _ShareOverlay({required this.title, required this.when, required this.stats});
+  final String title;
+  final String when;
+  final List<(String, String)> stats;
+
+  @override
+  Widget build(BuildContext context) {
+    const fg = Color(0xFFE4F1ED);
+    const muted = Color(0xFF93AEA7);
+    return Positioned.fill(
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 28),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xEE0B1412), Color(0x000B1412)],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: fg, fontSize: 22, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                if (!title.contains(when)) Text(when, style: const TextStyle(color: muted, fontSize: 14)),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              color: const Color(0xEE0B1412),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0x552DD4A7)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    for (final (l, v) in stats)
+                      Column(children: [
+                        Text(v, style: const TextStyle(color: fg, fontSize: 20, fontWeight: FontWeight.w800)),
+                        Text(l, style: const TextStyle(color: muted, fontSize: 12)),
+                      ]),
+                  ],
+                ),
+                const Divider(color: Color(0x332DD4A7), height: 20),
+                Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.asset('assets/brand/logo.png', width: 26, height: 26),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('Travel Companion',
+                        style: TextStyle(color: fg, fontSize: 15, fontWeight: FontWeight.w700)),
+                    const Spacer(),
+                    const Text('© OpenStreetMap', style: TextStyle(color: muted, fontSize: 10)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

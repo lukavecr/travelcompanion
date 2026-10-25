@@ -31,6 +31,10 @@ String fmtDay(DateTime d) {
 
 DateTime dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
+/// Posun o kalendářní dny (ne o 24 h – den přechodu na zimní/letní čas má 25/23 hodin).
+DateTime addDays(DateTime d, int n) =>
+    DateTime(d.year, d.month, d.day + n, d.hour, d.minute, d.second, d.millisecond);
+
 /// 570 -> "09:30" (nebo "9:30 AM" při 12h formátu)
 String fmtTime(int minutes) {
   final h = (minutes ~/ 60) % 24, m = minutes % 60;

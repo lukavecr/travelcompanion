@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:share_handler/share_handler.dart';
 
 import 'core/router.dart';
@@ -28,6 +29,9 @@ import 'features/tracks/tracker_service.dart';
 import 'features/widget/home_widget_service.dart';
 import 'l10n/tr.dart';
 
+/// Zprávy (SnackBar) i mimo konkrétní obrazovku – např. po klepnutí na widget.
+final rootScaffoldKey = GlobalKey<ScaffoldMessengerState>();
+
 class TravelApp extends ConsumerStatefulWidget {
   const TravelApp({super.key});
 
@@ -38,6 +42,7 @@ class TravelApp extends ConsumerStatefulWidget {
 class _TravelAppState extends ConsumerState<TravelApp>
     with WidgetsBindingObserver {
   StreamSubscription<SharedMedia>? _sub;
+  StreamSubscription<Uri?>? _widgetSub;
   late final HomeWidgetService _widget = HomeWidgetService(ref.read(databaseProvider));
 
   @override
@@ -50,6 +55,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
     ProService.instance.init();
     _widget.start(); // widget na plochu: plán na 3 dny + dnešní útrata
     TrackerService.instance.init(ref.read(databaseProvider));
+    _initWidgetClicks();
     SharedTrips.instance.start(ref.read(databaseProvider)); // společné cesty (i ve verzi zdarma)
     AppSettings.instance.addListener(_onSettings);
     var wasPro = false;
@@ -90,6 +96,28 @@ class _TravelAppState extends ConsumerState<TravelApp>
       },
       fireImmediately: true,
     );
+  }
+
+  /// Klepnutí na widget: travelcompanion://open = jen otevřít, travelcompanion://track = Start/Stop trasy.
+  Future<void> _initWidgetClicks() async {
+    _widgetSub = HomeWidget.widgetClicked.listen(_onWidget);
+    _onWidget(await HomeWidget.initiallyLaunchedFromHomeWidget());
+  }
+
+  Future<void> _onWidget(Uri? uri) async {
+    if (uri?.host != 'track') return;
+    await Future<void>.delayed(const Duration(milliseconds: 600)); // až je aplikace vykreslená
+    if (!mounted) return;
+    final t = TrackerService.instance;
+    if (t.recording) {
+      await t.stop();
+    } else {
+      final err = await t.start();
+      if (err != null) {
+        rootScaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(err)));
+      }
+    }
+    ref.read(routerProvider).go('/map/tracks');
   }
 
   Future<void> _initShare() async {
@@ -159,6 +187,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
     AppSettings.instance.removeListener(_onSettings);
     WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
+    _widgetSub?.cancel();
     _widget.dispose();
     super.dispose();
   }
@@ -166,6 +195,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      scaffoldMessengerKey: rootScaffoldKey,
       title: tr('Travel Companion AI'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,

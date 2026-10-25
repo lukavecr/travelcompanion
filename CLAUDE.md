@@ -140,6 +140,13 @@ proto je důležitá spolehlivost offline a záloha dat.
 - **Widget na plochu** `widget/home_widget_service.dart` (balíček `home_widget`) + Kotlin `PlanWidgetProvider.kt`,
   `res/layout/plan_widget.xml`: data na 14 dní dopředu (`w_days`, `w_spend`), widget si vybere dnešek + 2 dny; překreslení
   o půlnoci (`scheduleWidgetUpdates`, receiver v manifestu). Nastavení → Personalizace → Widget na plochu.
+  Dny počítat vždy `addDays` (format.dart), ne `+ Duration(days:)` – den změny času má 23/25 h (chyba 25. 10. 2026).
+  Widget: tlačítko Start/Stop trasy (odkaz travelcompanion://track, `_onWidget` v app.dart), klepnutí = travelcompanion://open;
+  Flutter deep linking je v manifestu vypnutý (jinak router hlásí Page Not Found). Kroky: senzor TYPE_STEP_COUNTER přímo
+  v `PlanWidgetProvider.kt` (dnešní = rozdíl od prvního údaje dne, prefs `tc_steps`), zapíná se v Nastavení → Personalizace
+  (oprávnění ACTIVITY_RECOGNITION, balíček permission_handler 12 – verze 13 chce novější compileSdk).
+- Obrázek trasy: detail trasy → Sdílet jako obrázek (RepaintBoundary mapy + `_ShareOverlay`: název, datum, údaje, logo
+  `assets/brand/logo.png` = kompas z webu, kandidát na ikonu aplikace).
 - **Tracker trasy** `tracks/tracker_service.dart` (ruční Start/Stop, geolocator se službou v popředí, oprávnění
   `FOREGROUND_SERVICE_LOCATION`; body JSON v tabulce `Tracks`, synchronizuje se), `tracks_screen.dart` (`/map/tracks`, GPX).
   Google Play bude chtít prohlášení k službě v popředí typu location (krátké video záznamu).

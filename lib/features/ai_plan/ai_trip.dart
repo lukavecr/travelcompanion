@@ -208,7 +208,7 @@ AiTrip? parseAiTrip(String text, {String? fileName}) {
       final dt = _date(d['date']);
       if (dt != null) {
         final n = (_num(d['day']) ?? 1).toInt();
-        start = dt.subtract(Duration(days: n - 1));
+        start = addDays(dt, -(n - 1));
         break;
       }
     }
@@ -216,7 +216,7 @@ AiTrip? parseAiTrip(String text, {String? fileName}) {
   final days = <AiDay>[];
   for (final (i, d) in rawDays.indexed) {
     final n = (_num(d['day']) ?? (i + 1)).toInt();
-    final date = _date(d['date']) ?? (start?.add(Duration(days: n - 1)));
+    final date = _date(d['date']) ?? (start == null ? null : addDays(start, n - 1));
     if (date == null) continue;
     final items = <AiItem>[
       for (final it in ((d['items'] as List?) ?? (d['activities'] as List?) ?? const []))
@@ -551,7 +551,7 @@ AiTrip? parseAiCsv(String text, {String? fileName}) {
               ));
     }
     if (type == 'hotel' || (end != null && end.isAfter(date))) {
-      final out = (end != null && end.isAfter(date)) ? end : date.add(const Duration(days: 1));
+      final out = (end != null && end.isAfter(date)) ? end : addDays(date, 1);
       stays.add(AiStay(name, date, out, placeKey: key));
       continue; // ubytování je v plánu jako od–do, ne jako položka dne
     }
@@ -636,7 +636,7 @@ AiTrip? _parseFreeCsv(Iterable<String> rows, String sep, Map<String, int> idx, S
 
   void closeStay() {
     if (lastArea != null && areaFrom != null && lastDate != null) {
-      stays.add(AiStay(lastArea, areaFrom, lastDate.add(const Duration(days: 1)), placeKey: 'area|${lastArea.toLowerCase()}'));
+      stays.add(AiStay(lastArea, areaFrom, addDays(lastDate, 1), placeKey: 'area|${lastArea.toLowerCase()}'));
     }
   }
 

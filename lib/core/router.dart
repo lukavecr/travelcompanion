@@ -34,6 +34,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/${AppSettings.instance.startTab}',
     redirect: (context, state) {
+      // odkaz z widgetu (kdyby ho systém předal routeru) → úvodní záložka
+      if (state.uri.scheme == 'travelcompanion') return '/${AppSettings.instance.startTab}';
       if (auth.isLoading) return null;
       final loggedIn = kDemo || auth.value != null;
       final atLogin = state.matchedLocation == '/login';

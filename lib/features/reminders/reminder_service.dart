@@ -163,7 +163,7 @@ class ReminderService {
       if (exp == null) continue;
       final t = vaultType(v.type);
       for (final days in t.remindDays) {
-        final d = exp.subtract(Duration(days: days));
+        final d = addDays(exp, -days); // kalendářní dny (přechod na zimní čas)
         final fire = DateTime(d.year, d.month, d.day, 0, settings.expiryReminderMinutes);
         if (!fire.isAfter(now)) continue;
         await _plugin.zonedSchedule(

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/app_settings.dart';
 import '../../data/database.dart';
 import '../../l10n/tr.dart';
+import '../../core/format.dart';
 
 /// Poznámka, podle které se pozná ukázková cesta (nepočítá se do limitů verze zdarma).
 const demoTripNote = 'demo';
@@ -15,8 +16,8 @@ const demoTripNote = 'demo';
 Future<String> createDemoTrip(AppDatabase db) async {
   const uuid = Uuid();
   final now = DateTime.now();
-  final start = DateTime(now.year, now.month, now.day).add(const Duration(days: 30));
-  DateTime day(int n) => start.add(Duration(days: n - 1));
+  final start = addDays(DateTime(now.year, now.month, now.day), 30);
+  DateTime day(int n) => addDays(start, n - 1);
   final tripId = uuid.v4();
 
   await db.transaction(() async {

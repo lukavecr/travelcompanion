@@ -57,6 +57,7 @@ class AppSettings extends ChangeNotifier {
   bool expiryReminders = true;
   int expiryReminderMinutes = 9 * 60;
   bool onboardingDone = false;
+  bool widgetSteps = false; // kroky na widgetu (oprávnění Pohybová aktivita)
   bool tripReminders = true; // check-in 24 h před letem, odlet, den odjezdu z ubytování
 
   Future<void> load() async {
@@ -74,6 +75,7 @@ class AppSettings extends ChangeNotifier {
     expiryReminderMinutes = _p.getInt('set_expiry_time') ?? expiryReminderMinutes;
     onboardingDone = _p.getBool('set_onboarding_done') ?? onboardingDone;
     tripReminders = _p.getBool('set_trip_reminders') ?? tripReminders;
+    widgetSteps = _p.getBool('set_widget_steps') ?? widgetSteps;
   }
 
   /// Jazyk, který se opravdu použije (u „Podle telefonu“ podle jazyka systému).
@@ -114,6 +116,8 @@ class AppSettings extends ChangeNotifier {
       _save(() => expiryReminders = v, () => _p.setBool('set_expiry_on', v));
   Future<void> setOnboardingDone(bool v) =>
       _save(() => onboardingDone = v, () => _p.setBool('set_onboarding_done', v));
+  Future<void> setWidgetSteps(bool v) => _save(() => widgetSteps = v, () => _p.setBool('set_widget_steps', v));
+
   Future<void> setTripReminders(bool v) =>
       _save(() => tripReminders = v, () => _p.setBool('set_trip_reminders', v));
   Future<void> setExpiryReminderMinutes(int v) =>

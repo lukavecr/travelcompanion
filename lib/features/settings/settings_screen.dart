@@ -1,4 +1,5 @@
 import 'package:home_widget/home_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -306,6 +307,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _snack(tr('Podrž prst na ploše → Widgety → Travel Companion.'));
         }
       }),
+      Card(
+        child: SwitchListTile(
+          secondary: const Icon(Icons.directions_walk),
+          title: Text(tr('Kroky na widgetu')),
+          subtitle: Text(tr('Krokoměr telefonu, počítá se od půlnoci')),
+          value: st.widgetSteps,
+          onChanged: (v) async {
+            if (v && !(await Permission.activityRecognition.request()).isGranted) {
+              _snack(tr('Bez oprávnění „Fyzická aktivita“ nejde kroky číst.'));
+              return;
+            }
+            await st.setWidgetSteps(v);
+          },
+        ),
+      ),
     ];
   }
 

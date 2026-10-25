@@ -7,7 +7,9 @@ import 'package:home_widget/home_widget.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
+import '../../core/app_settings.dart';
 import '../onboarding/demo_trip.dart';
+import '../tracks/tracker_service.dart';
 import '../../l10n/tr.dart';
 
 const _androidName = 'PlanWidgetProvider';
@@ -52,7 +54,7 @@ WidgetPayload buildWidgetPayload({
   final ev = events.where((e) => e.deletedAt == null && live.containsKey(e.tripId)).toList();
   final days = <Map<String, Object>>[];
   for (var i = 0; i < widgetDays; i++) {
-    final d = t0.add(Duration(days: i));
+    final d = addDays(t0, i);
     final todays = ev.where((e) => dayOnly(e.date) == d).toList()
       ..sort((a, b) {
         final am = a.startMinutes, bm = b.startMinutes;
@@ -76,7 +78,7 @@ WidgetPayload buildWidgetPayload({
   for (final x in expenses) {
     if (x.deletedAt != null || !live.containsKey(x.tripId)) continue;
     final d = dayOnly(x.spentAt);
-    if (d.isBefore(t0) || !d.isBefore(t0.add(const Duration(days: widgetDays)))) continue;
+    if (d.isBefore(t0) || !d.isBefore(addDays(t0, widgetDays))) continue;
     final cur = x.amountMain != null ? live[x.tripId]!.mainCurrency : x.currency;
     final m = sums.putIfAbsent(_ymd(d), () => {});
     m[cur] = (m[cur] ?? 0) + (x.amountMain ?? x.amount);
@@ -95,8 +97,18 @@ class HomeWidgetService {
   StreamSubscription<Set<TableUpdate>>? _sub;
   Timer? _debounce;
 
+  DateTime _lastTrackSave = DateTime(2000);
+
   void start() {
     unawaited(update());
+    // tlačítko Start/Stop na widgetu ukazuje stav záznamu a ujetou vzdálenost
+    var wasRecording = TrackerService.instance.recording;
+    TrackerService.instance.addListener(() {
+      final rec = TrackerService.instance.recording;
+      final changed = rec != wasRecording;
+      wasRecording = rec;
+      if (changed || DateTime.now().difference(_lastTrackSave).inSeconds >= 30) unawaited(updateTracker());
+    });
     _sub = db
         .tableUpdates(TableUpdateQuery.onAllTables([db.trips, db.calendarEvents, db.expenses]))
         .listen((_) {
@@ -108,6 +120,22 @@ class HomeWidgetService {
   void dispose() {
     _sub?.cancel();
     _debounce?.cancel();
+  }
+
+  Future<void> _saveTracker() async {
+    final t = TrackerService.instance;
+    _lastTrackSave = DateTime.now();
+    await HomeWidget.saveWidgetData<String>('w_rec', t.recording ? '1' : '0');
+    await HomeWidget.saveWidgetData<String>('w_track_dist', t.recording ? fmtDistance(t.distance) : '');
+  }
+
+  /// Jen stav záznamu trasy (častěji než celý plán).
+  Future<void> updateTracker() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      await _saveTracker();
+      await HomeWidget.updateWidget(androidName: _androidName);
+    } catch (_) {}
   }
 
   Future<void> update() async {
@@ -134,10 +162,15 @@ class HomeWidgetService {
       await HomeWidget.saveWidgetData<String>('w_tomorrow', tr('Zítra'));
       await HomeWidget.saveWidgetData<String>('w_empty', tr('Nic naplánováno'));
       await HomeWidget.saveWidgetData<String>('w_spent', tr('Dnes utraceno'));
+      await HomeWidget.saveWidgetData<String>('w_steps', tr('kroků'));
+      await HomeWidget.saveWidgetData<String>('w_steps_on', AppSettings.instance.widgetSteps ? '1' : '0');
+      await HomeWidget.saveWidgetData<String>('w_track_start', tr('Trasa'));
+      await HomeWidget.saveWidgetData<String>('w_track_stop', tr('Stop'));
+      await _saveTracker();
       await HomeWidget.updateWidget(androidName: _androidName);
       // o půlnoci překreslit (dnešek se posune), na dva týdny dopředu
       await HomeWidget.scheduleWidgetUpdates(
-        [for (var i = 1; i <= widgetDays; i++) from.add(Duration(days: i, minutes: 1))],
+        [for (var i = 1; i <= widgetDays; i++) addDays(from, i).add(const Duration(minutes: 1))],
         androidName: _androidName,
       );
     } catch (e) {

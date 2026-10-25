@@ -1,10 +1,9 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/country_info.dart';
+import '../../core/file_crypto.dart';
 import '../../core/format.dart';
 import '../../core/full_image_screen.dart';
 import '../../data/database.dart';
@@ -18,12 +17,12 @@ import 'guess.dart';
 import 'scan_service.dart';
 import '../../l10n/tr.dart';
 
-/// Nový doklad (z naskenovaného obrázku) i úprava existujícího dokladu.
+/// NovÃ½ doklad (z naskenovanÃ©ho obrÃ¡zku) i Ãºprava existujÃ­cÃ­ho dokladu.
 class NewDocumentScreen extends ConsumerStatefulWidget {
   const NewDocumentScreen({super.key, this.scan, this.existing, this.popOnSave = false});
   final ScanResult? scan;
   final DocView? existing;
-  final bool popOnSave; // import z e-mailu s více doklady: po uložení zpět na seznam
+  final bool popOnSave; // import z e-mailu s vÃ­ce doklady: po uloÅ¾enÃ­ zpÄ›t na seznam
 
   @override
   ConsumerState<NewDocumentScreen> createState() => _NewDocumentScreenState();
@@ -47,7 +46,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   String? _tripId;
   int _codeIdx = 0;
   DateTime? _date;
-  DateTime? _endDate; // ubytování: do kdy
+  DateTime? _endDate; // ubytovÃ¡nÃ­: do kdy
   int? _minutes;
   bool _addToPlan = false;
   bool _defaultsDone = false;
@@ -107,7 +106,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     _bcbp = found;
     if (found != null) {
       _type = 'flight';
-      _title.text = tr('Let {flight} {from} → {to}', {'flight': found.flight, 'from': found.from, 'to': found.to});
+      _title.text = tr('Let {flight} {from} â†’ {to}', {'flight': found.flight, 'from': found.from, 'to': found.to});
       _number.text = found.flight;
       _from.text = found.from;
       _to.text = found.to;
@@ -130,16 +129,16 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   String _guessType(String text) {
     final s = text.toLowerCase();
     bool any(List<String> k) => k.any(s.contains);
-    if (any(['shinkansen', '新幹線', '乗車券', '特急券', 'railway', 'train ticket'])) {
+    if (any(['shinkansen', 'æ–°å¹¹ç·š', 'ä¹—è»Šåˆ¸', 'ç‰¹æ€¥åˆ¸', 'railway', 'train ticket'])) {
       return 'train';
     }
-    if (any(['admission', 'entrance', '入場', '拝観', 'temple', 'shrine', 'museum',
+    if (any(['admission', 'entrance', 'å…¥å ´', 'æ‹è¦³', 'temple', 'shrine', 'museum',
         'universal', 'theme park'])) {
       return 'ticket';
     }
-    if (any(['ferry', '乗船'])) return 'ferry';
-    if (any(['hotel', 'check-in', 'check in', '宿泊'])) return 'hotel';
-    if (any(['bus ticket', 'バス'])) return 'bus';
+    if (any(['ferry', 'ä¹—èˆ¹'])) return 'ferry';
+    if (any(['hotel', 'check-in', 'check in', 'å®¿æ³Š'])) return 'hotel';
+    if (any(['bus ticket', 'ãƒã‚¹'])) return 'bus';
     return 'other';
   }
 
@@ -153,7 +152,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     super.dispose();
   }
 
-  /// Po načtení cest doplní výchozí cestu, datum a zemi.
+  /// Po naÄtenÃ­ cest doplnÃ­ vÃ½chozÃ­ cestu, datum a zemi.
   void _applyDefaults(List<Trip> trips) {
     if (_defaultsDone || trips.isEmpty) return;
     _defaultsDone = true;
@@ -281,12 +280,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     final planned = tripCountries(currentTrip);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_editing ? tr('Upravit doklad') : tr('Nový doklad'))),
+      appBar: AppBar(title: Text(_editing ? tr('Upravit doklad') : tr('NovÃ½ doklad'))),
       body: trips.isEmpty
           ? Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: Text(tr('Nejdřív vytvoř cestu v záložce Cesty.'),
+                child: Text(tr('NejdÅ™Ã­v vytvoÅ™ cestu v zÃ¡loÅ¾ce Cesty.'),
                     textAlign: TextAlign.center),
               ),
             )
@@ -300,12 +299,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
                       height: 160,
-                      child: Image.file(
-                        File(scan.path),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, e, s) => Center(
-                            child: Text(tr('Obrázek není k dispozici'))),
-                      ),
+                      child: EncryptedImage(scan.path, fit: BoxFit.cover, errorText: tr('ObrÃ¡zek nenÃ­ k dispozici')),
                     ),
                   ),
                 ),
@@ -313,12 +307,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 if (!_editing)
                   Text(
                     _fromText
-                        ? tr('Údaje z e-mailu jsou předvyplněné, zkontroluj je.')
+                        ? tr('Ãšdaje z e-mailu jsou pÅ™edvyplnÄ›nÃ©, zkontroluj je.')
                         : _bcbp != null
-                        ? tr('Rozpoznán palubní lístek – údaje jsou předvyplněné.')
+                        ? tr('RozpoznÃ¡n palubnÃ­ lÃ­stek â€“ Ãºdaje jsou pÅ™edvyplnÄ›nÃ©.')
                         : scan.fields.isNotEmpty || scan.codes.isNotEmpty
-                            ? tr('Něco se rozpoznalo, údaje zkontroluj.')
-                            : tr('Nic se nepodařilo spolehlivě přečíst, údaje doplň ručně.'),
+                            ? tr('NÄ›co se rozpoznalo, Ãºdaje zkontroluj.')
+                            : tr('Nic se nepodaÅ™ilo spolehlivÄ› pÅ™eÄÃ­st, Ãºdaje doplÅˆ ruÄnÄ›.'),
                   ),
                 const SizedBox(height: 16),
                 Text(tr('Typ'), style: Theme.of(context).textTheme.titleSmall),
@@ -334,7 +328,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(tr('Do které cesty'),
+                Text(tr('Do kterÃ© cesty'),
                     style: Theme.of(context).textTheme.titleSmall),
                 Wrap(
                   spacing: 8,
@@ -350,12 +344,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _title,
-                  decoration: InputDecoration(labelText: tr('Název')),
+                  decoration: InputDecoration(labelText: tr('NÃ¡zev')),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _country,
-                  decoration: InputDecoration(labelText: tr('Země')),
+                  decoration: InputDecoration(labelText: tr('ZemÄ›')),
                 ),
                 if (planned.isNotEmpty)
                   Wrap(
@@ -402,7 +396,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                         child: TextField(
                           controller: _number,
                           decoration: InputDecoration(
-                              labelText: tr('Číslo letu / spoje')),
+                              labelText: tr('ÄŒÃ­slo letu / spoje')),
                         ),
                       ),
                     ],
@@ -414,7 +408,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                         child: TextField(
                           controller: _seat,
                           decoration: InputDecoration(
-                              labelText: tr('Sedadlo / vůz')),
+                              labelText: tr('Sedadlo / vÅ¯z')),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -422,7 +416,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                         child: TextField(
                           controller: _gate,
                           decoration: InputDecoration(
-                              labelText: tr('Gate / nástupiště')),
+                              labelText: tr('Gate / nÃ¡stupiÅ¡tÄ›')),
                         ),
                       ),
                     ],
@@ -432,13 +426,13 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 TextField(
                   controller: _passenger,
                   decoration: InputDecoration(
-                      labelText: tr('Jméno (cestující / zákazník)')),
+                      labelText: tr('JmÃ©no (cestujÃ­cÃ­ / zÃ¡kaznÃ­k)')),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _ref,
                   decoration:
-                      InputDecoration(labelText: tr('Číslo rezervace')),
+                      InputDecoration(labelText: tr('ÄŒÃ­slo rezervace')),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -468,7 +462,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.schedule),
                         label: Text(
-                            _minutes == null ? tr('Čas') : fmtTime(_minutes!)),
+                            _minutes == null ? tr('ÄŒas') : fmtTime(_minutes!)),
                         onPressed: () async {
                           final start = _minutes ?? 540;
                           final t = await showTimePicker(
@@ -505,13 +499,13 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 if (_date != null && !_editing)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(tr('Přidat do plánu dne')),
+                    title: Text(tr('PÅ™idat do plÃ¡nu dne')),
                     value: _addToPlan,
                     onChanged: (v) => setState(() => _addToPlan = v),
                   ),
                 if (!_editing && scan.codes.length > 1) ...[
                   const SizedBox(height: 8),
-                  Text(tr('Který kód zobrazit'),
+                  Text(tr('KterÃ½ kÃ³d zobrazit'),
                       style: Theme.of(context).textTheme.titleSmall),
                   Wrap(
                     spacing: 8,
@@ -531,11 +525,11 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: _saving ? null : _save,
-                  child: Text(_editing ? tr('Uložit změny') : tr('Uložit doklad')),
+                  child: Text(_editing ? tr('UloÅ¾it zmÄ›ny') : tr('UloÅ¾it doklad')),
                 ),
                 const SizedBox(height: 12),
                 ExpansionTile(
-                  title: Text(tr('Rozpoznaný text (pro kontrolu)')),
+                  title: Text(tr('RozpoznanÃ½ text (pro kontrolu)')),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(12),

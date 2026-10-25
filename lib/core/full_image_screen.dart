@@ -1,6 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+
+import 'file_crypto.dart';
+import 'secure_screen.dart';
 
 /// Obrázek přes celou obrazovku, jde přibližovat dvěma prsty.
 class FullImageScreen extends StatelessWidget {
@@ -10,13 +11,15 @@ class FullImageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(title: Text(title)),
-      body: InteractiveViewer(
-        minScale: 1,
-        maxScale: 6,
-        child: Center(child: Image.file(File(path))),
+    return SecureScreen(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(title: Text(title)),
+        body: InteractiveViewer(
+          minScale: 1,
+          maxScale: 6,
+          child: Center(child: EncryptedImage(path)),
+        ),
       ),
     );
   }

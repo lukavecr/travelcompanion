@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'field_extractor.dart';
+import '../../core/file_crypto.dart';
 
 class ScannedCode {
   const ScannedCode(this.value, this.format);
@@ -103,13 +104,18 @@ Future<ScanResult> scanImage(String path) async {
   return ScanResult(path, codes, ocr.text, fields);
 }
 
-/// Zkopíruje obrázek do úložiště aplikace (dočasné soubory z fotoaparátu mizí).
+/// Uloží obrázek do úložiště aplikace zašifrovaně (AES-256-GCM, klíč v Keystore)
+/// a dočasnou kopii z fotoaparátu / galerie smaže.
 Future<String> storeImage(String srcPath) async {
   final base = await getApplicationDocumentsDirectory();
   final dir = Directory(p.join(base.path, 'documents'));
   if (!await dir.exists()) await dir.create(recursive: true);
   final ext = p.extension(srcPath).isEmpty ? '.jpg' : p.extension(srcPath);
   final dest = p.join(dir.path, '${const Uuid().v4()}$ext');
-  await File(srcPath).copy(dest);
+  final src = File(srcPath);
+  await FileCrypto.write(dest, await src.readAsBytes());
+  try {
+    if (p.isWithin((await getTemporaryDirectory()).path, srcPath)) await src.delete();
+  } catch (_) {}
   return dest;
 }

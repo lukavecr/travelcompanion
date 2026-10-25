@@ -24,7 +24,7 @@ class VaultKeys extends ChangeNotifier {
 
   static const _storage = FlutterSecureStorage();
   static const _localKeyName = 'vault_key_v1';
-  static const _iterations = 310000;
+  static const _iterations = 600000; // OWASP 2023 (starší Vaulty mají 310 000, číslo je uložené u klíče)
   static final _aes = AesGcm.with256bits();
 
   SecretKey? _key;

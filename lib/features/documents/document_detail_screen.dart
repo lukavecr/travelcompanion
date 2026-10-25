@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:barcode_widget/barcode_widget.dart' as bw;
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'email_parser.dart';
 import 'docs_list_screen.dart';
 import 'document_repository.dart';
 import '../../l10n/tr.dart';
+import '../../core/file_crypto.dart';
 
 class _Code {
   const _Code(this.barcode, this.kind);
@@ -143,7 +143,7 @@ class _FullImageScreen extends StatelessWidget {
       body: InteractiveViewer(
         minScale: 1,
         maxScale: 6,
-        child: Center(child: Image.file(File(path))),
+        child: Center(child: EncryptedImage(path)),
       ),
     );
   }
@@ -295,14 +295,10 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                     constraints: const BoxConstraints(maxHeight: 460),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(view.doc.localPath),
+                      child: EncryptedImage(
+                        view.doc.localPath,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stack) => Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text(
-                              tr('Obrázek se zatím nepodařilo stáhnout ze zálohy.')),
-                        ),
+                        errorText: tr('Obrázek se zatím nepodařilo stáhnout ze zálohy.'),
                       ),
                     ),
                   )

@@ -21,6 +21,7 @@ import '../vault/vault_crypto.dart';
 import '../vault/vault_sync.dart';
 import '../../l10n/tr.dart';
 import '../../demo/demo_mode.dart';
+import '../../core/file_crypto.dart';
 
 class SyncStatus {
   const SyncStatus({
@@ -415,17 +416,17 @@ class SyncService {
 
   // ---------- soubory (zmenšené obrázky ve Firestore) ----------
   Future<Uint8List?> _compress(String path) async {
+    final plain = await FileCrypto.read(path); // v telefonu je fotka šifrovaná
     var quality = 75;
     var size = 1600;
     for (var i = 0; i < 4; i++) {
-      final out = await FlutterImageCompress.compressWithFile(
-        path,
+      final out = await FlutterImageCompress.compressWithList(
+        plain,
         minWidth: size,
         minHeight: size,
         quality: quality,
         format: CompressFormat.jpeg,
       );
-      if (out == null) return null;
       if (out.length <= _maxImageBytes) return out;
       quality -= 10;
       size = (size * 0.8).round();
@@ -465,7 +466,7 @@ class SyncService {
       final dir = Directory(p.join(base.path, 'documents'));
       if (!await dir.exists()) await dir.create(recursive: true);
       final path = p.join(dir.path, '$id.jpg');
-      await File(path).writeAsBytes(bytes);
+      await FileCrypto.write(path, bytes);
       return path;
     } catch (_) {
       return null;

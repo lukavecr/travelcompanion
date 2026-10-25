@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +19,7 @@ import 'fx_service.dart';
 import 'receipt_reader.dart';
 import '../share/shared_trips.dart';
 import '../../l10n/tr.dart';
+import '../../core/file_crypto.dart';
 
 class ExpenseFormArgs {
   const ExpenseFormArgs(this.tripId, [this.existing, this.defaultCountry]);
@@ -395,8 +395,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   onTap: () => openFullImage(context, tr('Účtenka'), _receipt!),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(File(_receipt!),
-                        width: 80, height: 80, fit: BoxFit.cover),
+                    child: EncryptedImage(_receipt!, width: 80, height: 80, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(width: 8),

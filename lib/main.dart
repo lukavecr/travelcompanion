@@ -10,6 +10,7 @@ import 'core/db_crypto.dart';
 import 'data/database.dart';
 import 'demo/demo_mode.dart';
 import 'firebase_options.dart'; // vygeneruje `flutterfire configure`
+import 'core/file_crypto.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,9 @@ Future<void> main() async {
     ));
     return;
   }
+  // fotky dokladů ze starších verzí zašifrovat, dočasné exporty a kopie fotek smazat
+  FileCrypto.encryptExistingFiles();
+  FileCrypto.cleanTemp();
   final key = await databaseKey();
   await encryptLegacyDatabase(key);
   runApp(ProviderScope(

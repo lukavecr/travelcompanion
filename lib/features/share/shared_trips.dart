@@ -116,6 +116,16 @@ class SharedTrips extends ChangeNotifier {
     }, SetOptions(merge: true));
   }
 
+  /// Po zapnutí šifrované zálohy uloží kopie klíčů společných cest do zálohy znovu – zašifrovaně.
+  Future<void> resaveKeys() async {
+    final db = _db;
+    if (db == null) return;
+    for (final t in await (db.select(db.trips)..where((t) => t.shareRole.isNotNull())).get()) {
+      final k = await _key(t.id);
+      if (k != null) await _saveKey(t.id, await k.extractBytes(), role: t.shareRole);
+    }
+  }
+
   // ---------- členové ----------
 
   Future<void> _loadMembers(String tripId) async {

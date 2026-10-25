@@ -29,6 +29,8 @@ import 'features/share/shared_trips.dart';
 import 'features/tracks/tracker_service.dart';
 import 'features/widget/home_widget_service.dart';
 import 'l10n/tr.dart';
+import 'features/sync/backup_crypto.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Zprávy (SnackBar) i mimo konkrétní obrazovku – např. po klepnutí na widget.
 final rootScaffoldKey = GlobalKey<ScaffoldMessengerState>();
@@ -62,7 +64,22 @@ class _TravelAppState extends ConsumerState<TravelApp>
     var wasPro = false;
     ProService.instance.addListener(() {
       final isPro = ProService.instance.isPro;
-      if (isPro && !wasPro) ref.read(syncServiceProvider).syncNow();
+      if (isPro && !wasPro) {
+        ref.read(syncServiceProvider).ensureEncryptedBackup();
+        BackupCrypto.instance.active.then((on) async {
+          if (on) return;
+          // připomenutí nejvýš jednou denně
+          final prefs = await SharedPreferences.getInstance();
+          final last = prefs.getInt('backup_nag_at') ?? 0;
+          if (DateTime.now().millisecondsSinceEpoch - last < const Duration(days: 1).inMilliseconds) return;
+          await prefs.setInt('backup_nag_at', DateTime.now().millisecondsSinceEpoch);
+          rootScaffoldKey.currentState?.showSnackBar(SnackBar(
+            duration: const Duration(seconds: 10),
+            content: Text(tr('Pro je aktivní. Nastav šifrovanou zálohu – chrání ji heslo Vaultu.')),
+            action: SnackBarAction(label: tr('Nastavit'), onPressed: () => ref.read(routerProvider).push('/sync')),
+          ));
+        });
+      }
       wasPro = isPro;
     });
     ref.listenManual(

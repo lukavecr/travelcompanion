@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/format.dart';
 import '../../data/database.dart';
-import '../sync/backup_crypto.dart';
 import '../sync/sync_service.dart';
 import 'sos_screen.dart';
 import 'vault_crypto.dart';
@@ -43,9 +42,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     if (!mounted) return;
     if (_keys.unlocked) {
       setState(() => _stage = _Stage.open);
-      // nový telefon: odemkne i šifrovanou zálohu; pak stáhne položky z jiného telefonu
-      final sync = ref.read(syncServiceProvider);
-      BackupCrypto.instance.restoreFromVault().then((_) => sync.syncNow());
+      // záloha je povinně šifrovaná: obnoví klíč zálohy (nový telefon) nebo ho vytvoří, pak synchronizuje
+      ref.read(syncServiceProvider).ensureEncryptedBackup();
     } else if (_stage == _Stage.open) {
       setState(() => _stage = _Stage.locked);
     }
@@ -240,7 +238,7 @@ class _PasswordFormState extends State<_PasswordForm> {
         Text(
           widget.restore
               ? tr('Vault už máš v záloze. Zadej heslo Vaultu, které sis zvolil při založení.')
-              : tr('Pas, víza, pojištění, očkování a nouzové kontakty se ukládají zašifrovaně. ' 'Zvol si heslo Vaultu – je potřeba jen pro obnovu na novém telefonu. ' 'Normálně Vault otevřeš otiskem prstu.'),
+              : tr('Pas, víza, pojištění, očkování a nouzové kontakty se ukládají zašifrovaně. Zvol si heslo Vaultu – chrání Vault i zálohu a potřebuješ ho jen na novém telefonu. Normálně Vault otevřeš otiskem prstu.'),
           textAlign: TextAlign.center,
         ),
         if (!widget.restore) ...[
@@ -250,7 +248,7 @@ class _PasswordFormState extends State<_PasswordForm> {
             child: Padding(
               padding: EdgeInsets.all(12),
               child: Text(
-                tr('Heslo si poznamenej na bezpečné místo. Když ho zapomeneš a ztratíš telefon, ' 'Vault ze zálohy obnovit nepůjde – nikdo (ani Google) ho nepřečte.'),
+                tr('Heslo si poznamenej na bezpečné místo. Když ho zapomeneš a ztratíš telefon, Vault ani zálohu obnovit nepůjde – nikdo (ani Google, ani my) je nepřečte.'),
               ),
             ),
           ),

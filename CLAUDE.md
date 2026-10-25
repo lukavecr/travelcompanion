@@ -70,8 +70,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   číst vždy `FileCrypto.read` / `EncryptedImage`, nikdy `Image.file`), zámek aplikace, Vault (vlastní klíč, PBKDF2 600k pro nové),
   FLAG_SECURE na záložkách Doklady a Vault (`core/secure_screen.dart`, kanál `tc/secure` v MainActivity), systémová záloha
   Androidu vypnutá (`allowBackup=false`, `data_extraction_rules.xml`), dočasné exporty se mažou (`FileCrypto.cleanTemp`).
-  Záloha ve Firestore je end-to-end šifrovaná jen po zapnutí „Šifrovat zálohu“ (vyžaduje Vault) – jinak čitelná pro Google
-  a správce Firebase projektu. Otevřené: šifrování zálohy jako výchozí; klíč Vaultu vázaný na biometrii v Keystore.
+  **Záloha je povinně šifrovaná** (rozhodnutí uživatele 25. 10. 2026): bez klíče zálohy `syncNow` jen stahuje, nic neodesílá
+  (`SyncStatus.needsEncryption`); po odemčení/založení Vaultu `ensureEncryptedBackup` klíč obnoví nebo vytvoří, `enableEncryptedBackup`
+  přepíše vše šifrovaně, smaže nešifrované obrázky v cloudu a znovu uloží klíče společných cest. Otevřené: klíč Vaultu vázaný na biometrii.
 - **Avast** na PC kontroluje HTTPS vlastním certifikátem → Java/Gradle tomu nevěří (PKIX chyba při stahování knihoven).
   Řešení: `~/.gradle/gradle.properties` → `systemProp.javax.net.ssl.trustStore=C:/Users/lukav/.gradle/truststore-avast.p12`
   (kopie `jbr/lib/security/cacerts` + `C:\ProgramData\Avast Software\Avast\wscert.pem`, heslo `changeit`).
@@ -84,6 +85,8 @@ proto je důležitá spolehlivost offline a záloha dat.
   poloha, Face ID). Sdílení z Map na iOS nejde (Share Extension + App Groups = placený účet) → tlačítko „Vložit odkaz“ na Mapě.
   SMS na iOS: `sms:/open?addresses=…&body=…`.
 - Xiaomi/MIUI zabíjí upozornění, dokud uživatel nevypne úsporu baterie pro aplikaci.
+- **Nikdy neupravovat soubory přes PowerShell `Get-Content`/`Set-Content`** (Windows PowerShell 5.1 čte bez BOM jako ANSI → rozbije
+  diakritiku). Úpravy jen nástrojem Edit nebo Pythonem s `encoding='utf-8'`. Kontrola: `grep -rl "Ã" lib` musí být prázdné.
 - Česká typografie ve stringech: „uvozovky“, ne ASCII. Neinstaluj balíček `intl`, formát dat/čísel řeší `lib/core/format.dart`.
 
 ## Architektura

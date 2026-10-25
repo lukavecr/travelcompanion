@@ -971,6 +971,31 @@ T = {
 'Kroky na widgetu jsou zapnuté.': ('Steps on the widget are on.', 'Schritte im Widget sind eingeschaltet.', 'Los pasos en el widget están activados.'),
 'Záznam trasy spuštěn': ('Track recording started', 'Streckenaufzeichnung gestartet', 'Grabación de ruta iniciada'),
 'Trasa uložena': ('Track saved', 'Strecke gespeichert', 'Ruta guardada'),
+# --- povinně šifrovaná záloha ---
+'Pas, víza, pojištění, očkování a nouzové kontakty se ukládají zašifrovaně. Zvol si heslo Vaultu – chrání Vault i zálohu a potřebuješ ho jen na novém telefonu. Normálně Vault otevřeš otiskem prstu.': (
+    'Passport, visas, insurance, vaccinations and emergency contacts are stored encrypted. Choose a Vault password – it protects the Vault and your backup, and you only need it on a new phone. Normally you open the Vault with your fingerprint.',
+    'Pass, Visa, Versicherung, Impfungen und Notfallkontakte werden verschlüsselt gespeichert. Wähle ein Vault-Passwort – es schützt den Vault und deine Sicherung, du brauchst es nur auf einem neuen Telefon. Normalerweise öffnest du den Vault per Fingerabdruck.',
+    'El pasaporte, visados, seguro, vacunas y contactos de emergencia se guardan cifrados. Elige una contraseña del Vault: protege el Vault y tu copia, y solo la necesitas en un teléfono nuevo. Normalmente abres el Vault con la huella.'),
+'Heslo si poznamenej na bezpečné místo. Když ho zapomeneš a ztratíš telefon, Vault ani zálohu obnovit nepůjde – nikdo (ani Google, ani my) je nepřečte.': (
+    'Write the password down somewhere safe. If you forget it and lose your phone, neither the Vault nor the backup can be restored – nobody (not Google, not us) can read them.',
+    'Notiere das Passwort an einem sicheren Ort. Wenn du es vergisst und dein Telefon verlierst, lassen sich weder Vault noch Sicherung wiederherstellen – niemand (weder Google noch wir) kann sie lesen.',
+    'Apunta la contraseña en un lugar seguro. Si la olvidas y pierdes el teléfono, no se podrán recuperar ni el Vault ni la copia: nadie (ni Google ni nosotros) puede leerlos.'),
+'Zvol heslo Vaultu – chrání pas i celou zálohu. Šifrování zálohy se pak zapne samo.': (
+    'Choose a Vault password – it protects your passport and the whole backup. Backup encryption then turns on by itself.',
+    'Wähle ein Vault-Passwort – es schützt deinen Pass und die ganze Sicherung. Die Verschlüsselung der Sicherung schaltet sich dann selbst ein.',
+    'Elige una contraseña del Vault: protege tu pasaporte y toda la copia. Después el cifrado de la copia se activa solo.'),
+'Nastav šifrovanou zálohu': ('Set up encrypted backup', 'Verschlüsselte Sicherung einrichten', 'Configura la copia cifrada'),
+'Záloha se ukládá jen šifrovaně, aby ji nepřečetl nikdo jiný – ani Google, ani my. Klíč chrání heslo Vaultu: na novém telefonu jím zálohu odemkneš. Dokud šifrování nenastavíš, nic se do cloudu neodesílá.': (
+    'The backup is stored only in encrypted form so nobody else can read it – not Google, not us. The key is protected by your Vault password, which unlocks the backup on a new phone. Until you set up encryption, nothing is sent to the cloud.',
+    'Die Sicherung wird nur verschlüsselt gespeichert, damit niemand sonst sie lesen kann – weder Google noch wir. Der Schlüssel ist durch dein Vault-Passwort geschützt, mit dem du die Sicherung auf einem neuen Telefon entsperrst. Solange du die Verschlüsselung nicht einrichtest, wird nichts in die Cloud gesendet.',
+    'La copia solo se guarda cifrada para que nadie más pueda leerla: ni Google ni nosotros. La clave está protegida por tu contraseña del Vault, con la que desbloqueas la copia en un teléfono nuevo. Hasta que configures el cifrado, no se envía nada a la nube.'),
+'Nastavit': ('Set up', 'Einrichten', 'Configurar'),
+'Synchronizuji…': ('Syncing…', 'Synchronisiere…', 'Sincronizando…'),
+'Záloha čeká na nastavení šifrování': ('Backup is waiting for encryption setup', 'Sicherung wartet auf die Einrichtung der Verschlüsselung', 'La copia espera a que configures el cifrado'),
+'Pro je aktivní. Nastav šifrovanou zálohu – chrání ji heslo Vaultu.': (
+    'Pro is active. Set up your encrypted backup – it is protected by your Vault password.',
+    'Pro ist aktiv. Richte deine verschlüsselte Sicherung ein – sie ist durch dein Vault-Passwort geschützt.',
+    'Pro está activo. Configura tu copia cifrada: la protege la contraseña del Vault.'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

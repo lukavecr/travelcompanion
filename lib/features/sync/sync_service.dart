@@ -22,6 +22,7 @@ import '../vault/vault_sync.dart';
 import '../../l10n/tr.dart';
 import '../../demo/demo_mode.dart';
 import '../../core/file_crypto.dart';
+import '../share/shared_trips.dart';
 
 class SyncStatus {
   const SyncStatus({
@@ -29,11 +30,14 @@ class SyncStatus {
     this.lastSync,
     this.error,
     this.pending = 0,
+    this.needsEncryption = false,
   });
   final bool running;
   final DateTime? lastSync;
   final String? error;
   final int pending;
+  /// Záloha se odesílá jen šifrovaně – dokud uživatel nenastaví Vault, nic se neodesílá.
+  final bool needsEncryption;
 }
 
 /// Jedna tabulka z pohledu synchronizace. Pracuje s JSON mapami, takže
@@ -265,6 +269,7 @@ class SyncService {
     if (kDemo) return; // prezentační režim nesmí nic zapsat do účtu
     if (_running || FirebaseAuth.instance.currentUser == null) return;
     if (!ProService.instance.isPro) return; // záloha je součást Pro
+    if (!await BackupCrypto.instance.active) return; // bez šifrování se nic neodesílá
     final n = await _pendingCount();
     status.value = SyncStatus(
         lastSync: status.value.lastSync, error: status.value.error, pending: n);
@@ -282,10 +287,12 @@ class SyncService {
         lastSync: status.value.lastSync,
         pending: status.value.pending);
     String? error;
+    // záloha je povinně šifrovaná: bez klíče se jen stahuje (stará / šifrovaná záloha), nic se neodesílá
+    final encrypted = await BackupCrypto.instance.active;
     try {
-      await _push(user.uid);
+      if (encrypted) await _push(user.uid);
       await _pull(user.uid);
-      await _retryMissingFiles(user.uid);
+      if (encrypted) await _retryMissingFiles(user.uid);
       await syncVault(db, user.uid);
     } catch (e) {
       error = e.toString();
@@ -296,9 +303,10 @@ class SyncService {
       await (await _p).setInt('sync_last', now.millisecondsSinceEpoch);
     }
     status.value = SyncStatus(
-      lastSync: error == null ? now : status.value.lastSync,
+      lastSync: error == null && encrypted ? now : status.value.lastSync,
       error: error,
       pending: pending,
+      needsEncryption: !encrypted,
     );
     _running = false;
   }
@@ -606,7 +614,36 @@ extension EncryptBackup on SyncService {
     _uploaded.clear();
     await (await _p).remove('sync_uploaded');
     await syncNow();
-    return status.value.error;
+    if (status.value.error != null) return status.value.error;
+    await _deletePlainFiles();
+    await SharedTrips.instance.resaveKeys(); // klíče společných cest v záloze teď šifrovaně
+    return null;
+  }
+
+  /// Po zapnutí šifrování smaže z cloudu obrázky, které tam zůstaly nešifrované (např. ze smazaných dokladů).
+  Future<void> _deletePlainFiles() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final snap = await _col(uid, 'files').get(const GetOptions(source: Source.server));
+      for (final d in snap.docs) {
+        if (d.data()['enc'] != true) await d.reference.delete();
+      }
+    } catch (e) {
+      debugPrint('deletePlainFiles: $e');
+    }
+  }
+
+  /// Záloha je povinně šifrovaná: po odemčení Vaultu klíč zálohy obnoví (jiný telefon) nebo vytvoří.
+  Future<void> ensureEncryptedBackup() async {
+    if (!ProService.instance.isPro || FirebaseAuth.instance.currentUser == null) return;
+    final bc = BackupCrypto.instance;
+    if (!await bc.active) await bc.restoreFromVault();
+    if (!await bc.active && VaultKeys.instance.unlocked) {
+      await enableEncryptedBackup();
+      return;
+    }
+    await syncNow();
   }
 }
 

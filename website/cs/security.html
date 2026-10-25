@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zabezpečení – Travel Companion</title>
+  <meta name="description" content="Jak Travel Companion chrání tvůj pas, letenky a cestovní data: šifrování, zámek aplikace, Vault a záloha.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/security.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/security.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/security.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/security.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/security.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="../favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Hlavní"><a href="./">Úvod</a><a href="privacy.html">Soukromí</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/security.html" hreflang="en" lang="en">EN</a><a href="/cs/security.html" hreflang="cs" lang="cs" aria-current="true">CS</a><a href="/de/security.html" hreflang="de" lang="de">DE</a><a href="/es/security.html" hreflang="es" lang="es">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Zabezpečení</span>
+    <h1>Tvůj pas nikomu jinému nepatří.</h1>
+    <p>Travel Companion uchovává to nejcitlivější, co na cestě máš: pas, víza, pojištění, letenky a místa, kde jsi. Tady je přesně a srozumitelně, jak jsou chráněné – i to, před čím tě neochrání žádná aplikace.</p>
+    <h2>1. V telefonu</h2>
+    <ul>
+      <li><strong>Šifrovaná databáze.</strong> Všechny cesty, plány, doklady a výdaje jsou v databázi šifrované AES-256. Klíč vznikne v tvém telefonu a je uložený v Android Keystore.</li>
+      <li><strong>Šifrované fotky.</strong> Fotky letenek, palubenek a účtenek se před uložením šifrují AES-256-GCM.</li>
+      <li><strong>Zámek aplikace.</strong> Otisk prstu, obličej nebo PIN telefonu při otevření aplikace a po minutě v pozadí.</li>
+      <li><strong>Ochrana obrazovky.</strong> Doklady a Vault nejde vyfotit snímkem obrazovky ani nahrát a v přehledu spuštěných aplikací jsou skryté.</li>
+      <li><strong>Žádné kopie jinde.</strong> Automatická systémová záloha Androidu je pro aplikaci vypnutá a dočasné soubory exportů se mažou.</li>
+    </ul>
+    <h2>2. Travel Vault</h2>
+    <ul>
+      <li>Pas, víza, pojištění, očkování a zdravotní údaje jsou šifrované <strong>podruhé</strong> vlastním klíčem AES-256-GCM, odděleně od zbytku aplikace.</li>
+      <li>Vault se zamyká spolu s aplikací. Upozornění na konec platnosti fungují i se zamčeným Vaultem a nikdy neukazují číslo dokladu.</li>
+      <li>Jeho záloha je <strong>šifrovaná end-to-end</strong>: klíč opouští telefon jen zamčený tvým heslem Vaultu (PBKDF2-SHA256, 600 000 iterací). Heslo nikdy nedostaneme, takže tvůj Vault nepřečte nikdo – ani my.</li>
+    </ul>
+    <h2>3. Záloha do cloudu a společné cesty</h2>
+    <ul>
+      <li>Záloha (Pro) je v Google Cloud Firestore v části, kterou může otevřít <strong>jen tvůj přihlášený účet</strong>. Tato pravidla přístupu se automaticky testují.</li>
+      <li>Zapni <strong>šifrování zálohy</strong> (Nastavení → Účet → Záloha a účet) a celá záloha včetně fotek bude také šifrovaná end-to-end. Doporučujeme.</li>
+      <li>Společné cesty jsou šifrované klíčem, který mají <strong>jen účastníci</strong>. Předává se v kódu pozvánky a v cloudu nikdy neleží čitelně. Doklady, Vault a tvoje trasy se nesdílí nikdy.</li>
+      <li>Všechna spojení používají HTTPS/TLS.</li>
+    </ul>
+    <h2>4. Co zůstane v telefonu</h2>
+    <ul>
+      <li>Čtení lístků a účtenek (text, QR a čárové kódy) probíhá <strong>v telefonu</strong>. Fotky se nikam neposílají.</li>
+      <li>Žádné reklamy, sledovací nástroje ani analytika. Tvoje data neprodáváme ani nesdílíme.</li>
+    </ul>
+    <h2>5. Před čím neochrání žádná aplikace</h2>
+    <ul>
+      <li>Někdo, kdo drží tvůj telefon, když je odemčený i s aplikací.</li>
+      <li>Telefon s malwarem, upraveným (rootnutým) systémem nebo bez zámku obrazovky.</li>
+      <li>Zapomenuté heslo Vaultu: záměrně ho nikdo nemůže obnovit, takže bez něj zálohu Vaultu nejde vrátit.</li>
+    </ul>
+    <h2>6. Naše tipy</h2>
+    <ul>
+      <li>Používej zámek obrazovky s otiskem nebo obličejem a aktualizuj telefon.</li>
+      <li>Zvol dlouhé a jedinečné heslo Vaultu a ulož si ho bezpečně, třeba ve správci hesel.</li>
+      <li>S Pro si zapni šifrování zálohy.</li>
+    </ul>
+    <h2>7. Našel jsi bezpečnostní problém?</h2>
+    <p>Napiš prosím na <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a>. Rychle odpovíme a opravíme to dřív, než se o tom bude veřejně mluvit.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Patička"><a href="./">Úvod</a><a href="privacy.html">Zásady ochrany soukromí</a><a href="delete-account.html">Smazání účtu</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

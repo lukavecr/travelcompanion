@@ -35,7 +35,7 @@
       <li>Ausgaben und Belegfotos,</li>
       <li>Einträge im Travel Vault (Reisepass, Visa, Versicherung, Impfungen, Notfallkontakte, Gesundheitsdaten), die zusätzlich mit AES-256-GCM verschlüsselt sind.</li>
     </ul>
-    <p>Fotos von Dokumenten liegen im privaten Speicher der App auf deinem Telefon.</p>
+    <p>Fotos von Dokumenten und Belegen liegen im privaten Speicher der App, <strong>mit AES-256-GCM verschlüsselt</strong>. Mehr unter <a href="security.html">Sicherheit</a>.</p>
 
     <h2>2. Konto</h2>
     <p>Für die Cloud-Sicherung legst du ein Konto mit <strong>E-Mail-Adresse und Passwort</strong> an. Konten werden von Google Firebase Authentication verwaltet. Die E-Mail-Adresse nutzen wir nur für die Anmeldung und, wenn du uns schreibst, für die Antwort.</p>
@@ -52,7 +52,8 @@
     <p>Das Lesen von Text, QR- und Barcodes aus Fotos erfolgt <strong>auf deinem Telefon</strong> mit Google ML Kit. Fotos werden für die Erkennung nicht hochgeladen. ML Kit kann Google kontaktieren, um Modell-Updates zu laden, und anonyme Leistungs- und Nutzungsdaten an Google senden.</p>
 
     <h2>5. Standort</h2>
-    <p>Die App fragt nur nach dem Standort, wenn du ihn nutzt: um deine Position auf der Karte zu zeigen, deinen aktuellen Ort zu speichern oder ihn in eine SOS-Nachricht einzufügen. Dein Standort wird nicht im Hintergrund verfolgt und nicht an uns gesendet. Eine SOS-Nachricht verschickt die Nachrichten-App deines Telefons an die von dir gewählten Kontakte.</p>
+    <p>Die App fragt nur nach dem Standort, wenn du ihn nutzt: um deine Position auf der Karte zu zeigen, deinen Standort als Ort zu speichern, ihn in eine SOS-Nachricht einzufügen oder <strong>eine Strecke aufzuzeichnen</strong>. Eine Strecke wird nur aufgezeichnet, nachdem du Start drückst (in der App oder im Widget), bis du Stopp drückst; währenddessen ist eine Benachrichtigung sichtbar. Streckenpunkte werden auf deinem Telefon gespeichert (und in deiner Sicherung, wenn du sie nutzt). Dein Standort wird nie an uns gesendet. Eine SOS-Nachricht verschickt die Nachrichten-App deines Telefons an die von dir gewählten Kontakte.</p>
+    <p><strong>Schritte.</strong> Wenn du Schritte im Widget einschaltest, liest die App den Schrittzähler des Telefons (Berechtigung „Körperliche Aktivität“). Die Zahl wird nur im Widget angezeigt und nirgends gespeichert oder gesendet.</p>
 
     <h2>6. Dienste Dritter</h2>
     <p>Manche Funktionen senden eine Anfrage an einen externen Dienst. Sie enthält nur, was die Funktion braucht, und deine IP-Adresse, die jede Internetanfrage verrät.</p>
@@ -96,7 +97,7 @@
 <footer class="site-footer">
   <div class="container">
     <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
-    <nav aria-label="Fußzeile"><a href="./">Start</a><a href="delete-account.html">Konto löschen</a></nav>
+    <nav aria-label="Fußzeile"><a href="./">Start</a><a href="security.html">Sicherheit</a><a href="delete-account.html">Konto löschen</a></nav>
   </div>
 </footer>
 

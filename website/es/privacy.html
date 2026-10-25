@@ -35,7 +35,7 @@
       <li>gastos y fotos de recibos,</li>
       <li>elementos del Travel Vault (pasaporte, visados, seguro, vacunas, contactos de emergencia, datos médicos), que además se cifran con AES-256-GCM.</li>
     </ul>
-    <p>Las fotos de documentos se guardan en el almacenamiento privado de la app en tu teléfono.</p>
+    <p>Las fotos de documentos y recibos se guardan en el almacenamiento privado de la app, <strong>cifradas con AES-256-GCM</strong>. Más en <a href="security.html">Seguridad</a>.</p>
 
     <h2>2. Cuenta</h2>
     <p>Para usar la copia en la nube creas una cuenta con tu <strong>correo electrónico y una contraseña</strong>. Las cuentas las gestiona Google Firebase Authentication. Usamos el correo solo para iniciar sesión y, si nos escribes, para responderte.</p>
@@ -52,7 +52,8 @@
     <p>La lectura de texto, códigos QR y de barras de las fotos se hace <strong>en tu teléfono</strong> con Google ML Kit. Las fotos no se suben para reconocerlas. ML Kit puede contactar con Google para descargar actualizaciones de modelos y enviar métricas anónimas de rendimiento y uso.</p>
 
     <h2>5. Ubicación</h2>
-    <p>La app solo pide la ubicación cuando la usas: para mostrar tu posición en el mapa, guardar tu sitio actual como lugar o incluirla en un mensaje SOS. Tu ubicación no se rastrea en segundo plano ni se nos envía. El mensaje SOS lo envía la app de mensajes de tu teléfono a los contactos que elegiste.</p>
+    <p>La app solo pide tu ubicación cuando la usas: para mostrar tu posición en el mapa, guardar el lugar donde estás, incluirla en un mensaje SOS o <strong>grabar una ruta</strong>. Una ruta solo se graba desde que pulsas Iniciar (en la app o en el widget) hasta que pulsas Parar; mientras tanto se muestra una notificación. Los puntos de la ruta se guardan en tu teléfono (y en tu copia, si la usas). Tu ubicación nunca se nos envía. El mensaje SOS lo envía la app de mensajes de tu teléfono a los contactos que elijas.</p>
+    <p><strong>Pasos.</strong> Si activas los pasos en el widget, la app lee el podómetro del teléfono (permiso «Actividad física»). El número solo se muestra en el widget y no se guarda ni se envía a ningún sitio.</p>
 
     <h2>6. Servicios de terceros</h2>
     <p>Algunas funciones envían una petición a un servicio externo. Solo contiene lo necesario para la función, además de tu dirección IP, que revela cualquier conexión a internet.</p>
@@ -96,7 +97,7 @@
 <footer class="site-footer">
   <div class="container">
     <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
-    <nav aria-label="Pie"><a href="./">Inicio</a><a href="delete-account.html">Eliminar cuenta</a></nav>
+    <nav aria-label="Pie"><a href="./">Inicio</a><a href="security.html">Seguridad</a><a href="delete-account.html">Eliminar cuenta</a></nav>
   </div>
 </footer>
 

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sicherheit – Travel Companion</title>
+  <meta name="description" content="Wie Travel Companion deinen Pass, Tickets und Reisedaten schützt: Verschlüsselung, App-Sperre, Vault und Sicherung.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/security.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/security.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/security.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/security.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/security.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="../favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Haupt"><a href="./">Start</a><a href="privacy.html">Datenschutz</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/security.html" hreflang="en" lang="en">EN</a><a href="/cs/security.html" hreflang="cs" lang="cs">CS</a><a href="/de/security.html" hreflang="de" lang="de" aria-current="true">DE</a><a href="/es/security.html" hreflang="es" lang="es">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Sicherheit</span>
+    <h1>Dein Pass geht niemanden etwas an.</h1>
+    <p>Travel Companion enthält das Sensibelste, was du auf Reisen dabeihast: Pass, Visa, Versicherung, Tickets und deine Aufenthaltsorte. Hier steht genau und verständlich, wie sie geschützt sind – auch, wovor dich keine App schützen kann.</p>
+    <h2>1. Auf deinem Telefon</h2>
+    <ul>
+      <li><strong>Verschlüsselte Datenbank.</strong> Alle Reisen, Pläne, Dokumente und Ausgaben liegen in einer AES-256-verschlüsselten Datenbank. Der Schlüssel entsteht auf deinem Telefon und liegt im Android Keystore.</li>
+      <li><strong>Verschlüsselte Fotos.</strong> Fotos von Tickets, Bordkarten und Belegen werden vor dem Speichern mit AES-256-GCM verschlüsselt.</li>
+      <li><strong>App-Sperre.</strong> Fingerabdruck, Gesicht oder Telefon-PIN beim Öffnen der App und nach einer Minute im Hintergrund.</li>
+      <li><strong>Bildschirmschutz.</strong> Dokumente und der Vault lassen sich nicht per Screenshot oder Bildschirmaufnahme erfassen und sind in der Übersicht der letzten Apps verborgen.</li>
+      <li><strong>Keine Kopien woanders.</strong> Die automatische Android-Systemsicherung ist für die App ausgeschaltet, temporäre Exportdateien werden gelöscht.</li>
+    </ul>
+    <h2>2. Travel Vault</h2>
+    <ul>
+      <li>Pass, Visa, Versicherung, Impfungen und Gesundheitsdaten sind <strong>ein zweites Mal</strong> mit einem eigenen AES-256-GCM-Schlüssel verschlüsselt, getrennt vom Rest der App.</li>
+      <li>Der Vault sperrt sich zusammen mit der App. Ablauferinnerungen funktionieren auch bei gesperrtem Vault und zeigen nie die Dokumentnummer.</li>
+      <li>Seine Sicherung ist <strong>Ende-zu-Ende verschlüsselt</strong>: der Schlüssel verlässt dein Telefon nur mit deinem Vault-Passwort gesichert (PBKDF2-SHA256, 600.000 Iterationen). Wir erhalten das Passwort nie, daher kann niemand deinen Vault lesen, auch wir nicht.</li>
+    </ul>
+    <h2>3. Cloud-Sicherung und gemeinsame Reisen</h2>
+    <ul>
+      <li>Die Sicherung (Pro) liegt in Google Cloud Firestore in einem Bereich, den <strong>nur dein angemeldetes Konto</strong> öffnen kann. Diese Zugriffsregeln werden automatisch getestet.</li>
+      <li>Schalte die <strong>Verschlüsselung der Sicherung</strong> ein (Einstellungen → Konto → Sicherung &amp; Konto), dann ist die ganze Sicherung samt Fotos ebenfalls Ende-zu-Ende verschlüsselt. Empfohlen.</li>
+      <li>Gemeinsame Reisen sind mit einem Schlüssel verschlüsselt, den <strong>nur die Teilnehmer</strong> haben. Er wird im Einladungscode weitergegeben und liegt nie lesbar in der Cloud. Dokumente, Vault und deine Strecken werden nie geteilt.</li>
+      <li>Alle Verbindungen nutzen HTTPS/TLS.</li>
+    </ul>
+    <h2>4. Was auf deinem Telefon bleibt</h2>
+    <ul>
+      <li>Das Lesen von Tickets und Belegen (Text, QR- und Barcodes) passiert <strong>auf dem Telefon</strong>. Fotos werden dafür nirgendwohin hochgeladen.</li>
+      <li>Keine Werbung, keine Tracker, keine Analysen. Wir verkaufen oder teilen deine Daten nicht.</li>
+    </ul>
+    <h2>5. Wovor keine App schützen kann</h2>
+    <ul>
+      <li>Jemand hält dein Telefon, während es und die App entsperrt sind.</li>
+      <li>Ein Telefon mit Schadsoftware, verändertem (gerootetem) System oder ohne Displaysperre.</li>
+      <li>Ein vergessenes Vault-Passwort: absichtlich kann es niemand zurücksetzen, ohne es lässt sich die Vault-Sicherung nicht wiederherstellen.</li>
+    </ul>
+    <h2>6. Unsere Tipps</h2>
+    <ul>
+      <li>Nutze eine Displaysperre mit Fingerabdruck oder Gesicht und halte dein Telefon aktuell.</li>
+      <li>Wähle ein langes, einzigartiges Vault-Passwort und bewahre es sicher auf, zum Beispiel in einem Passwortmanager.</li>
+      <li>Mit Pro: schalte die Verschlüsselung der Sicherung ein.</li>
+    </ul>
+    <h2>7. Ein Sicherheitsproblem gefunden?</h2>
+    <p>Bitte schreib an <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a>. Wir antworten schnell und beheben es, bevor etwas öffentlich wird.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Fußzeile"><a href="./">Start</a><a href="privacy.html">Datenschutz</a><a href="delete-account.html">Konto löschen</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

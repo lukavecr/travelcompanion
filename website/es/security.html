@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Seguridad – Travel Companion</title>
+  <meta name="description" content="Cómo protege Travel Companion tu pasaporte, billetes y datos de viaje: cifrado, bloqueo, Vault y copia.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/security.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/security.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/security.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/security.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/security.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="../favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Principal"><a href="./">Inicio</a><a href="privacy.html">Privacidad</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/security.html" hreflang="en" lang="en">EN</a><a href="/cs/security.html" hreflang="cs" lang="cs">CS</a><a href="/de/security.html" hreflang="de" lang="de">DE</a><a href="/es/security.html" hreflang="es" lang="es" aria-current="true">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Seguridad</span>
+    <h1>Tu pasaporte no es asunto de nadie más.</h1>
+    <p>Travel Companion guarda lo más delicado que llevas de viaje: pasaporte, visados, seguro, billetes y dónde estás. Aquí explicamos con claridad cómo se protegen, y también de qué no te puede proteger ninguna app.</p>
+    <h2>1. En tu teléfono</h2>
+    <ul>
+      <li><strong>Base de datos cifrada.</strong> Todos los viajes, planes, documentos y gastos se guardan en una base de datos cifrada con AES-256. La clave se genera en tu teléfono y se guarda en el Android Keystore.</li>
+      <li><strong>Fotos cifradas.</strong> Las fotos de billetes, tarjetas de embarque y recibos se cifran con AES-256-GCM antes de guardarse.</li>
+      <li><strong>Bloqueo de la app.</strong> Huella, cara o el PIN del teléfono al abrir la app y tras un minuto en segundo plano.</li>
+      <li><strong>Protección de pantalla.</strong> Los documentos y el Vault no se pueden capturar ni grabar y quedan ocultos en las apps recientes.</li>
+      <li><strong>Sin copias en otros sitios.</strong> La copia automática del sistema Android está desactivada para la app y los archivos temporales de exportación se borran.</li>
+    </ul>
+    <h2>2. Travel Vault</h2>
+    <ul>
+      <li>Pasaporte, visados, seguro, vacunas y datos médicos se cifran <strong>por segunda vez</strong> con su propia clave AES-256-GCM, separada del resto de la app.</li>
+      <li>El Vault se bloquea junto con la app. Los avisos de caducidad funcionan aunque esté bloqueado y nunca muestran el número del documento.</li>
+      <li>Su copia está <strong>cifrada de extremo a extremo</strong>: la clave solo sale de tu teléfono protegida por tu contraseña del Vault (PBKDF2-SHA256, 600.000 iteraciones). Nunca recibimos la contraseña, así que nadie puede leer tu Vault, ni siquiera nosotros.</li>
+    </ul>
+    <h2>3. Copia en la nube y viajes compartidos</h2>
+    <ul>
+      <li>La copia (Pro) se guarda en Google Cloud Firestore en un área que <strong>solo tu cuenta</strong> puede abrir. Estas reglas de acceso se prueban automáticamente.</li>
+      <li>Activa el <strong>cifrado de la copia</strong> (Ajustes → Cuenta → Copia y cuenta) y toda la copia, incluidas las fotos, también quedará cifrada de extremo a extremo. Recomendado.</li>
+      <li>Los viajes compartidos se cifran con una clave que <strong>solo tienen los participantes</strong>. Se transmite en el código de invitación y nunca se guarda legible en la nube. Los documentos, el Vault y tus rutas nunca se comparten.</li>
+      <li>Todas las conexiones usan HTTPS/TLS.</li>
+    </ul>
+    <h2>4. Lo que se queda en tu teléfono</h2>
+    <ul>
+      <li>La lectura de billetes y recibos (texto, QR y códigos de barras) se hace <strong>en el teléfono</strong>. Las fotos no se suben a ningún sitio.</li>
+      <li>Sin anuncios, rastreadores ni analítica. No vendemos ni compartimos tus datos.</li>
+    </ul>
+    <h2>5. De qué no te protege ninguna app</h2>
+    <ul>
+      <li>Alguien con tu teléfono en la mano mientras este y la app están desbloqueados.</li>
+      <li>Un teléfono con malware, con el sistema modificado (root) o sin bloqueo de pantalla.</li>
+      <li>Una contraseña del Vault olvidada: a propósito nadie puede restablecerla, así que sin ella la copia del Vault no se puede recuperar.</li>
+    </ul>
+    <h2>6. Nuestros consejos</h2>
+    <ul>
+      <li>Usa un bloqueo de pantalla con huella o cara y mantén el teléfono actualizado.</li>
+      <li>Elige una contraseña del Vault larga y única y guárdala en un lugar seguro, por ejemplo en un gestor de contraseñas.</li>
+      <li>Con Pro, activa el cifrado de la copia.</li>
+    </ul>
+    <h2>7. ¿Has encontrado un problema de seguridad?</h2>
+    <p>Escríbenos a <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a>. Responderemos rápido y lo corregiremos antes de que se haga público.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Pie"><a href="./">Inicio</a><a href="privacy.html">Privacidad</a><a href="delete-account.html">Eliminar cuenta</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

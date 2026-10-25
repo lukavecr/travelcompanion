@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Security – Travel Companion</title>
+  <meta name="description" content="How Travel Companion protects your passport, tickets and travel data: encryption, app lock, Vault and backup.">
+  <meta name="theme-color" content="#0b1412">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <!--HREFLANG--><link rel="alternate" hreflang="en" href="https://travel-companion-ai-e300c.web.app/security.html"><link rel="alternate" hreflang="cs" href="https://travel-companion-ai-e300c.web.app/cs/security.html"><link rel="alternate" hreflang="de" href="https://travel-companion-ai-e300c.web.app/de/security.html"><link rel="alternate" hreflang="es" href="https://travel-companion-ai-e300c.web.app/es/security.html"><link rel="alternate" hreflang="x-default" href="https://travel-companion-ai-e300c.web.app/security.html"><!--/HREFLANG-->
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="./"><img src="favicon.svg" alt="" width="28" height="28">Travel Companion</a>
+    <nav class="nav" aria-label="Main"><a href="./">Home</a><a href="privacy.html">Privacy</a></nav>
+    <!--LANGS--><nav class="langs" aria-label="Language"><a href="/security.html" hreflang="en" lang="en" aria-current="true">EN</a><a href="/cs/security.html" hreflang="cs" lang="cs">CS</a><a href="/de/security.html" hreflang="de" lang="de">DE</a><a href="/es/security.html" hreflang="es" lang="es">ES</a></nav><!--/LANGS-->
+  </div>
+</header>
+
+<main class="legal">
+  <div class="container">
+    <span class="eyebrow">Security</span>
+    <h1>Your passport is nobody else’s business.</h1>
+    <p>Travel Companion holds some of the most sensitive things you carry: your passport, visas, insurance, tickets and where you are. Here is exactly how they are protected, in plain words, including what no app can protect you from.</p>
+    <h2>1. On your phone</h2>
+    <ul>
+      <li><strong>Encrypted database.</strong> All trips, plans, documents and expenses are stored in an AES-256 encrypted database. Its key is generated on your phone and kept in the Android Keystore.</li>
+      <li><strong>Encrypted photos.</strong> Photos of tickets, boarding passes and receipts are encrypted with AES-256-GCM before they are saved.</li>
+      <li><strong>App lock.</strong> Fingerprint, face or your phone PIN when you open the app and after a minute in the background.</li>
+      <li><strong>Screen protection.</strong> Documents and the Vault cannot be captured in screenshots or screen recordings and are hidden in the recent apps overview.</li>
+      <li><strong>No copies elsewhere.</strong> Android’s automatic system backup is turned off for the app, and temporary export files are deleted.</li>
+    </ul>
+    <h2>2. Travel Vault</h2>
+    <ul>
+      <li>Passport, visas, insurance, vaccinations and medical details are encrypted <strong>a second time</strong> with their own AES-256-GCM key, separate from the rest of the app.</li>
+      <li>The Vault locks together with the app. Expiry reminders work even while it is locked and never show the document number.</li>
+      <li>Its backup is <strong>end-to-end encrypted</strong>: the key leaves your phone only wrapped by your Vault password (PBKDF2-SHA256, 600,000 iterations). We never receive the password, so nobody, including us, can read your Vault.</li>
+    </ul>
+    <h2>3. Cloud backup and shared trips</h2>
+    <ul>
+      <li>The backup (Pro) is stored in Google Cloud Firestore in an area that <strong>only your signed-in account</strong> can open. These access rules are tested automatically.</li>
+      <li>Turn on <strong>backup encryption</strong> (Settings → Account → Backup &amp; account) and the whole backup, including photos, is end-to-end encrypted as well. We recommend it.</li>
+      <li>Shared trips are encrypted with a key that <strong>only the members</strong> have. It is passed on in the invite code, never stored readable in the cloud. Documents, the Vault and your tracks are never shared.</li>
+      <li>All connections use HTTPS/TLS.</li>
+    </ul>
+    <h2>4. What stays on your phone</h2>
+    <ul>
+      <li>Reading tickets and receipts (text, QR and barcodes) happens <strong>on the phone</strong>. Photos are not uploaded anywhere to be read.</li>
+      <li>No ads, no trackers, no analytics. We do not sell or share your data.</li>
+    </ul>
+    <h2>5. What no app can protect you from</h2>
+    <ul>
+      <li>Someone holding your phone while it and the app are unlocked.</li>
+      <li>A phone with malware, a modified (rooted) system or no screen lock.</li>
+      <li>A forgotten Vault password: by design, nobody can reset it, so a Vault backup cannot be restored without it.</li>
+    </ul>
+    <h2>6. Our tips</h2>
+    <ul>
+      <li>Use a screen lock with fingerprint or face and keep your phone updated.</li>
+      <li>Choose a long, unique Vault password and keep it somewhere safe, for example in a password manager.</li>
+      <li>With Pro, turn on backup encryption.</li>
+    </ul>
+    <h2>7. Found a security problem?</h2>
+    <p>Please write to <a href="mailto:lrtechcz@gmail.com">lrtechcz@gmail.com</a>. We will reply quickly and fix it before anything is made public.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 Travel Companion · <span class="dev"><img src="lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
+    <nav aria-label="Footer"><a href="./">Home</a><a href="privacy.html">Privacy policy</a><a href="delete-account.html">Delete account</a></nav>
+  </div>
+</footer>
+
+</body>
+</html>

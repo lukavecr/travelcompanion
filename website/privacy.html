@@ -35,7 +35,7 @@
       <li>expenses and receipt photos,</li>
       <li>Travel Vault items (passport, visas, insurance, vaccinations, emergency contacts, medical details), which are additionally encrypted with AES-256-GCM.</li>
     </ul>
-    <p>Photos of documents are stored in the app's private storage on your phone.</p>
+    <p>Photos of documents and receipts are stored in the app’s private storage, <strong>encrypted with AES-256-GCM</strong>. More in <a href="security.html">Security</a>.</p>
 
     <h2>2. Account</h2>
     <p>To use cloud backup you create an account with your <strong>e-mail address and a password</strong>. Accounts are handled by Google Firebase Authentication. We use the e-mail address only to sign you in and, if you write to us, to reply.</p>
@@ -52,7 +52,8 @@
     <p>Reading text, QR codes and barcodes from photos is done <strong>on your phone</strong> with Google ML Kit. Photos are not uploaded for recognition. ML Kit may contact Google to download model updates and may send anonymous performance and usage metrics to Google.</p>
 
     <h2>5. Location</h2>
-    <p>The app asks for location permission only when you use it: to show your position on the map, to save your current spot as a place, or to include your location in an SOS message. Your location is not tracked in the background and is not sent to us. An SOS message is sent by your phone's own messaging app to the contacts you chose.</p>
+    <p>The app asks for location permission only when you use it: to show your position on the map, to save your current spot as a place, to include your location in an SOS message, or to <strong>record a track</strong>. A track is recorded only after you press Start (in the app or on the widget) and until you press Stop; while it runs, a notification is shown. Track points are stored on your phone (and in your backup, if you use it). Your location is never sent to us. An SOS message is sent by your phone’s own messaging app to the contacts you chose.</p>
+    <p><strong>Steps.</strong> If you turn on steps on the home screen widget, the app reads your phone’s step counter (permission “Physical activity”). The number is shown only on the widget and is not stored or sent anywhere.</p>
 
     <h2>6. Third-party services</h2>
     <p>Some features send a request to an outside service. These requests contain only what is needed for the feature, plus your IP address, which every internet request reveals.</p>
@@ -96,7 +97,7 @@
 <footer class="site-footer">
   <div class="container">
     <span>© 2026 Travel Companion · <span class="dev"><img src="lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
-    <nav aria-label="Footer"><a href="./">Home</a><a href="delete-account.html">Delete account</a></nav>
+    <nav aria-label="Footer"><a href="./">Home</a><a href="security.html">Security</a><a href="delete-account.html">Delete account</a></nav>
   </div>
 </footer>
 

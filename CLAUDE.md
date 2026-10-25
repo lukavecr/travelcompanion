@@ -65,8 +65,13 @@ proto je důležitá spolehlivost offline a záloha dat.
 - **Zámek aplikace** (`features/lock/app_lock.dart`, `local_auth` 3): při spuštění a po >60 s v pozadí; biometrie nebo PIN telefonu.
   `MainActivity` musí být `FlutterFragmentActivity`. Emulátor nemá zámek obrazovky → ukáže „Pokračovat bez zámku“
   (zámek emulátoru nenastavovat bez souhlasu uživatele). Smazání všech dat se potvrzuje stejným ověřením.
-- Záloha ve Firestore zatím **není** šifrovaná na straně aplikace (jen u Googlu); fotky dokladů leží v soukromé složce aplikace
-  (šifrováno Androidem, ne aplikací). Vault bude šifrovat end-to-end.
+- **Zabezpečení** (přehled pro uživatele: `website/security.html`): DB AES-256 (sqlite3mc), fotky dokladů a účtenek
+  AES-256-GCM (`core/file_crypto.dart`, klíč `file_key_v1` v Keystore, hlavička „TCE1“, staré nešifrované se zašifrují při startu;
+  číst vždy `FileCrypto.read` / `EncryptedImage`, nikdy `Image.file`), zámek aplikace, Vault (vlastní klíč, PBKDF2 600k pro nové),
+  FLAG_SECURE na záložkách Doklady a Vault (`core/secure_screen.dart`, kanál `tc/secure` v MainActivity), systémová záloha
+  Androidu vypnutá (`allowBackup=false`, `data_extraction_rules.xml`), dočasné exporty se mažou (`FileCrypto.cleanTemp`).
+  Záloha ve Firestore je end-to-end šifrovaná jen po zapnutí „Šifrovat zálohu“ (vyžaduje Vault) – jinak čitelná pro Google
+  a správce Firebase projektu. Otevřené: šifrování zálohy jako výchozí; klíč Vaultu vázaný na biometrii v Keystore.
 - **Avast** na PC kontroluje HTTPS vlastním certifikátem → Java/Gradle tomu nevěří (PKIX chyba při stahování knihoven).
   Řešení: `~/.gradle/gradle.properties` → `systemProp.javax.net.ssl.trustStore=C:/Users/lukav/.gradle/truststore-avast.p12`
   (kopie `jbr/lib/security/cacerts` + `C:\ProgramData\Avast Software\Avast\wscert.pem`, heslo `changeit`).
@@ -147,7 +152,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   (oprávnění ACTIVITY_RECOGNITION, balíček permission_handler 12 – verze 13 chce novější compileSdk).
 - Obrázek trasy: detail trasy → Sdílet jako obrázek (RepaintBoundary mapy + `_ShareOverlay`: název, datum, údaje, logo
   `assets/brand/logo.png` = kompas z webu, kandidát na ikonu aplikace).
-- **Tracker trasy** `tracks/tracker_service.dart` (ruční Start/Stop, geolocator se službou v popředí, oprávnění
+- **Tracker trasy**: na Androidu nativní služba `TrackService.kt` (LocationManager GPS, body v prefs `tc_track`, hotové trasy
+  v „finished“ → `TrackerService.refresh` je uloží do DB), Start/Stop z widgetu přes neviditelnou `TrackToggleActivity`
+  (aplikace se neotevře), kanál `tc/tracker`; iOS přes geolocator. Původně: `tracks/tracker_service.dart` (ruční Start/Stop, geolocator se službou v popředí, oprávnění
   `FOREGROUND_SERVICE_LOCATION`; body JSON v tabulce `Tracks`, synchronizuje se), `tracks_screen.dart` (`/map/tracks`, GPX).
   Google Play bude chtít prohlášení k službě v popředí typu location (krátké video záznamu).
 - **Offline mapy** `offline_maps/offline_tiles.dart`: oblasti z mapy (`regions.json`, dlaždice OpenFreeMap z14 do

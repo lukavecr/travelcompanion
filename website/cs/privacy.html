@@ -35,7 +35,7 @@
       <li>výdaje a fotky účtenek,</li>
       <li>položky Travel Vaultu (pas, víza, pojištění, očkování, nouzové kontakty, zdravotní údaje), které jsou navíc šifrované AES-256-GCM.</li>
     </ul>
-    <p>Fotky dokladů jsou uložené v soukromém úložišti aplikace v telefonu.</p>
+    <p>Fotky dokladů a účtenek jsou v soukromém úložišti aplikace, <strong>šifrované AES-256-GCM</strong>. Víc v části <a href="security.html">Zabezpečení</a>.</p>
 
     <h2>2. Účet</h2>
     <p>Pro zálohu do cloudu si vytvoříš účet s <strong>e-mailovou adresou a heslem</strong>. Účty spravuje Google Firebase Authentication. E-mail používáme jen k přihlášení a k odpovědi, pokud nám napíšeš.</p>
@@ -52,7 +52,8 @@
     <p>Čtení textu, QR a čárových kódů z fotek probíhá <strong>v telefonu</strong> pomocí Google ML Kit. Fotky se kvůli rozpoznání nikam nenahrávají. ML Kit se může spojit s Googlem kvůli stažení aktualizací modelů a může Googlu posílat anonymní údaje o výkonu a používání.</p>
 
     <h2>5. Poloha</h2>
-    <p>Aplikace žádá o polohu jen ve chvíli, kdy ji používáš: k zobrazení tvé pozice na mapě, k uložení aktuálního místa nebo k přidání polohy do SOS zprávy. Poloha se nesleduje na pozadí a neposílá se nám. SOS zprávu odešle aplikace Zprávy v tvém telefonu kontaktům, které sis vybral.</p>
+    <p>Aplikace žádá o polohu jen tehdy, když ji používáš: pro zobrazení tvé polohy na mapě, uložení místa, kde stojíš, polohu v SOS zprávě nebo <strong>záznam trasy</strong>. Trasa se zaznamenává jen od chvíle, kdy klepneš na Start (v aplikaci nebo na widgetu), do Stop; po celou dobu je vidět oznámení. Body trasy se ukládají v telefonu (a do tvé zálohy, pokud ji používáš). Tvoje poloha se nám nikdy neposílá. SOS zprávu odešle aplikace Zprávy v tvém telefonu kontaktům, které sis vybral.</p>
+    <p><strong>Kroky.</strong> Když si na widgetu zapneš kroky, aplikace čte krokoměr telefonu (oprávnění „Fyzická aktivita“). Počet se ukazuje jen na widgetu, nikam se neukládá ani neodesílá.</p>
 
     <h2>6. Služby třetích stran</h2>
     <p>Některé funkce posílají dotaz na externí službu. Dotaz obsahuje jen to, co funkce potřebuje, a tvou IP adresu, kterou prozradí každé spojení s internetem.</p>
@@ -96,7 +97,7 @@
 <footer class="site-footer">
   <div class="container">
     <span>© 2026 Travel Companion · <span class="dev"><img src="../lr-tech-logo.png" width="28" height="28" alt="LR Tech CZ logo">LR Tech CZ</span></span>
-    <nav aria-label="Patička"><a href="./">Úvod</a><a href="delete-account.html">Smazání účtu</a></nav>
+    <nav aria-label="Patička"><a href="./">Úvod</a><a href="security.html">Zabezpečení</a><a href="delete-account.html">Smazání účtu</a></nav>
   </div>
 </footer>
 

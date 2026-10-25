@@ -180,6 +180,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(syncServiceProvider).syncNow();
+      TrackerService.instance.refresh(); // záznam spuštěný / zastavený z widgetu
       _widget.update();
     }
   }
@@ -188,6 +189,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   void _onSettings() {
     if (!mounted) return;
     ReminderService.reschedule(); // texty upozornění v novém jazyce / nový čas
+    TrackerService.instance.setLabels();
     _widget.update();
     setState(() {});
     void mark(Element e) {

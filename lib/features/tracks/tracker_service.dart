@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:uuid/uuid.dart';
 
@@ -73,24 +74,32 @@ String buildGpx(Track t) {
   return b.toString();
 }
 
-/// Ruční záznam trasy (Start/Stop). Běží i se zhasnutým displejem přes službu
-/// v popředí s oznámením „Zaznamenávám trasu“.
+
+/// Ruční záznam trasy (Start/Stop). Běží i se zhasnutým displejem a zavřenou aplikací.
+///
+/// Android: body sbírá nativní služba v popředí (`TrackService.kt`, kanál „tc/tracker“), kterou jde
+/// spustit i z widgetu bez otevření aplikace; aplikace jen zobrazuje stav a hotové trasy si uloží do databáze.
+/// iOS: záznam přímo v aplikaci přes geolocator.
 class TrackerService extends ChangeNotifier {
   TrackerService._();
   static final instance = TrackerService._();
 
+  static const _ch = MethodChannel('tc/tracker');
+  static bool get _native => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   AppDatabase? _db;
   StreamSubscription<Position>? _sub;
-  Timer? _flushTimer;
-  String? trackId;
+  Timer? _flushTimer, _poll;
+  String? trackId; // iOS: řádek v databázi
+  bool _recording = false;
   DateTime? startedAt;
   final List<TrackPoint> points = [];
   double distance = 0;
   bool _dirty = false;
 
-  bool get recording => trackId != null;
+  bool get recording => _native ? _recording : trackId != null;
 
-  /// Při startu aplikace: trasa, která zůstala otevřená (aplikace spadla / telefon ji ukončil), se uzavře.
+  /// Při startu aplikace: uloží trasy dokončené na pozadí, uzavře nedokončené a načte stav záznamu.
   Future<void> init(AppDatabase db) async {
     _db = db;
     final open = await (db.select(db.tracks)..where((t) => t.endedAt.isNull() & t.deletedAt.isNull())).get();
@@ -102,6 +111,83 @@ class TrackerService extends ChangeNotifier {
         syncState: const Value('pending'),
       ));
     }
+    if (_native) {
+      await setLabels();
+      await refresh();
+    }
+  }
+
+  /// Texty pro oznámení a widget v jazyce aplikace (služba běží i bez aplikace).
+  Future<void> setLabels() async {
+    if (!_native) return;
+    try {
+      await _ch.invokeMethod('setLabels', {
+        'n_title': tr('Zaznamenávám trasu'),
+        'n_stop': tr('Stop'),
+        'n_channel': tr('Záznam trasy'),
+        't_started': tr('Záznam trasy spuštěn'),
+        't_stopped': tr('Trasa uložena'),
+        't_gps': tr('Zapni v telefonu polohu (GPS).'),
+      });
+    } catch (_) {}
+  }
+
+  /// Stav ze služby (např. po startu/stopu z widgetu) + uložení dokončených tras.
+  Future<void> refresh() async {
+    if (!_native) return;
+    try {
+      await _importFinished();
+      final s = jsonDecode(await _ch.invokeMethod<String>('state') ?? '{}') as Map<String, dynamic>;
+      _recording = s['recording'] == true;
+      startedAt = _recording ? DateTime.fromMillisecondsSinceEpoch((s['startedAt'] as num).toInt()) : null;
+      distance = _recording ? (s['distance'] as num).toDouble() : 0;
+      points
+        ..clear()
+        ..addAll(_recording ? decodePoints(s['points'] as String? ?? '[]') : const []);
+      if (_recording) {
+        _poll ??= Timer.periodic(const Duration(seconds: 3), (_) => refresh());
+      } else {
+        _poll?.cancel();
+        _poll = null;
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('tracker: $e');
+    }
+  }
+
+  /// Trasy, které služba dokončila, do databáze (id ze služby → nic se neuloží dvakrát).
+  Future<void> _importFinished() async {
+    final db = _db;
+    if (db == null) return;
+    final list = jsonDecode(await _ch.invokeMethod<String>('takeFinished') ?? '[]') as List;
+    for (final f in list.cast<Map<String, dynamic>>()) {
+      final start = DateTime.fromMillisecondsSinceEpoch((f['startedAt'] as num).toInt());
+      await db.into(db.tracks).insert(
+            TracksCompanion.insert(
+              id: f['id'] as String,
+              tripId: Value(await _tripFor(start)),
+              name: tr('Trasa {d}', {'d': '${fmtDate(start)} ${fmtTime(start.hour * 60 + start.minute)}'}),
+              startedAt: start,
+              endedAt: Value(DateTime.fromMillisecondsSinceEpoch((f['endedAt'] as num).toInt())),
+              distanceM: Value((f['distance'] as num).toDouble()),
+              points: Value(jsonEncode(f['points'])),
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+    }
+  }
+
+  /// Cesta, která v daný den probíhá (když nějaká je).
+  Future<String?> _tripFor(DateTime when) async {
+    final db = _db!;
+    String? tripId;
+    for (final t in await (db.select(db.trips)..where((t) => t.deletedAt.isNull())).get()) {
+      if (t.notes == demoTripNote || t.startDate == null) continue;
+      final s = dayOnly(t.startDate!), e = t.endDate == null ? null : dayOnly(t.endDate!);
+      if (!s.isAfter(dayOnly(when)) && (e == null || !e.isBefore(dayOnly(when)))) tripId = t.id;
+    }
+    return tripId;
   }
 
   /// Vrátí null, když se záznam spustil, jinak text chyby pro uživatele.
@@ -115,18 +201,19 @@ class TrackerService extends ChangeNotifier {
       return tr('Aplikace nemá povolený přístup k poloze.');
     }
 
-    final now = DateTime.now();
-    // patří k probíhající cestě (když nějaká je)
-    String? tripId;
-    for (final t in await (db.select(db.trips)..where((t) => t.deletedAt.isNull())).get()) {
-      if (t.notes == demoTripNote || t.startDate == null) continue;
-      final s = dayOnly(t.startDate!), e = t.endDate == null ? null : dayOnly(t.endDate!);
-      if (!s.isAfter(dayOnly(now)) && (e == null || !e.isBefore(dayOnly(now)))) tripId = t.id;
+    if (_native) {
+      await setLabels();
+      await _ch.invokeMethod('start');
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      await refresh();
+      return null;
     }
+
+    final now = DateTime.now();
     final id = const Uuid().v4();
     await db.into(db.tracks).insert(TracksCompanion.insert(
           id: id,
-          tripId: Value(tripId),
+          tripId: Value(await _tripFor(now)),
           name: tr('Trasa {d}', {'d': '${fmtDate(now)} ${fmtTime(now.hour * 60 + now.minute)}'}),
           startedAt: now,
         ));
@@ -136,27 +223,14 @@ class TrackerService extends ChangeNotifier {
     distance = 0;
     notifyListeners();
 
-    final settings = defaultTargetPlatform == TargetPlatform.android
-        ? AndroidSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 8,
-            intervalDuration: const Duration(seconds: 5),
-            foregroundNotificationConfig: ForegroundNotificationConfig(
-              notificationTitle: tr('Zaznamenávám trasu'),
-              notificationText: tr('Klepnutím otevřeš Travel Companion'),
-              notificationChannelName: tr('Záznam trasy'),
-              enableWakeLock: true,
-              setOngoing: true,
-            ),
-          )
-        : AppleSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 8,
-            allowBackgroundLocationUpdates: true,
-            showBackgroundLocationIndicator: true,
-            pauseLocationUpdatesAutomatically: false,
-            activityType: ActivityType.fitness,
-          ) as LocationSettings;
+    final settings = AppleSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 8,
+      allowBackgroundLocationUpdates: true,
+      showBackgroundLocationIndicator: true,
+      pauseLocationUpdatesAutomatically: false,
+      activityType: ActivityType.fitness,
+    );
     _sub = Geolocator.getPositionStream(locationSettings: settings).listen(_onPosition, onError: (_) {});
     _flushTimer = Timer.periodic(const Duration(seconds: 30), (_) => _flush());
     return null;
@@ -191,6 +265,12 @@ class TrackerService extends ChangeNotifier {
   }
 
   Future<void> stop() async {
+    if (_native) {
+      await _ch.invokeMethod('stop');
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await refresh();
+      return;
+    }
     final db = _db, id = trackId;
     if (db == null || id == null) return;
     await _sub?.cancel();

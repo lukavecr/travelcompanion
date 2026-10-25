@@ -64,6 +64,18 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+        <!-- záznam trasy na pozadí (spouští widget i aplikace) -->
+        <service
+            android:name=".TrackService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+        <activity
+            android:name=".TrackToggleActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:taskAffinity="com.lukrom.travelcompanion.toggle"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!-- widget na plochu: plán na 3 dny + dnešní útrata -->
         <receiver
             android:name=".PlanWidgetProvider"

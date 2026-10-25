@@ -150,9 +150,13 @@ class PlanWidgetProvider : HomeWidgetProvider() {
                 R.id.widget_track, "setBackgroundResource",
                 if (recording) R.drawable.widget_button_stop else R.drawable.widget_button,
             )
+            // Start/Stop bez otevření aplikace (neviditelná aktivita spustí / zastaví službu)
             views.setOnClickPendingIntent(
                 R.id.widget_track,
-                HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java, Uri.parse("travelcompanion://track")),
+                android.app.PendingIntent.getActivity(
+                    context, 3, android.content.Intent(context, TrackToggleActivity::class.java),
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
+                ),
             )
             views.setOnClickPendingIntent(
                 R.id.widget_root,
@@ -200,18 +204,28 @@ class PlanWidgetProvider : HomeWidgetProvider() {
 
     private fun prefs(context: Context) = context.getSharedPreferences("tc_steps", Context.MODE_PRIVATE)
 
-    /** Dnešní kroky: rozdíl od prvního údaje dne (o půlnoci se widget překreslí sám). */
+    /**
+     * Dnešní kroky = celkový počet (od zapnutí telefonu) − stav o půlnoci.
+     * Stav o půlnoci = poslední údaj ze včerejška (widget se obnovuje zhruba každých 30 min),
+     * takže ranní kroky se neztratí, ani když systém půlnoční obnovení zdrží.
+     */
     private fun stepsToday(context: Context, total: Int): Int {
         val p = prefs(context)
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val today = fmt.format(Date())
+        val yesterday = fmt.format(Date(System.currentTimeMillis() - 24L * 3600 * 1000))
         var base = p.getInt("base", -1)
-        if (p.getString("date", "") != today || base < 0 || total < base) {
-            // nový den nebo restart telefonu (počítadlo začne od nuly)
-            base = if (p.getString("date", "") == today && total < base) 0 else total
+        if (p.getString("date", "") != today) {
+            val lastTotal = p.getInt("lastTotal", -1)
+            base = if (p.getString("lastTotalDate", "") == yesterday && lastTotal in 0..total) lastTotal else total
             p.edit().putString("date", today).putInt("base", base).apply()
+        } else if (total < base) {
+            base = 0 // restart telefonu: počítadlo začalo znovu od nuly
+            p.edit().putInt("base", 0).apply()
         }
         val steps = total - base
-        p.edit().putInt("last", steps).putString("lastDate", today).apply()
+        p.edit().putInt("last", steps).putString("lastDate", today)
+            .putInt("lastTotal", total).putString("lastTotalDate", today).apply()
         return steps
     }
 

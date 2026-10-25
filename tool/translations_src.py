@@ -969,6 +969,8 @@ T = {
 'Trasa': ('Track', 'Strecke', 'Ruta'),
 'Zapnout kroky': ('Turn on steps', 'Schritte einschalten', 'Activar pasos'),
 'Kroky na widgetu jsou zapnuté.': ('Steps on the widget are on.', 'Schritte im Widget sind eingeschaltet.', 'Los pasos en el widget están activados.'),
+'Záznam trasy spuštěn': ('Track recording started', 'Streckenaufzeichnung gestartet', 'Grabación de ruta iniciada'),
+'Trasa uložena': ('Track saved', 'Strecke gespeichert', 'Ruta guardada'),
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.

@@ -13,7 +13,7 @@ PAGES = {'index.html': INDEX, 'privacy.html': PRIVACY, 'delete-account.html': DE
 
 def url(lang, page):
     base = '/' if lang == 'en' else f'/{lang}/'
-    return base + ('' if page == 'index.html' else page)
+    return base + ('' if page == 'index.html' else page.removesuffix('.html'))  # cleanUrls ve firebase.json
 
 
 def langs_nav(cur, page):
@@ -23,8 +23,9 @@ def langs_nav(cur, page):
     return f'<!--LANGS--><nav class="langs" aria-label="Language">{links}</nav><!--/LANGS-->'
 
 
-def hreflang(page):
-    tags = ''.join(f'<link rel="alternate" hreflang="{l}" href="{SITE}{url(l, page)}">' for l in LANGS)
+def hreflang(page, lang='en'):
+    tags = f'<link rel="canonical" href="{SITE}{url(lang, page)}">'
+    tags += ''.join(f'<link rel="alternate" hreflang="{l}" href="{SITE}{url(l, page)}">' for l in LANGS)
     tags += f'<link rel="alternate" hreflang="x-default" href="{SITE}{url("en", page)}">'
     return f'<!--HREFLANG-->{tags}<!--/HREFLANG-->'
 
@@ -57,8 +58,18 @@ for page, items in PAGES.items():
         out = re.sub(r'(img/[a-z0-9_]+)-en\.(webp|png)', rf'\1-{lang}.\2', out)  # obrázek v daném jazyce
         out = re.sub(r'(href|src)="(img/[^"]+)"', r'\1="../\2"', out)
         out = put(out, 'LANGS', langs_nav(lang, page))
+        out = put(out, 'HREFLANG', hreflang(page, lang))
         os.makedirs(os.path.join('website', lang), exist_ok=True)
         open(os.path.join('website', lang, page), 'w', encoding='utf-8', newline='').write(out)
+
+# mapa webu a robots.txt pro vyhledávače (Google Search Console → Soubory Sitemap → sitemap.xml)
+alts = lambda page: ''.join(f'<xhtml:link rel="alternate" hreflang="{l}" href="{SITE}{url(l, page)}"/>' for l in LANGS)
+entries = ''.join(f'<url><loc>{SITE}{url(l, page)}</loc>{alts(page)}</url>\n' for page in PAGES for l in LANGS)
+open('website/sitemap.xml', 'w', encoding='utf-8', newline='\n').write(
+    '<?xml version="1.0" encoding="UTF-8"?>\n'
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+    f'{entries}</urlset>\n')
+open('website/robots.txt', 'w', encoding='utf-8', newline='\n').write(f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
 
 if errors:
     print('\n'.join(errors))

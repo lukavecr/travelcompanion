@@ -8,10 +8,12 @@ Spuštění: python tool/promo/build_promo.py [jazyky…]
 """
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
+from PIL import Image  # noqa: E402
 from promo_texts import CTA, FEATURES, SLOGAN, SUB  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -175,6 +177,10 @@ def build_web():
         body = (phone(shot(lang, '08_boarding'), 60, 150, 400, -8) + phone(shot(lang, '02_plan'), 400, 60, 440, 0)
                 + phone(shot(lang, '10_vault'), 780, 150, 400, 8))
         render(f'{lang}/web/hero_1240x1100', 1240, 1100, page(1240, 1100, body))
+        # rovnou do webu: úvodní obrázek (webp) a náhled odkazu pro Facebook/WhatsApp (og)
+        img = ROOT / 'website' / 'img'
+        Image.open(OUT / lang / 'web' / 'hero_1240x1100.png').save(img / f'hero-{lang}.webp', quality=88)
+        shutil.copyfile(OUT / lang / 'facebook' / 'post_og_1200x630.png', img / f'og-{lang}.png')
 
 
 if __name__ == '__main__':

@@ -128,7 +128,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   `tool/fix_const.py`. Popisky typů/polí Vaultu se překládají v getteru `label`.
 - **Web** (`website/`): angličtina v kořeni = zdroj, `python tool/build_website.py` vytvoří `website/cs|de|es/` podle
   `tool/website_i18n.py` (přepínač jazyků, hreflang). Po úpravě anglického textu doplnit překlad, jinak build skončí chybou.
-  Zveřejnění: `firebase deploy --only hosting` (jen se souhlasem uživatele).
+  Zveřejnění: `firebase deploy --only hosting` (jen se souhlasem uživatele). Web běží na **https://comesviae.web.app**
+  (Firebase Hosting, druhý web v projektu, zdarma); stará adresa travel-companion-ai-e300c.web.app přesměrovává 301
+  (`firebase.json` → `hosting` je pole dvou webů). Deploy kvůli Avastu s `NODE_EXTRA_CA_CERTS` = wscert.pem.
 - **Úvodní průvodce** `features/onboarding/welcome_screen.dart` (route `/welcome`, jen před prvním přihlášením;
   `AppSettings.onboardingDone`, přihlášení uživatelé ho přeskočí) a **ukázková cesta** `demo_trip.dart` (Japonsko,
   `notes = 'demo'` → nepočítá se do limitů Free; tlačítko v prázdném seznamu cest).

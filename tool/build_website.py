@@ -5,7 +5,7 @@ import os, re, sys
 sys.path.insert(0, 'tool')
 from website_i18n import COMMON, INDEX, PRIVACY, DELETE, SECURITY  # noqa: E402
 
-SITE = 'https://travel-companion-ai-e300c.web.app'
+SITE = 'https://comesviae.web.app'
 LANGS = ['en', 'cs', 'de', 'es']
 NAMES = {'en': 'EN', 'cs': 'CS', 'de': 'DE', 'es': 'ES'}
 PAGES = {'index.html': INDEX, 'privacy.html': PRIVACY, 'delete-account.html': DELETE, 'security.html': SECURITY}

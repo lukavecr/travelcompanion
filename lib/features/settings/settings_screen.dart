@@ -400,7 +400,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // ---------- O aplikaci ----------
 
-  static const _web = 'https://travel-companion-ai-e300c.web.app';
+  static const _web = 'https://comesviae.web.app';
 
   List<Widget> _about(BuildContext c) => [
         FutureBuilder<PackageInfo>(

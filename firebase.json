@@ -19,14 +19,32 @@
       }
     }
   },
-  "hosting": {
-    "public": "website",
-    "ignore": [
-      "firebase.json",
-      "**/.*"
-    ],
-    "cleanUrls": true
-  },
+  "hosting": [
+    {
+      "site": "comesviae",
+      "public": "website",
+      "ignore": [
+        "firebase.json",
+        "**/.*"
+      ],
+      "cleanUrls": true
+    },
+    {
+      "site": "travel-companion-ai-e300c",
+      "public": "website",
+      "ignore": [
+        "firebase.json",
+        "**/.*"
+      ],
+      "redirects": [
+        {
+          "source": "/:path*",
+          "destination": "https://comesviae.web.app/:path",
+          "type": 301
+        }
+      ]
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules"
   }

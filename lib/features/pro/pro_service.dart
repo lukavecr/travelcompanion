@@ -8,7 +8,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/tr.dart';
 
-/// Travel Companion Pro = roční předplatné v Google Play.
+/// Comes Viae Pro = roční předplatné v Google Play.
 ///
 /// Free: 1 aktivní cesta, 10 dokladů, 30 výdajů, data jen v telefonu; Vault a SOS zdarma.
 /// Pro: bez omezení + záloha a synchronizace do cloudu.

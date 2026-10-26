@@ -1,4 +1,4 @@
-# Propagační materiály Travel Companion
+# Propagační materiály Comes Viae
 
 Vše je vygenerované z **prezentačního režimu** aplikace (vymyšlená data, žádné skutečné údaje).
 Složky podle jazyka: `cs`, `en`, `de`, `es`.

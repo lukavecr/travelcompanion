@@ -1,4 +1,4 @@
-# Travel Companion AI – kontext pro Claude Code
+# Comes Viae (dříve Travel Companion AI) – kontext pro Claude Code
 
 Android aplikace (Flutter) pro dlouhodobé cestovatele: cesty, plán po dnech, místa, doklady
 (QR / palubní lístky), výdaje s přepočtem měn, upozornění, záloha do Firebase.
@@ -189,7 +189,12 @@ proto je důležitá spolehlivost offline a záloha dat.
   `promo_texts.py`. Výstup `branding/promo/<jazyk>/` (mimo git), návod `branding/promo/README.md`. Web: `website/img/hero-*.webp`,
   `og-*.png` (náhled odkazu). Emulátor občas zamrzne (hlavně po přepínání režimu letadlo) → zabít qemu, spustit
   s `-gpu swiftshader_indirect`; po tvrdém vypnutí zmizí naposledy instalovaná aplikace → znovu `adb install -r` (data zůstanou).
-- **Ikona aplikace je zatím výchozí Flutter** (mipmap ic_launcher) – před Google Play nahradit (návrh: kompas z webu, barva #2DD4A7).
+- **Název aplikace: Comes Viae** (lat. „společník na cestě“; rozhodnutí uživatele 26. 10. 2026 – prověřeno: známky EU/CZ,
+  obchody, domény comesviae.com/.cz/.app/.eu volné, zatím neregistrované). Zobrazovaný název se mění jen v textech;
+  technické identifikátory zůstávají (`com.lukrom.travelcompanion`, balíček `travelcompanion`, schéma `travelcompanion://`,
+  Firebase projekt, `aiTripFormat`, hash pozvánek v `share_logic.dart` – ty měnit nelze).
+- **Ikona**: kompas z webu, `python tool/gen_app_icon.py` vytvoří Android (klasická, adaptivní + monochromatická,
+  pozadí `#0f2a23`), iOS AppIcon a `branding/app-icon-512.png` (Google Play).
 - SOS: `vault/emergency_numbers.dart` (tísňová čísla podle země z polohy, výběr jiné země), upozornění na chybějící předvolbu.
 - Průzkum trhu a návrhy: `docs/PRUZKUM_TRHU.md`.
 - `money_screen.dart`: **jen jeden řádek** „Vše + cesty“ (uživatel výslovně nechce druhý řádek zemí ani další filtry);

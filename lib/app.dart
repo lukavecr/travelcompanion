@@ -230,7 +230,7 @@ class _TravelAppState extends ConsumerState<TravelApp>
   Widget build(BuildContext context) {
     return MaterialApp.router(
       scaffoldMessengerKey: rootScaffoldKey,
-      title: tr('Travel Companion AI'),
+      title: tr('Comes Viae'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

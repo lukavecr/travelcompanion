@@ -91,7 +91,7 @@ String buildTripIcs(Trip trip, List<CalendarEvent> events, Map<String, Place> pl
   final lines = <String>[
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//LR Tech CZ//Travel Companion//EN',
+    'PRODID:-//LR Tech CZ//Comes Viae//EN',
     'CALSCALE:GREGORIAN',
     'X-WR-CALNAME:${_icsEscape(trip.name)}',
   ];
@@ -192,7 +192,7 @@ Future<List<int>> buildTripPdf(TripData d, pw.Font regular, pw.Font bold) async 
 
   final total = d.expenses.fold<double>(0, (s, e) => s + (e.amountMain ?? 0));
 
-  final doc = pw.Document(title: d.trip.name, author: 'Travel Companion');
+  final doc = pw.Document(title: d.trip.name, author: 'Comes Viae');
   doc.addPage(pw.MultiPage(
     pageFormat: PdfPageFormat.a4,
     margin: const pw.EdgeInsets.all(36),
@@ -200,7 +200,7 @@ Future<List<int>> buildTripPdf(TripData d, pw.Font regular, pw.Font bold) async 
     footer: (ctx) => pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text('Travel Companion · LR Tech CZ', style: const pw.TextStyle(fontSize: 8, color: muted)),
+        pw.Text('Comes Viae · LR Tech CZ', style: const pw.TextStyle(fontSize: 8, color: muted)),
         pw.Text('${ctx.pageNumber} / ${ctx.pagesCount}', style: const pw.TextStyle(fontSize: 8, color: muted)),
       ],
     ),

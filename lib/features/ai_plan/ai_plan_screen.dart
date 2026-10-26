@@ -78,7 +78,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
     if (save == null) return;
     if (save) {
       final uri = await FilePicker.saveFile(
-        fileName: 'travel-companion-plan.csv',
+        fileName: 'comes-viae-plan.csv',
         bytes: Uint8List.fromList(utf8.encode(aiCsvExample)),
         mimeType: 'text/csv',
       );
@@ -86,7 +86,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
       return;
     }
     final dir = await getTemporaryDirectory();
-    final f = File(p.join(dir.path, 'travel-companion-plan.csv'));
+    final f = File(p.join(dir.path, 'comes-viae-plan.csv'));
     await f.writeAsString(aiCsvExample);
     await SharePlus.instance.share(ShareParams(
       files: [XFile(f.path, mimeType: 'text/csv')],
@@ -247,7 +247,7 @@ class _AiPlanScreenState extends ConsumerState<AiPlanScreen> {
               onPressed: _pickFile,
             ),
             const SizedBox(height: 4),
-            Text(tr('Jde to i ze složky Stažené: soubor → Sdílet → Travel Companion.'), style: theme.textTheme.bodySmall),
+            Text(tr('Jde to i ze složky Stažené: soubor → Sdílet → Comes Viae.'), style: theme.textTheme.bodySmall),
           ]),
           if (_error != null)
             Padding(

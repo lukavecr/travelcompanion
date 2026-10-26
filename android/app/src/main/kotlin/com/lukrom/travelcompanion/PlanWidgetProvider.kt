@@ -77,7 +77,7 @@ class PlanWidgetProvider : HomeWidgetProvider() {
         val labelTomorrow = s("w_tomorrow", "Zítra")
         val labelEmpty = s("w_empty", "Nic naplánováno")
         val labelSpent = s("w_spent", "Dnes utraceno")
-        val title = s("w_title", "Travel Companion")
+        val title = s("w_title", "Comes Viae")
         val recording = s("w_rec", "0") == "1"
 
         // dnešek a dva další dny

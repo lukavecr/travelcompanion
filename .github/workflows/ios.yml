@@ -1,5 +1,5 @@
 # Sestavení aplikace pro iPhone na Macu v cloudu (GitHub Actions).
-# Výsledek: TravelCompanion.ipa (nepodepsaná) – do iPhonu ji nahraje Sideloadly s Apple ID.
+# Výsledek: ComesViae.ipa (nepodepsaná) – do iPhonu ji nahraje Sideloadly s Apple ID.
 # Spuštění: GitHub → Actions → „iPhone (IPA)“ → Run workflow.
 # Pozor: macOS minuty se v soukromém repozitáři počítají 10× (zdarma ~200 min/měsíc ≈ 8–10 sestavení).
 name: iPhone (IPA)
@@ -29,11 +29,11 @@ jobs:
         run: |
           mkdir -p Payload
           cp -R build/ios/iphoneos/Runner.app Payload/
-          zip -qry TravelCompanion.ipa Payload
-          ls -lh TravelCompanion.ipa
+          zip -qry ComesViae.ipa Payload
+          ls -lh ComesViae.ipa
 
       - uses: actions/upload-artifact@v6
         with:
-          name: TravelCompanion-iPhone
-          path: TravelCompanion.ipa
+          name: ComesViae-iPhone
+          path: ComesViae.ipa
           retention-days: 14

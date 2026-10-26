@@ -64,7 +64,7 @@ String buildGpx(Track t) {
   String esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   final b = StringBuffer()
     ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
-    ..writeln('<gpx version="1.1" creator="Travel Companion" xmlns="http://www.topografix.com/GPX/1/1">')
+    ..writeln('<gpx version="1.1" creator="Comes Viae" xmlns="http://www.topografix.com/GPX/1/1">')
     ..writeln('<trk><name>${esc(t.name)}</name><trkseg>');
   for (final p in pts) {
     final time = t.startedAt.add(Duration(seconds: p.$3)).toUtc().toIso8601String();

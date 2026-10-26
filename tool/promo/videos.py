@@ -114,7 +114,7 @@ def caption_png(lang, name, i, text):
 
 def end_png(lang):
     body = (f'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:50px">'
-            f'<div class="brand" style="transform:scale(2)">{bp.MARK}<span>Travel Companion</span></div>'
+            f'<div class="brand" style="transform:scale(2)">{bp.MARK}<span>Comes Viae</span></div>'
             f'<h1 style="font-size:64px;text-align:center;padding:0 80px">{bp.SLOGAN[lang]}</h1>'
             f'<span class="pill" style="font-size:40px;padding:20px 40px">{END[lang]}</span></div>'
             + bp.lr(400, 140, 56, 32))

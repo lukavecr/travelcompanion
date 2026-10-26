@@ -104,8 +104,8 @@ T = {
 'Rozpoznaný text (pro kontrolu)': ('Recognised text (for checking)', 'Erkannter Text (zur Kontrolle)', 'Texto reconocido (para revisar)'),
 # --- zámek ---
 'Otisk prstu, obličej nebo PIN telefonu': ('Fingerprint, face or phone PIN', 'Fingerabdruck, Gesicht oder Telefon-PIN', 'Huella, rostro o PIN del teléfono'),
-'Odemkni Travel Companion': ('Unlock Travel Companion', 'Travel Companion entsperren', 'Desbloquea Travel Companion'),
-'Travel Companion je zamčená': ('Travel Companion is locked', 'Travel Companion ist gesperrt', 'Travel Companion está bloqueada'),
+'Odemkni Comes Viae': ('Unlock Comes Viae', 'Comes Viae entsperren', 'Desbloquea Comes Viae'),
+'Comes Viae je zamčená': ('Comes Viae is locked', 'Comes Viae ist gesperrt', 'Comes Viae está bloqueada'),
 'Telefon nemá nastavený zámek obrazovky. Pro ochranu dat si v Nastavení telefonu nastav PIN a otisk prstu.': (
     'Your phone has no screen lock. To protect your data, set a PIN and fingerprint in your phone settings.',
     'Dein Telefon hat keine Displaysperre. Richte zum Schutz deiner Daten in den Telefoneinstellungen eine PIN und einen Fingerabdruck ein.',
@@ -238,10 +238,10 @@ T = {
 'Odkaz na mapu (nepovinné)': ('Map link (optional)', 'Kartenlink (optional)', 'Enlace al mapa (opcional)'),
 'Uložená místa': ('Saved places', 'Gespeicherte Orte', 'Lugares guardados'),
 'Přidat místo': ('Add place', 'Ort hinzufügen', 'Añadir lugar'),
-'Zatím tu nejsou žádná místa.\nV Google Maps klepni na „Sdílet“ a vyber Travel Companion AI.': (
-    'No places yet.\nIn Google Maps tap “Share” and choose Travel Companion.',
-    'Noch keine Orte.\nTippe in Google Maps auf „Teilen“ und wähle Travel Companion.',
-    'Aún no hay lugares.\nEn Google Maps toca «Compartir» y elige Travel Companion.'),
+'Zatím tu nejsou žádná místa.\nV Google Maps klepni na „Sdílet“ a vyber Comes Viae.': (
+    'No places yet.\nIn Google Maps tap “Share” and choose Comes Viae.',
+    'Noch keine Orte.\nTippe in Google Maps auf „Teilen“ und wähle Comes Viae.',
+    'Aún no hay lugares.\nEn Google Maps toca «Compartir» y elige Comes Viae.'),
 'Změnit polohu': ('Change location', 'Position ändern', 'Cambiar ubicación'),
 # --- Pro ---
 'Ve verzi zdarma můžeš mít {freeActiveTrips} aktivní cestu. Proběhlé cesty zůstávají.': (
@@ -296,8 +296,8 @@ T = {
 'Částka v měně cesty': ('Amount in trip currency', 'Betrag in Reisewährung', 'Importe en la moneda del viaje'),
 'Měna cesty': ('Trip currency', 'Reisewährung', 'Moneda del viaje'),
 'Kurz': ('Rate', 'Kurs', 'Tipo de cambio'),
-'Travel Companion – výdaje': ('Travel Companion – expenses', 'Travel Companion – Ausgaben', 'Travel Companion – gastos'),
-'Travel Companion – export dat': ('Travel Companion – data export', 'Travel Companion – Datenexport', 'Travel Companion – exportación de datos'),
+'Comes Viae – výdaje': ('Comes Viae – expenses', 'Comes Viae – Ausgaben', 'Comes Viae – gastos'),
+'Comes Viae – export dat': ('Comes Viae – data export', 'Comes Viae – Datenexport', 'Comes Viae – exportación de datos'),
 # --- nastavení ---
 'Smazat všechna data?': ('Delete all data?', 'Alle Daten löschen?', '¿Eliminar todos los datos?'),
 'Smaže se v telefonu i v záloze:\n• cesty a plán\n• místa\n• doklady a jejich fotky\n• výdaje a účtenky\n\nZůstane: Vault, tvůj účet a přihlášení.\n\nVrátit to nepůjde.': (
@@ -325,7 +325,7 @@ T = {
 'Heslo účtu': ('Account password', 'Kontopasswort', 'Contraseña de la cuenta'),
 'Heslo, kterým se přihlašuješ': ('The password you sign in with', 'Das Passwort, mit dem du dich anmeldest', 'La contraseña con la que inicias sesión'),
 'Smazat účet': ('Delete account', 'Konto löschen', 'Eliminar cuenta'),
-'Travel Companion Pro – aktivní': ('Travel Companion Pro – active', 'Travel Companion Pro – aktiv', 'Travel Companion Pro – activo'),
+'Comes Viae Pro – aktivní': ('Comes Viae Pro – active', 'Comes Viae Pro – aktiv', 'Comes Viae Pro – activo'),
 'Bez omezení, se zálohou do cloudu': ('No limits, with cloud backup', 'Ohne Grenzen, mit Cloud-Sicherung', 'Sin límites, con copia en la nube'),
 'Zdarma: 1 aktivní cesta, 10 dokladů, 30 výdajů, bez zálohy': (
     'Free: 1 active trip, 10 documents, 30 expenses, no backup', 'Kostenlos: 1 aktive Reise, 10 Dokumente, 30 Ausgaben, keine Sicherung',
@@ -708,10 +708,10 @@ T = {
 'Hotovo': ('Done', 'Fertig', 'Listo'),
 'Text e-mailu': ('Email text', 'E-Mail-Text', 'Texto del correo'),
 'Text e-mailu s rezervací': ('Booking email text', 'Text der Buchungs-E-Mail', 'Texto del correo de reserva'),
-'V Gmailu označ text rezervace, zkopíruj ho a vlož sem. Nebo v Gmailu zvol Sdílet → Travel Companion.': (
-    'In Gmail select the booking text, copy it and paste it here. Or in Gmail choose Share → Travel Companion.',
-    'Markiere in Gmail den Buchungstext, kopiere ihn und füge ihn hier ein. Oder wähle in Gmail Teilen → Travel Companion.',
-    'En Gmail selecciona el texto de la reserva, cópialo y pégalo aquí. O en Gmail elige Compartir → Travel Companion.'),
+'V Gmailu označ text rezervace, zkopíruj ho a vlož sem. Nebo v Gmailu zvol Sdílet → Comes Viae.': (
+    'In Gmail select the booking text, copy it and paste it here. Or in Gmail choose Share → Comes Viae.',
+    'Markiere in Gmail den Buchungstext, kopiere ihn und füge ihn hier ein. Oder wähle in Gmail Teilen → Comes Viae.',
+    'En Gmail selecciona el texto de la reserva, cópialo y pégalo aquí. O en Gmail elige Compartir → Comes Viae.'),
 'Vlož text…': ('Paste text…', 'Text einfügen…', 'Pega el texto…'),
 'Načíst': ('Read', 'Einlesen', 'Leer'),
 'Let {flight}': ('Flight {flight}', 'Flug {flight}', 'Vuelo {flight}'),
@@ -724,7 +724,7 @@ T = {
 'Aplikace nemá povolený přístup k poloze.': ('The app is not allowed to access your location.', 'Die App hat keinen Zugriff auf den Standort.', 'La app no tiene permiso para acceder a la ubicación.'),
 'Trasa {d}': ('Track {d}', 'Strecke {d}', 'Ruta {d}'),
 'Zaznamenávám trasu': ('Recording track', 'Strecke wird aufgezeichnet', 'Grabando ruta'),
-'Klepnutím otevřeš Travel Companion': ('Tap to open Travel Companion', 'Tippen, um Travel Companion zu öffnen', 'Toca para abrir Travel Companion'),
+'Klepnutím otevřeš Comes Viae': ('Tap to open Comes Viae', 'Tippen, um Comes Viae zu öffnen', 'Toca para abrir Comes Viae'),
 'Záznam trasy': ('Track recording', 'Streckenaufzeichnung', 'Grabación de ruta'),
 'Zaznamenej, kudy jdeš: trasa na mapě, vzdálenost a čas. Funguje i se zhasnutým displejem.': (
     'Record where you go: route on the map, distance and time. Works with the screen off too.',
@@ -776,7 +776,7 @@ T = {
 # --- widget ---
 'Widget na plochu': ('Home screen widget', 'Widget für den Startbildschirm', 'Widget de pantalla de inicio'),
 'Plán na 3 dny a dnešní útrata': ('Plan for 3 days and today’s spending', 'Plan für 3 Tage und heutige Ausgaben', 'Plan de 3 días y el gasto de hoy'),
-'Podrž prst na ploše → Widgety → Travel Companion.': ('Long-press the home screen → Widgets → Travel Companion.', 'Startbildschirm lange drücken → Widgets → Travel Companion.', 'Mantén pulsada la pantalla de inicio → Widgets → Travel Companion.'),
+'Podrž prst na ploše → Widgety → Comes Viae.': ('Long-press the home screen → Widgets → Comes Viae.', 'Startbildschirm lange drücken → Widgets → Comes Viae.', 'Mantén pulsada la pantalla de inicio → Widgets → Comes Viae.'),
 'Dnes': ('Today', 'Heute', 'Hoy'),
 'Zítra': ('Tomorrow', 'Morgen', 'Mañana'),
 'Nic naplánováno': ('Nothing planned', 'Nichts geplant', 'Nada planeado'),
@@ -797,10 +797,10 @@ T = {
 'Všichni jsou vyrovnaní.': ('Everyone is settled.', 'Alle sind ausgeglichen.', 'Todos están a mano.'),
 'Tvoje jméno v cestě': ('Your name in the trip', 'Dein Name in der Reise', 'Tu nombre en el viaje'),
 'Uvidí ho ostatní účastníci (např. u výdajů).': ('Other members will see it (e.g. on expenses).', 'Die anderen sehen ihn (z. B. bei Ausgaben).', 'Lo verán los demás (p. ej. en los gastos).'),
-'Přidej se k mé cestě „{trip}“ v aplikaci Travel Companion: uvidíš plán i útraty. V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion': (
-    'Join my trip “{trip}” in Travel Companion: you will see the plan and the spending. In the app open Trips, tap the “Join with code” icon and enter {code} (valid for 7 days).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
-    'Komm zu meiner Reise „{trip}“ in Travel Companion: du siehst Plan und Ausgaben. Öffne in der App Reisen, tippe auf „Mit Code beitreten“ und gib {code} ein (7 Tage gültig).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
-    'Únete a mi viaje «{trip}» en Travel Companion: verás el plan y los gastos. En la app abre Viajes, toca «Unirse con código» e introduce {code} (válido 7 días).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion'),
+'Přidej se k mé cestě „{trip}“ v aplikaci Comes Viae: uvidíš plán i útraty. V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion': (
+    'Join my trip “{trip}” in Comes Viae: you will see the plan and the spending. In the app open Trips, tap the “Join with code” icon and enter {code} (valid for 7 days).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
+    'Komm zu meiner Reise „{trip}“ in Comes Viae: du siehst Plan und Ausgaben. Öffne in der App Reisen, tippe auf „Mit Code beitreten“ und gib {code} ein (7 Tage gültig).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
+    'Únete a mi viaje «{trip}» en Comes Viae: verás el plan y los gastos. En la app abre Viajes, toca «Unirse con código» e introduce {code} (válido 7 días).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion'),
 'Nepodařilo se: {e}. Zkontroluj připojení k internetu.': ('Failed: {e}. Check your internet connection.', 'Fehlgeschlagen: {e}. Prüfe die Internetverbindung.', 'Error: {e}. Comprueba la conexión a internet.'),
 'Společná cesta': ('Shared trip', 'Gemeinsame Reise', 'Viaje compartido'),
 'Pozvi partnera, rodinu nebo kamarády: všichni uvidí plán, místa a útraty a můžou přidávat výdaje. Aplikace spočítá, kdo komu kolik dluží.': (
@@ -863,7 +863,7 @@ T = {
 'Zkopírovat zadání': ('Copy prompt', 'Prompt kopieren', 'Copiar instrucción'),
 '…nebo zkopírovat a rovnou otevřít:': ('…or copy and open right away:', '…oder kopieren und gleich öffnen:', '…o copiar y abrir directamente:'),
 '2. Vlož odpověď AI': ('2. Paste the AI answer', '2. KI-Antwort einfügen', '2. Pega la respuesta de la IA'),
-'V AI zkopíruj celou odpověď (nebo jen blok kódu na konci). Jde i Sdílet → Travel Companion.': ('In the AI copy the whole answer (or just the code block at the end). Share → Travel Companion works too.', 'Kopiere in der KI die ganze Antwort (oder nur den Codeblock am Ende). Teilen → Travel Companion geht auch.', 'En la IA copia toda la respuesta (o solo el bloque de código final). También sirve Compartir → Travel Companion.'),
+'V AI zkopíruj celou odpověď (nebo jen blok kódu na konci). Jde i Sdílet → Comes Viae.': ('In the AI copy the whole answer (or just the code block at the end). Share → Comes Viae works too.', 'Kopiere in der KI die ganze Antwort (oder nur den Codeblock am Ende). Teilen → Comes Viae geht auch.', 'En la IA copia toda la respuesta (o solo el bloque de código final). También sirve Compartir → Comes Viae.'),
 'Vložit ze schránky': ('Paste from clipboard', 'Aus Zwischenablage einfügen', 'Pegar del portapapeles'),
 '…nebo sem odpověď vlož ručně': ('…or paste the answer here', '…oder füge die Antwort hier ein', '…o pega aquí la respuesta'),
 'Načíst plán': ('Read plan', 'Plan einlesen', 'Leer el plan'),
@@ -880,10 +880,10 @@ T = {
 'Termín: {dates}': ('Dates: {dates}', 'Zeitraum: {dates}', 'Fechas: {dates}'),
 'Co mě baví / s kým jedu: {likes}': ('What I enjoy / who I travel with: {likes}', 'Was mir gefällt / mit wem ich reise: {likes}', 'Qué me gusta / con quién viajo: {likes}'),
 'Napiš podrobný plán po dnech: časy, místa, přesuny, ubytování a tipy.': ('Write a detailed day-by-day plan: times, places, transfers, accommodation and tips.', 'Schreib einen detaillierten Tagesplan: Zeiten, Orte, Wege, Unterkünfte und Tipps.', 'Escribe un plan detallado día a día: horarios, lugares, traslados, alojamiento y consejos.'),
-'Na úplný konec odpovědi přidej celý plán ještě jednou jako jeden blok kódu JSON přesně v tomto formátu (data RRRR-MM-DD, časy HH:MM, souřadnice desetinně; co nevíš, vynech). Každé místo z plánu dej do „places“ a odkaž na něj v položce dne přes „place“. Typ místa: attraction, restaurant, hotel, transport, other. Blok si vložím do aplikace Travel Companion.': (
-    'At the very end of your answer repeat the whole plan as a single JSON code block in exactly this format (dates YYYY-MM-DD, times HH:MM, decimal coordinates; leave out what you do not know). Put every place from the plan into "places" and reference it in the day item with "place". Place type: attraction, restaurant, hotel, transport, other. I will paste the block into the Travel Companion app.',
-    'Füge ganz am Ende der Antwort den ganzen Plan noch einmal als einen JSON-Codeblock genau in diesem Format hinzu (Datum JJJJ-MM-TT, Zeit HH:MM, Koordinaten dezimal; was du nicht weißt, lass weg). Jeden Ort des Plans in "places" und im Tageseintrag mit "place" darauf verweisen. Ortstyp: attraction, restaurant, hotel, transport, other. Den Block füge ich in die App Travel Companion ein.',
-    'Al final de la respuesta repite todo el plan como un único bloque de código JSON exactamente en este formato (fechas AAAA-MM-DD, horas HH:MM, coordenadas decimales; omite lo que no sepas). Pon cada lugar del plan en "places" y refiérelo en el elemento del día con "place". Tipo de lugar: attraction, restaurant, hotel, transport, other. Pegaré el bloque en la app Travel Companion.'),
+'Na úplný konec odpovědi přidej celý plán ještě jednou jako jeden blok kódu JSON přesně v tomto formátu (data RRRR-MM-DD, časy HH:MM, souřadnice desetinně; co nevíš, vynech). Každé místo z plánu dej do „places“ a odkaž na něj v položce dne přes „place“. Typ místa: attraction, restaurant, hotel, transport, other. Blok si vložím do aplikace Comes Viae.': (
+    'At the very end of your answer repeat the whole plan as a single JSON code block in exactly this format (dates YYYY-MM-DD, times HH:MM, decimal coordinates; leave out what you do not know). Put every place from the plan into "places" and reference it in the day item with "place". Place type: attraction, restaurant, hotel, transport, other. I will paste the block into the Comes Viae app.',
+    'Füge ganz am Ende der Antwort den ganzen Plan noch einmal als einen JSON-Codeblock genau in diesem Format hinzu (Datum JJJJ-MM-TT, Zeit HH:MM, Koordinaten dezimal; was du nicht weißt, lass weg). Jeden Ort des Plans in "places" und im Tageseintrag mit "place" darauf verweisen. Ortstyp: attraction, restaurant, hotel, transport, other. Den Block füge ich in die App Comes Viae ein.',
+    'Al final de la respuesta repite todo el plan como un único bloque de código JSON exactamente en este formato (fechas AAAA-MM-DD, horas HH:MM, coordenadas decimales; omite lo que no sepas). Pon cada lugar del plan en "places" y refiérelo en el elemento del día con "place". Tipo de lugar: attraction, restaurant, hotel, transport, other. Pegaré el bloque en la app Comes Viae.'),
 'Cesta z AI': ('Trip from AI', 'Reise von der KI', 'Viaje de la IA'),
 # --- plán z AI: soubor CSV ---
 'Pokyn je zkopírovaný. V AI ho vlož za svou zprávu (podrž prst → Vložit).': ('Instruction copied. In the AI paste it after your message (long-press → Paste).', 'Anweisung kopiert. Füge sie in der KI nach deiner Nachricht ein (lange drücken → Einfügen).', 'Instrucción copiada. Pégala en la IA después de tu mensaje (mantén pulsado → Pegar).'),
@@ -909,7 +909,7 @@ T = {
     'Si la IA no ofrece la descarga, escribe: «Hazlo un archivo CSV descargable». Puedes editar el archivo en Excel antes de importarlo.'),
 'Importuj soubor do aplikace': ('Import the file into the app', 'Importiere die Datei in die App', 'Importa el archivo en la app'),
 'Importovat soubor z AI (.csv)': ('Import AI file (.csv)', 'KI-Datei importieren (.csv)', 'Importar archivo de la IA (.csv)'),
-'Jde to i ze složky Stažené: soubor → Sdílet → Travel Companion.': ('Also works from Downloads: file → Share → Travel Companion.', 'Geht auch aus Downloads: Datei → Teilen → Travel Companion.', 'También desde Descargas: archivo → Compartir → Travel Companion.'),
+'Jde to i ze složky Stažené: soubor → Sdílet → Comes Viae.': ('Also works from Downloads: file → Share → Comes Viae.', 'Geht auch aus Downloads: Datei → Teilen → Comes Viae.', 'También desde Descargas: archivo → Compartir → Comes Viae.'),
 'Nemáš soubor? Vlož text odpovědi': ('No file? Paste the answer text', 'Keine Datei? Antworttext einfügen', '¿Sin archivo? Pega el texto de la respuesta'),
 'Vytvoř detailní plán cesty den po dni s konkrétními zajímavými místy, ubytováním a přesuny.': ('Create a detailed day-by-day trip plan with specific places worth visiting, accommodation and transfers.', 'Erstelle einen detaillierten Reiseplan Tag für Tag mit konkreten sehenswerten Orten, Unterkünften und Wegen.', 'Crea un plan de viaje detallado día a día con lugares concretos que visitar, alojamiento y traslados.'),
 'Celý plán mi dej jako soubor CSV ke stažení (kódování UTF-8, oddělovač čárka, první řádek jsou názvy sloupců) s těmito sloupci v tomto pořadí:': ('Give me the whole plan as a downloadable CSV file (UTF-8, comma separated, first row are column names) with these columns in this order:', 'Gib mir den ganzen Plan als CSV-Datei zum Herunterladen (UTF-8, Komma als Trenner, erste Zeile Spaltennamen) mit diesen Spalten in dieser Reihenfolge:', 'Dame todo el plan como archivo CSV descargable (UTF-8, separado por comas, la primera fila son los nombres de columnas) con estas columnas en este orden:'),
@@ -999,5 +999,5 @@ T = {
 }
 
 # Záměrně bez překladu (zůstávají stejně): názvy jazyků, značky, anglická karta pro záchranáře.
-KEEP = {'Čeština', 'English', 'Deutsch', 'Español', 'Travel Companion', 'Travel Companion AI', 'Vault',
-        'Date of birth', 'Blood type', 'Medical conditions', 'Policy number', 'Travel Companion Pro'}
+KEEP = {'Čeština', 'English', 'Deutsch', 'Español', 'Comes Viae', 'Comes Viae', 'Vault',
+        'Date of birth', 'Blood type', 'Medical conditions', 'Policy number', 'Comes Viae Pro'}

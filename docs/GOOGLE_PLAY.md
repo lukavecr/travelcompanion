@@ -9,7 +9,7 @@ Zbývá před zveřejněním: zásady ochrany soukromí (web), anglická verze, 
 3. **Platební profil** (kvůli výplatám z předplatného): Nastavení → Platební profil → bankovní účet.
 
 ## 2. Založení aplikace
-1. **Vytvořit aplikaci**: název (pracovně „Travel Companion“ – před zveřejněním vymyslet vlastní),
+1. **Vytvořit aplikaci**: název (pracovně „Comes Viae“ – před zveřejněním vymyslet vlastní),
    jazyk čeština, Aplikace, **Zdarma** (předplatné je uvnitř).
 2. **Testování → Interní testování → Vytvořit verzi** → nahrát
    `C:\dev\travelcompanion\build\app\outputs\bundle\release\app-release.aab`.
@@ -22,7 +22,7 @@ Zbývá před zveřejněním: zásady ochrany soukromí (web), anglická verze, 
 Předplatné jde založit až po nahrání první verze (krok 2).
 1. **Zpeněžení → Produkty → Předplatná → Vytvořit předplatné**
    - ID produktu: **`pro_yearly`** (přesně takhle, je v kódu)
-   - Název: Travel Companion Pro
+   - Název: Comes Viae Pro
 2. **Přidat základní tarif**: ID `yearly`, **Automatické obnovení**, období **1 rok**, cena např. **299 Kč**
    (Google dopočítá ostatní země) → **Aktivovat**.
 3. (Volitelně) **Nabídka**: 7 dní zdarma pro nové předplatitele.

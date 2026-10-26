@@ -98,7 +98,7 @@ class PlacesScreen extends ConsumerWidget {
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  tr('Zatím tu nejsou žádná místa.\n' 'V Google Maps klepni na „Sdílet“ a vyber Travel Companion AI.'),
+                  tr('Zatím tu nejsou žádná místa.\n' 'V Google Maps klepni na „Sdílet“ a vyber Comes Viae.'),
                   textAlign: TextAlign.center,
                 ),
               ),

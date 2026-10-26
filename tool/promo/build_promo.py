@@ -62,7 +62,7 @@ def shot(lang, key):
     return f.as_uri()
 
 
-def brand(text='Travel Companion'):
+def brand(text='Comes Viae'):
     return f'<div class="brand">{MARK}<span>{text}</span></div>'
 
 

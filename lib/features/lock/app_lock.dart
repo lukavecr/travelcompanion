@@ -38,7 +38,7 @@ class DeviceAuth {
         persistAcrossBackgrounding: true,
         authMessages: [
           AndroidAuthMessages(
-            signInTitle: tr('Travel Companion'),
+            signInTitle: tr('Comes Viae'),
             signInHint: tr('Otisk prstu, obličej nebo PIN telefonu'),
             cancelButton: tr('Zrušit'),
           ),
@@ -105,7 +105,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       if (mounted) setState(() => _noDeviceLock = true);
       return;
     }
-    final ok = await DeviceAuth.confirm(tr('Odemkni Travel Companion'));
+    final ok = await DeviceAuth.confirm(tr('Odemkni Comes Viae'));
     if (!mounted) return;
     if (ok) {
       setState(() => _locked = false);
@@ -136,7 +136,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
                       Icon(Icons.lock_outline,
                           size: 72, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(height: 16),
-                      Text(tr('Travel Companion je zamčená'),
+                      Text(tr('Comes Viae je zamčená'),
                           style: Theme.of(context).textTheme.titleLarge,
                           textAlign: TextAlign.center),
                       const SizedBox(height: 8),

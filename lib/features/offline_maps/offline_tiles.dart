@@ -190,7 +190,7 @@ class OfflineMaps extends ChangeNotifier {
                 .replaceAll('{x}', '${t.$2}')
                 .replaceAll('{y}', '${t.$3}');
             final res = await client
-                .get(Uri.parse(url), headers: {'User-Agent': 'TravelCompanion/1.0 (lrtechcz@gmail.com)'})
+                .get(Uri.parse(url), headers: {'User-Agent': 'ComesViae/1.0 (lrtechcz@gmail.com)'})
                 .timeout(const Duration(seconds: 20));
             if (res.statusCode == 200) {
               await f.parent.create(recursive: true);

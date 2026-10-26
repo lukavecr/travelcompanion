@@ -391,7 +391,7 @@ class _ShareOverlay extends StatelessWidget {
                       child: Image.asset('assets/brand/logo.png', width: 26, height: 26),
                     ),
                     const SizedBox(width: 8),
-                    const Text('Travel Companion',
+                    const Text('Comes Viae',
                         style: TextStyle(color: fg, fontSize: 15, fontWeight: FontWeight.w700)),
                     const Spacer(),
                     const Text('© OpenStreetMap', style: TextStyle(color: muted, fontSize: 10)),

@@ -11,7 +11,7 @@
     <!-- kroky na widgetu (senzor krokoměru telefonu) -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <application
-        android:label="Travel Companion"
+        android:label="Comes Viae"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"

@@ -108,7 +108,7 @@ Future<String?> askEmailText(BuildContext context) async {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(tr('V Gmailu označ text rezervace, zkopíruj ho a vlož sem. Nebo v Gmailu zvol Sdílet → Travel Companion.'),
+            Text(tr('V Gmailu označ text rezervace, zkopíruj ho a vlož sem. Nebo v Gmailu zvol Sdílet → Comes Viae.'),
                 style: Theme.of(ctx).textTheme.bodySmall),
             const SizedBox(height: 8),
             TextField(

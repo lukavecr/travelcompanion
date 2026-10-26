@@ -86,7 +86,7 @@ class PaywallScreen extends StatelessWidget {
           });
         }
         return Scaffold(
-          appBar: AppBar(title: Text(tr('Travel Companion Pro'))),
+          appBar: AppBar(title: Text(tr('Comes Viae Pro'))),
           body: ListView(
             padding: const EdgeInsets.all(20),
             children: [

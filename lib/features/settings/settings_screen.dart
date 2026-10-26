@@ -222,7 +222,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return [
       _tile(
           Icons.workspace_premium,
-          pro ? tr('Travel Companion Pro – aktivní') : tr('Travel Companion Pro'),
+          pro ? tr('Comes Viae Pro – aktivní') : tr('Comes Viae Pro'),
           pro
               ? tr('Bez omezení, se zálohou do cloudu')
               : tr('Zdarma: 1 aktivní cesta, 10 dokladů, 30 výdajů, bez zálohy'),
@@ -304,7 +304,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         if (ok) {
           await HomeWidget.requestPinWidget(androidName: 'PlanWidgetProvider');
         } else {
-          _snack(tr('Podrž prst na ploše → Widgety → Travel Companion.'));
+          _snack(tr('Podrž prst na ploše → Widgety → Comes Viae.'));
         }
       }),
       Card(
@@ -407,7 +407,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           future: PackageInfo.fromPlatform(),
           builder: (c, snap) => _tile(
               Icons.info_outline,
-              tr('Travel Companion'),
+              tr('Comes Viae'),
               snap.hasData ? tr('Verze {version} ({build})', {'version': snap.data!.version, 'build': snap.data!.buildNumber}) : null,
               null),
         ),
@@ -437,7 +437,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             null,
             () => showLicensePage(
                   context: c,
-                  applicationName: tr('Travel Companion'),
+                  applicationName: tr('Comes Viae'),
                   applicationIcon: Padding(
                     padding: const EdgeInsets.all(8),
                     child: ClipOval(

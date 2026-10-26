@@ -70,7 +70,7 @@ class ExportService {
     }
     // BOM, aby Excel poznal UTF-8 (háčky a čárky)
     final f = await _write('vydaje-${_stamp()}.csv', [0xEF, 0xBB, 0xBF, ...utf8.encode(b.toString())]);
-    await _share(f, 'text/csv', tr('Travel Companion – výdaje'));
+    await _share(f, 'text/csv', tr('Comes Viae – výdaje'));
   }
 
   /// Všechna data (kromě Vaultu a fotek) jako JSON – pro zálohu u sebe nebo žádost dle GDPR.
@@ -80,7 +80,7 @@ class ExportService {
             if ((r.toJson()['deletedAt']) == null) r.toJson(),
         ];
     final data = {
-      'app': tr('Travel Companion'),
+      'app': tr('Comes Viae'),
       'exportedAt': DateTime.now().toIso8601String(),
       'trips': live(await db.select(db.trips).get()),
       'places': live(await db.select(db.places).get()),
@@ -90,7 +90,7 @@ class ExportService {
       'expenses': live(await db.select(db.expenses).get()),
     };
     final json = const JsonEncoder.withIndent('  ').convert(data);
-    final f = await _write('travel-companion-${_stamp()}.json', utf8.encode(json));
-    await _share(f, 'application/json', tr('Travel Companion – export dat'));
+    final f = await _write('comes-viae-${_stamp()}.json', utf8.encode(json));
+    await _share(f, 'application/json', tr('Comes Viae – export dat'));
   }
 }

@@ -87,7 +87,7 @@ WidgetPayload buildWidgetPayload({
     spend[d] = m.entries.map((e) => '${fmtMoney(e.value)} ${e.key}').join(' + ');
   });
 
-  return WidgetPayload(active?.name ?? 'Travel Companion', days, spend);
+  return WidgetPayload(active?.name ?? 'Comes Viae', days, spend);
 }
 
 /// Uloží data pro widget a překreslí ho. Volá se po změně plánu/výdajů a při startu.

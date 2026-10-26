@@ -1,4 +1,4 @@
-# Travel Companion na iPhonu – návod
+# Comes Viae na iPhonu – návod
 
 Aplikaci pro iPhone dovoluje Apple sestavit jen na Macu. Použijeme **Mac v cloudu zdarma** (GitHub Actions)
 a do iPhonu ji z tohoto PC nahraje program **Sideloadly** s tvým běžným Apple ID (bez placení).
@@ -29,13 +29,13 @@ a do iPhonu ji z tohoto PC nahraje program **Sideloadly** s tvým běžným Appl
 
 1. GitHub → repozitář → **Actions → iPhone (IPA) → Run workflow → Run workflow**.
 2. Počkej cca 20–30 minut, až je u běhu zelená fajfka.
-3. Klikni na běh → dole **Artifacts → TravelCompanion-iPhone** → stáhne se ZIP → rozbal → `TravelCompanion.ipa`.
+3. Klikni na běh → dole **Artifacts → ComesViae-iPhone** → stáhne se ZIP → rozbal → `ComesViae.ipa`.
 4. Spusť Sideloadly, iPhone připojený kabelem:
-   - přetáhni `TravelCompanion.ipa` do okna
+   - přetáhni `ComesViae.ipa` do okna
    - **Apple account**: tvoje Apple ID
    - **Start** → zadej heslo Apple ID (případně kód z dvoufázového ověření)
 5. Na iPhonu: **Nastavení → Obecné → Správa VPN a zařízení → tvoje Apple ID → Důvěřovat**.
-6. Otevři Travel Companion a přihlas se stejným účtem jako na Androidu – data se stáhnou ze zálohy.
+6. Otevři Comes Viae a přihlas se stejným účtem jako na Androidu – data se stáhnou ze zálohy.
    Vault na iPhonu otevři **heslem Vaultu** (obnova), pak už Face ID.
 
 ## Omezení bezplatné cesty

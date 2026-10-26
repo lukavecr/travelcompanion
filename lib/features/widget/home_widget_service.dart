@@ -12,7 +12,8 @@ import '../onboarding/demo_trip.dart';
 import '../tracks/tracker_service.dart';
 import '../../l10n/tr.dart';
 
-const _androidName = 'PlanWidgetProvider';
+/// Třída widgetu (Kotlin balíček zůstal com.lukrom.travelcompanion, ID aplikace je jiné → plný název).
+const widgetProvider = 'com.lukrom.travelcompanion.PlanWidgetProvider';
 const widgetDays = 14; // data dopředu – widget si po půlnoci sám vybere správné dny
 
 String _ymd(DateTime d) =>
@@ -134,7 +135,7 @@ class HomeWidgetService {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     try {
       await _saveTracker();
-      await HomeWidget.updateWidget(androidName: _androidName);
+      await HomeWidget.updateWidget(qualifiedAndroidName: widgetProvider);
     } catch (_) {}
   }
 
@@ -168,11 +169,11 @@ class HomeWidgetService {
       await HomeWidget.saveWidgetData<String>('w_track_start', tr('Trasa'));
       await HomeWidget.saveWidgetData<String>('w_track_stop', tr('Stop'));
       await _saveTracker();
-      await HomeWidget.updateWidget(androidName: _androidName);
+      await HomeWidget.updateWidget(qualifiedAndroidName: widgetProvider);
       // o půlnoci překreslit (dnešek se posune), na dva týdny dopředu
       await HomeWidget.scheduleWidgetUpdates(
         [for (var i = 1; i <= widgetDays; i++) addDays(from, i).add(const Duration(minutes: 1))],
-        androidName: _androidName,
+        qualifiedAndroidName: widgetProvider,
       );
     } catch (e) {
       debugPrint('widget: $e');

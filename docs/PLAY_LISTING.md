@@ -5,8 +5,7 @@ Grafika: ikona `branding/app-icon-512.png`, úvodní grafika `branding/promo/<ja
 screenshoty `branding/promo/<jazyk>/play/screenshot_*.png` (8 ks, 1080 × 2400).
 
 ## Název (max. 30 znaků)
-- en: `Comes Viae: Travel Planner`
-- cs: `Comes Viae: plánovač cest`
+- en i cs: `Comes Viae` (rozhodnutí uživatele – jen název, bez podtitulu)
 
 ## Krátký popis (max. 80 znaků)
 - en: `Trip plan, boarding passes, passport vault & expenses – all offline.`

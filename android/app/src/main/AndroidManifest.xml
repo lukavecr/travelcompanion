@@ -77,7 +77,7 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:noHistory="true"
-            android:taskAffinity="com.lukrom.travelcompanion.toggle"
+            android:taskAffinity="cz.lrtech.comesviae.toggle"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!-- widget na plochu: plán na 3 dny + dnešní útrata -->
         <receiver

@@ -17,6 +17,7 @@ import '../lock/app_lock.dart';
 import '../pro/paywall.dart';
 import '../pro/pro_service.dart';
 import '../sync/sync_service.dart';
+import '../widget/home_widget_service.dart' show widgetProvider;
 import 'export_service.dart';
 import '../../l10n/tr.dart';
 
@@ -302,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _tile(Icons.widgets_outlined, tr('Widget na plochu'), tr('Plán na 3 dny a dnešní útrata'), () async {
         final ok = await HomeWidget.isRequestPinWidgetSupported() ?? false;
         if (ok) {
-          await HomeWidget.requestPinWidget(androidName: 'PlanWidgetProvider');
+          await HomeWidget.requestPinWidget(qualifiedAndroidName: widgetProvider);
         } else {
           _snack(tr('Podrž prst na ploše → Widgety → Comes Viae.'));
         }
@@ -429,7 +430,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             null,
             () => launchUrl(
                 Uri.parse(
-                    'https://play.google.com/store/apps/details?id=com.lukrom.travelcompanion'),
+                    'https://play.google.com/store/apps/details?id=cz.lrtech.comesviae'),
                 mode: LaunchMode.externalApplication)),
         _tile(
             Icons.article_outlined,

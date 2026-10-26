@@ -169,5 +169,5 @@ class ProService extends ChangeNotifier {
 
   /// Správa / zrušení předplatného v Google Play.
   static Uri get manageUrl => Uri.parse(
-      'https://play.google.com/store/account/subscriptions?sku=$productId&package=com.lukrom.travelcompanion');
+      'https://play.google.com/store/account/subscriptions?sku=$productId&package=cz.lrtech.comesviae');
 }

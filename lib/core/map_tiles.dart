@@ -154,7 +154,7 @@ class _MapTilesState extends ConsumerState<MapTiles> {
       loading: () => const SizedBox.shrink(),
       error: (_, _) => TileLayer(
         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'com.lukrom.travelcompanion',
+        userAgentPackageName: 'cz.lrtech.comesviae',
       ),
     );
   }

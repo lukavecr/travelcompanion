@@ -80,8 +80,8 @@ def adb(*a, timeout=30):
 
 def record(name, steps, seconds):
     TMP.mkdir(parents=True, exist_ok=True)
-    adb('shell', 'am', 'force-stop', 'com.lukrom.travelcompanion')
-    adb('shell', 'am', 'start', '-n', 'com.lukrom.travelcompanion/.MainActivity')
+    adb('shell', 'am', 'force-stop', 'cz.lrtech.comesviae')
+    adb('shell', 'am', 'start', '-n', 'cz.lrtech.comesviae/com.lukrom.travelcompanion.MainActivity')
     time.sleep(9)
     rec = subprocess.Popen([ADB, 'shell', 'screenrecord', '--time-limit', str(seconds), '--bit-rate', '8000000',
                             f'/sdcard/{name}.mp4'])

@@ -27,7 +27,9 @@ proto je důležitá spolehlivost offline a záloha dat.
   geokódování z **Nominatim** (User-Agent nastavený, max. 1 dotaz/s).
 - Obrázky se zálohují **zmenšené do Firestore** (base64, ≤ 650 kB, kolekce `users/{uid}/files/{id}`), ne do Storage.
 - Firebase projekt: `travel-companion-ai-e300c`, Auth e-mail/heslo, Firestore (pravidla: jen `users/{uid}/**` pro přihlášeného vlastníka).
-- Application ID: `com.lukrom.travelcompanion`.
+- Application ID: **`cz.lrtech.comesviae`** (od 27. 10. 2026; `com.lukrom.travelcompanion` už v Google Play někdo má). Kotlin balíček
+  a `namespace` zůstaly `com.lukrom.travelcompanion` → widget se volá plným názvem (`widgetProvider` v `home_widget_service.dart`).
+  Firebase: nová Android aplikace `1:120166127331:android:b065…` (google-services.json obsahuje obě).
 - E-mail projektu: **lrtechcz@gmail.com** (web, kontakty, účty služeb). Soukromý e-mail uživatele nikam nové nedávat.
   Přechod účtů (Firebase, GitHub, Play, sítě) viz `docs/UCTY.md`.
 
@@ -193,7 +195,7 @@ proto je důležitá spolehlivost offline a záloha dat.
   s `-gpu swiftshader_indirect`; po tvrdém vypnutí zmizí naposledy instalovaná aplikace → znovu `adb install -r` (data zůstanou).
 - **Název aplikace: Comes Viae** (lat. „společník na cestě“; rozhodnutí uživatele 26. 10. 2026 – prověřeno: známky EU/CZ,
   obchody, domény comesviae.com/.cz/.app/.eu volné, zatím neregistrované). Zobrazovaný název se mění jen v textech;
-  technické identifikátory zůstávají (`com.lukrom.travelcompanion`, balíček `travelcompanion`, schéma `travelcompanion://`,
+  technické identifikátory zůstávají (balíček `travelcompanion`, schéma `travelcompanion://`,
   Firebase projekt, `aiTripFormat`, hash pozvánek v `share_logic.dart` – ty měnit nelze).
 - **Ikona**: kompas z webu, `python tool/gen_app_icon.py` vytvoří Android (klasická, adaptivní + monochromatická,
   pozadí `#0f2a23`), iOS AppIcon a `branding/app-icon-512.png` (Google Play).

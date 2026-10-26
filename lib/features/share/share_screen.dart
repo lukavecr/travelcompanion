@@ -54,7 +54,7 @@ Future<String?> _askMyName(BuildContext context) async {
 String _inviteText(String tripName, String code) => tr(
     'Přidej se k mé cestě „{trip}“ v aplikaci Comes Viae: uvidíš plán i útraty. '
     'V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\n'
-    'https://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
+    'https://play.google.com/store/apps/details?id=cz.lrtech.comesviae',
     {'trip': tripName, 'code': formatInviteCode(code)});
 
 /// Sdílení cesty: účastníci, pozvánky, odchod.

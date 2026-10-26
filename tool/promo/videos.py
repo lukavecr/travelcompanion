@@ -121,25 +121,45 @@ def end_png(lang):
     path = f'_video/{lang}_end'
     bp.render(path, 1080, 1920, bp.page(1080, 1920, body))
     bg = f'_video/bg'
-    bp.render(bg, 1080, 1920, bp.page(1080, 1920, ''))
+    bp.render(bg, 1080, 1920, bp.page(1080, 1920, phone_frame()))
     return OUT / f'{path}.png', OUT / f'{bg}.png'
 
 
-def compose(lang, name, raw, seconds):
+# telefon ve videu: nahrávka bez stavového řádku nahoře (108 px) a bez navigační lišty dole (126 px)
+PHONE_W, PHONE_Y = 680, 520
+PHONE_H = round(PHONE_W * (2400 - 108 - 126) / 1080)
+SCREEN_R = 64
+
+
+def phone_frame():
+    """Tělo telefonu (rámeček, tlačítka, kamera) pod videem obrazovky – kreslí se do pozadí."""
+    bez = 20
+    x, y, w, h = (1080 - PHONE_W) // 2 - bez, PHONE_Y - bez, PHONE_W + 2 * bez, PHONE_H + 2 * bez
+    return (f'<div style="position:absolute;left:{x - 7}px;top:{y + 260}px;width:10px;height:110px;border-radius:5px;background:#1b2421"></div>'
+            f'<div style="position:absolute;left:{x - 7}px;top:{y + 400}px;width:10px;height:110px;border-radius:5px;background:#1b2421"></div>'
+            f'<div style="position:absolute;left:{x + w - 3}px;top:{y + 320}px;width:10px;height:150px;border-radius:5px;background:#1b2421"></div>'
+            f'<div style="position:absolute;left:{x}px;top:{y}px;width:{w}px;height:{h}px;border-radius:{SCREEN_R + bez}px;'
+            f'background:linear-gradient(145deg,#2b3632,#0b0f0e 40%,#151c1a);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12),'
+            f'0 40px 90px rgba(0,0,0,.6)"></div>')
+
+
+def compose(lang, name, raw, seconds, bg=None, out=None):
     caps = CAPTIONS[name][lang]
     pngs = [caption_png(lang, name, i, t) for i, (_, _, t) in enumerate(caps)]
-    end, bg = end_png(lang)
-    out = OUT / lang / 'video' / f'{name}_1080x1920.mp4'
+    end, default_bg = end_png(lang)
+    bg = bg or default_bg
+    out = out or OUT / lang / 'video' / f'{name}_1080x1920.mp4'
     out.parent.mkdir(parents=True, exist_ok=True)
     # telefon: nahrávka 1080×2400 bez stavového řádku → výška 1360, zaoblené rohy maskou
     inputs = ['-loop', '1', '-i', str(bg), '-i', str(raw)]
     for p in pngs:
         inputs += ['-loop', '1', '-i', str(p)]
     inputs += ['-loop', '1', '-i', str(end)]
-    f = ['[1:v]crop=1080:2292:0:108,scale=680:-2,format=yuva420p,'
-         "geq=lum='lum(X,Y)':a='if(gt(abs(W/2-X),W/2-40)*gt(abs(H/2-Y),H/2-40),"
-         "if(lte(hypot(W/2-40-abs(W/2-X),H/2-40-abs(H/2-Y)),40),255,0),255)':cb='cb(X,Y)':cr='cr(X,Y)'[ph]",
-         '[0:v][ph]overlay=(W-w)/2:520[v0]']
+    r_ = SCREEN_R
+    f = [f'[1:v]crop=1080:{2400 - 108 - 126}:0:108,scale={PHONE_W}:{PHONE_H},format=yuva420p,'
+         f"geq=lum='lum(X,Y)':a='if(gt(abs(W/2-X),W/2-{r_})*gt(abs(H/2-Y),H/2-{r_}),"
+         f"if(lte(hypot(W/2-{r_}-abs(W/2-X),H/2-{r_}-abs(H/2-Y)),{r_}),255,0),255)':cb='cb(X,Y)':cr='cr(X,Y)'[ph]",
+         f'[0:v][ph]overlay=(W-w)/2:{PHONE_Y}[v0]']
     last = 'v0'
     for i, (a, b, _) in enumerate(caps):
         f.append(f"[{last}][{i + 2}:v]overlay=0:0:enable='between(t,{a},{b})'[v{i + 1}]")

@@ -34,7 +34,8 @@ Future<ReceiptGuess> readReceipt(String path) async {
   return ReceiptGuess(
     path: path,
     text: text,
-    amount: guessAmount(text),
+    // nejdřív podle polohy „Celkem → číslo vpravo“, jinak z textu
+    amount: guessTotalFromLines(ocr.lines) ?? guessAmount(text),
     currency: cur,
     date: guessDate(text),
     category: guessCategory(text),
@@ -91,7 +92,7 @@ double? guessAmount(String text) {
         .whereType<double>()
         .where((v) => v > 0 && v < 10000000)
         .toList();
-    final hasKeyword = keyword.hasMatch(line);
+    final hasKeyword = keyword.hasMatch(line) && !_notTotal.hasMatch(line);
     if (nums.isEmpty) {
       pending = hasKeyword;
       continue;
@@ -131,4 +132,94 @@ String? guessCategory(String text) {
     return 'shopping';
   }
   return null;
+}
+
+// ---------- celková částka podle polohy na fotce ----------
+
+/// Silné popisky konečné částky (k zaplacení) – mají přednost.
+final _totalStrong = RegExp(
+  r'k\s*úhrad|k\s*uhrad|celkem\s*k|amount\s*due|grand\s*total|total\s*due|to\s*pay|zu\s*zahlen|total\s*a\s*pagar|'
+  r'importe\s*total|tổng\s*cộng|tong\s*cong|合計|お会計|ご請求|ยอดสุทธิ|รวมทั้งสิ้น',
+  caseSensitive: false,
+);
+
+/// Obecné popisky celkové částky.
+final _totalWord = RegExp(
+  r'total|celkem|celkov|suma|součet|soucet|summe|gesamt|betrag|importe|tổng|tong|รวม|итого|razem|osszesen|összesen|totaal',
+  caseSensitive: false,
+);
+
+/// Řádky, které celkovou částkou nejsou (mezisoučet, DPH, přijatá hotovost, vráceno…).
+final _notTotal = RegExp(
+  r'sub\s*-?\s*total|subtotal|mezisou|dph|vat\b|tax|daň|dan\b|základ|zaklad|sazb|mwst|ust\b|netto|'
+  r'zaokrouhl|rounding|change|vráceno|vraceno|vrátit|přijato|prijato|hotovost|cash|tendered|received|'
+  r'tip\b|spropitn|items|položek|polozek|počet|pocet|qty|\bks\b|'
+  r'小計|お預|お釣|釣銭|税|ภาษี|เงินทอน|tiền\s*thối|tien\s*thoi|vat\s*\d',
+  caseSensitive: false,
+);
+
+final _amountRe = RegExp(r'\d{1,3}(?:[ ,.]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?');
+
+List<double> _amountsIn(String s) => _amountRe
+    .allMatches(s)
+    // datum (26.10.2026) ani čas (14:30) nejsou částky
+    .where((m) {
+      final after = m.end < s.length ? s[m.end] : ' ';
+      final before = m.start > 0 ? s[m.start - 1] : ' ';
+      return after != ':' && before != ':' && !(after == '.' && m.end + 1 < s.length && RegExp(r'\d').hasMatch(s[m.end + 1]));
+    })
+    .map((m) => parseAmount(m.group(0)!, ocr: true))
+    .whereType<double>()
+    .where((v) => v > 0 && v < 10000000)
+    .toList();
+
+/// Celková částka z řádků OCR podle polohy: popisek „Celkem / Total / K úhradě / 合計“
+/// a číslo vpravo na stejném řádku (nebo hned pod ním). null = popisek nenalezen.
+double? guessTotalFromLines(List<OcrLine> lines) {
+  double? best;
+  var bestScore = -1;
+  for (final l in lines) {
+    final strong = _totalStrong.firstMatch(l.text);
+    final word = strong ?? _totalWord.firstMatch(l.text);
+    if (word == null || _notTotal.hasMatch(l.text)) continue;
+    final score = strong != null ? 2 : 1;
+
+    // číslo za popiskem na stejném řádku OCR
+    var nums = _amountsIn(l.text.substring(word.end));
+    if (nums.isEmpty) {
+      // vpravo na stejné výšce (účtenky mají popisky vlevo a částky vpravo)
+      final r = l.rect;
+      final right = lines
+          .where((o) => !identical(o, l) && o.rect.left >= r.left + r.width * 0.5)
+          .where((o) => (o.rect.center.dy - r.center.dy).abs() < math.max(r.height, o.rect.height) * 0.6)
+          .where((o) => !_notTotal.hasMatch(o.text))
+          .toList()
+        ..sort((a, b) => a.rect.left.compareTo(b.rect.left));
+      for (final o in right) {
+        nums = _amountsIn(o.text);
+        if (nums.isNotEmpty) break;
+      }
+    }
+    if (nums.isEmpty) {
+      // těsně pod popiskem
+      final r = l.rect;
+      final below = lines
+          .where((o) => !identical(o, l) && o.rect.top >= r.bottom - 4 && o.rect.top - r.bottom < r.height * 1.8)
+          .where((o) => math.min(r.right, o.rect.right) - math.max(r.left, o.rect.left) > -r.width * 0.5)
+          .toList()
+        ..sort((a, b) => a.rect.top.compareTo(b.rect.top));
+      for (final o in below) {
+        nums = _amountsIn(o.text);
+        if (nums.isNotEmpty) break;
+      }
+    }
+    if (nums.isEmpty) continue;
+    final v = nums.reduce(math.max);
+    // silnější popisek vyhrává; při stejném popisku větší částka (celkem > položka)
+    if (score > bestScore || (score == bestScore && v > best!)) {
+      best = v;
+      bestScore = score;
+    }
+  }
+  return best;
 }

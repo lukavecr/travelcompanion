@@ -66,10 +66,37 @@ def brand(text='Travel Companion'):
     return f'<div class="brand">{MARK}<span>{text}</span></div>'
 
 
-def phone(src, left, top, width, rot=0, crop_top=0.045):
-    # screenshot bez stavového řádku (čas, baterie)
-    return (f'<div class="phone" style="left:{left}px;top:{top}px;width:{width}px;height:{int(width * 2400 / 1080 * (1 - crop_top))}px;'
-            f'transform:rotate({rot}deg)"><img src="{src}" style="margin-top:-{int(width * 2400 / 1080 * crop_top)}px"></div>')
+# Snímek obrazovky 1080 × 2400: dole je světlá navigační lišta Androidu (zpět / domů / přehled) – ta se ořízne.
+NAV_BAR = 126 / 2400
+
+
+def phone(src, left, top, width, rot=0, crop_top=0.0):
+    """Realistický telefon: rámeček, zaoblení podle šířky telefonu, výřez kamery a boční tlačítka."""
+    bezel = max(5, round(width * 0.03))
+    screen_w = width - 2 * bezel
+    shot_h = screen_w * 2400 / 1080
+    screen_h = round(shot_h * (1 - crop_top - NAV_BAR))
+    outer_r = round(width * 0.13)
+    inner_r = outer_r - bezel
+    cam = max(6, round(screen_w * 0.034))
+    btn = max(2, round(width * 0.012))
+    h = screen_h + 2 * bezel
+    return (
+        f'<div style="position:absolute;left:{left}px;top:{top}px;width:{width}px;height:{h}px;transform:rotate({rot}deg);'
+        f'filter:drop-shadow(0 30px 50px rgba(0,0,0,.55))">'
+        # boční tlačítka (hlasitost vlevo, zapínání vpravo)
+        f'<div style="position:absolute;left:-{btn}px;top:{round(h * .2)}px;width:{btn + 2}px;height:{round(h * .08)}px;border-radius:{btn}px;background:#1b2421"></div>'
+        f'<div style="position:absolute;left:-{btn}px;top:{round(h * .3)}px;width:{btn + 2}px;height:{round(h * .08)}px;border-radius:{btn}px;background:#1b2421"></div>'
+        f'<div style="position:absolute;right:-{btn}px;top:{round(h * .24)}px;width:{btn + 2}px;height:{round(h * .1)}px;border-radius:{btn}px;background:#1b2421"></div>'
+        # tělo a obrazovka
+        f'<div style="position:absolute;inset:0;border-radius:{outer_r}px;background:linear-gradient(145deg,#2b3632,#0b0f0e 40%,#151c1a);'
+        f'box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.12)"></div>'
+        f'<div style="position:absolute;left:{bezel}px;top:{bezel}px;width:{screen_w}px;height:{screen_h}px;border-radius:{inner_r}px;overflow:hidden;background:#0b1412">'
+        f'<img src="{src}" style="display:block;width:100%;margin-top:-{round(shot_h * crop_top)}px">'
+        f'<div style="position:absolute;left:50%;top:{round(cam * .9)}px;width:{cam}px;height:{cam}px;margin-left:-{cam // 2}px;border-radius:50%;'
+        f'background:#020303;box-shadow:0 0 0 2px rgba(255,255,255,.06)"></div>'
+        f'</div></div>'
+    )
 
 
 def lr(left, bottom, size=40, font=24):

@@ -31,6 +31,7 @@ class ProService extends ChangeNotifier {
   static const _ownerHashes = {
     'f08b1b9d6587d1e90304264b292c5ccfaf07796b52dfd4096279b751bdd615a3', // Roman – přihlášení do aplikace (uživatelský účet)
     'b7b5618c1153d20c7ac84bf0274106ac281804d32ea4ea84bda973ee96c05d36', // lrtechcz – e-mail pro aplikaci
+    '888ef170a54a704ade4c8a007e143ddf9a32d2062c69196bce7f2e7217222894', // lrtechcz+review – testovací účet pro kontrolu v Google Play
   };
 
   static const _offlineGrace = Duration(days: 7);

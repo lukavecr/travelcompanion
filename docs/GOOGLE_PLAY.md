@@ -1,5 +1,16 @@
 # Google Play – návod pro zveřejnění
 
+## Stav k 27. 10. 2026
+- Účet LR Tech CZ (lrtechcz@gmail.com, ID 9019030464626882931) ověřený; aplikace **Comes Viae** `cz.lrtech.comesviae`
+  (ID v konzoli 4976059396892412123), Zdarma.
+- Interní testování: vydání 1 (1.0.0) zveřejněné, zatím bez testerů. AAB > 10 MB → nahrává uživatel ručně (přetažením).
+- Záznam v obchodu (en-US): název, popisy, ikona, grafika, 8 screenshotů – uloženo (podklady neoznačené jako AI).
+- Obsah aplikace hotovo: zásady soukromí, reklamy (ne), inzertní ID (ne), státní (ne), finanční (žádné),
+  zdravotní (Aktivita a fitness – kroky; Pohotovost – SOS), hodnocení obsahu (PEGI 3 / ESRB E).
+- Čeká na uživatele: přihlašovací údaje pro recenzenty (testovací účet), účet obchodníka (Google Payments → předplatné),
+  e-maily testerů. Pak: cílová skupina (blokovaná bez přihlašovacích údajů), bezpečnost údajů (krok 2 se neotevřel),
+  služba v popředí (video), předplatné `pro_yearly`, uzavřený test.
+
 Stav aplikace: smazání účtu ✔, podpisový klíč ✔, Free/Pro + roční předplatné ✔ (v kódu).
 Zbývá před zveřejněním: zásady ochrany soukromí (web), anglická verze, ikona a screenshoty.
 

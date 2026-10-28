@@ -739,6 +739,7 @@ T = {
 'Sdílet jako GPX': ('Share as GPX', 'Als GPX teilen', 'Compartir como GPX'),
 'Vzdálenost': ('Distance', 'Entfernung', 'Distancia'),
 'Průměr': ('Average', 'Durchschnitt', 'Media'),
+'{n} bodů': ('{n} points', '{n} Punkte', '{n} puntos'),
 'Trasa nemá dost bodů.': ('The track does not have enough points.', 'Die Strecke hat zu wenige Punkte.', 'La ruta no tiene suficientes puntos.'),
 'Přejmenovat': ('Rename', 'Umbenennen', 'Renombrar'),
 # --- offline mapy ---

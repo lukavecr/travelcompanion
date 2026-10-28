@@ -10,7 +10,10 @@
 - 28. 10.: Obsah aplikace kompletní (přihlašovací údaje lrtechcz+review – Pro zdarma, cílová skupina 18+, bezpečnost údajů
   9 typů dat, služba v popředí: aktualizace polohy na pozadí + video https://www.youtube.com/watch?v=cI56gbbouhg,
   soubor branding/promo/play_foreground_service_tracking.mp4). Interní vydání 2 (1.0.0+2).
-- Zbývá: odeslat změny ke kontrole (Přehled publikování), účet obchodníka → předplatné `pro_yearly`, uzavřený test (12 testerů / 14 dní).
+- 28. 10.: nastavení obchodu (kategorie Cestování a místa, kontakt lrtechcz@gmail.com, web), seznam testerů
+  „Testeři Comes Viae“ (zatím jen lrtechcz@gmail.com) pro interní i uzavřený test Alpha (všechny země, vydání 2 (1.0.0)),
+  **14 změn odesláno ke kontrole Googlu** (obvykle do 7 dnů).
+- Zbývá: účet obchodníka → předplatné `pro_yearly`, uzavřený test (12 testerů / 14 dní).
 
 ## 1. Vývojářský účet (ty)
 1. <https://play.google.com/console/signup> → **Osobní účet**, zaplatit 25 USD (jednorázově).

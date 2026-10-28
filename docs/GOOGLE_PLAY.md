@@ -7,12 +7,10 @@
 - Záznam v obchodu (en-US): název, popisy, ikona, grafika, 8 screenshotů – uloženo (podklady neoznačené jako AI).
 - Obsah aplikace hotovo: zásady soukromí, reklamy (ne), inzertní ID (ne), státní (ne), finanční (žádné),
   zdravotní (Aktivita a fitness – kroky; Pohotovost – SOS), hodnocení obsahu (PEGI 3 / ESRB E).
-- Čeká na uživatele: přihlašovací údaje pro recenzenty (testovací účet), účet obchodníka (Google Payments → předplatné),
-  e-maily testerů. Pak: cílová skupina (blokovaná bez přihlašovacích údajů), bezpečnost údajů (krok 2 se neotevřel),
-  služba v popředí (video), předplatné `pro_yearly`, uzavřený test.
-
-Stav aplikace: smazání účtu ✔, podpisový klíč ✔, Free/Pro + roční předplatné ✔ (v kódu).
-Zbývá před zveřejněním: zásady ochrany soukromí (web), anglická verze, ikona a screenshoty.
+- 28. 10.: Obsah aplikace kompletní (přihlašovací údaje lrtechcz+review – Pro zdarma, cílová skupina 18+, bezpečnost údajů
+  9 typů dat, služba v popředí: aktualizace polohy na pozadí + video https://www.youtube.com/watch?v=cI56gbbouhg,
+  soubor branding/promo/play_foreground_service_tracking.mp4). Interní vydání 2 (1.0.0+2).
+- Zbývá: odeslat změny ke kontrole (Přehled publikování), účet obchodníka → předplatné `pro_yearly`, uzavřený test (12 testerů / 14 dní).
 
 ## 1. Vývojářský účet (ty)
 1. <https://play.google.com/console/signup> → **Osobní účet**, zaplatit 25 USD (jednorázově).

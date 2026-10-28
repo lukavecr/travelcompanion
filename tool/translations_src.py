@@ -798,10 +798,10 @@ T = {
 'Všichni jsou vyrovnaní.': ('Everyone is settled.', 'Alle sind ausgeglichen.', 'Todos están a mano.'),
 'Tvoje jméno v cestě': ('Your name in the trip', 'Dein Name in der Reise', 'Tu nombre en el viaje'),
 'Uvidí ho ostatní účastníci (např. u výdajů).': ('Other members will see it (e.g. on expenses).', 'Die anderen sehen ihn (z. B. bei Ausgaben).', 'Lo verán los demás (p. ej. en los gastos).'),
-'Přidej se k mé cestě „{trip}“ v aplikaci Comes Viae: uvidíš plán i útraty. V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion': (
-    'Join my trip “{trip}” in Comes Viae: you will see the plan and the spending. In the app open Trips, tap the “Join with code” icon and enter {code} (valid for 7 days).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
-    'Komm zu meiner Reise „{trip}“ in Comes Viae: du siehst Plan und Ausgaben. Öffne in der App Reisen, tippe auf „Mit Code beitreten“ und gib {code} ein (7 Tage gültig).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion',
-    'Únete a mi viaje «{trip}» en Comes Viae: verás el plan y los gastos. En la app abre Viajes, toca «Unirse con código» e introduce {code} (válido 7 días).\nhttps://play.google.com/store/apps/details?id=com.lukrom.travelcompanion'),
+'Přidej se k mé cestě „{trip}“ v aplikaci Comes Viae: uvidíš plán i útraty. V aplikaci otevři Cesty, klepni na ikonu „Připojit se kódem“ a zadej kód {code} (platí 7 dní).\nhttps://play.google.com/store/apps/details?id=cz.lrtech.comesviae': (
+    'Join my trip “{trip}” in Comes Viae: you will see the plan and the spending. In the app open Trips, tap the “Join with code” icon and enter {code} (valid for 7 days).\nhttps://play.google.com/store/apps/details?id=cz.lrtech.comesviae',
+    'Komm zu meiner Reise „{trip}“ in Comes Viae: du siehst Plan und Ausgaben. Öffne in der App Reisen, tippe auf „Mit Code beitreten“ und gib {code} ein (7 Tage gültig).\nhttps://play.google.com/store/apps/details?id=cz.lrtech.comesviae',
+    'Únete a mi viaje «{trip}» en Comes Viae: verás el plan y los gastos. En la app abre Viajes, toca «Unirse con código» e introduce {code} (válido 7 días).\nhttps://play.google.com/store/apps/details?id=cz.lrtech.comesviae'),
 'Nepodařilo se: {e}. Zkontroluj připojení k internetu.': ('Failed: {e}. Check your internet connection.', 'Fehlgeschlagen: {e}. Prüfe die Internetverbindung.', 'Error: {e}. Comprueba la conexión a internet.'),
 'Společná cesta': ('Shared trip', 'Gemeinsame Reise', 'Viaje compartido'),
 'Pozvi partnera, rodinu nebo kamarády: všichni uvidí plán, místa a útraty a můžou přidávat výdaje. Aplikace spočítá, kdo komu kolik dluží.': (
